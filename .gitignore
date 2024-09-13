@@ -1,0 +1,6 @@
+.venv
+*.wav
+.vscode
+__pycache__
+recorder-output
+logs
