@@ -3,6 +3,7 @@ import sys
 
 from pydantic import ValidationError
 from recorder import AudioRecorder
+from compressor import Compressor
 from models import Command
 from loguru import logger
 
@@ -39,8 +40,13 @@ class Controller:
             if self.recorder.recording:
                 self.recorder.stop()
             sys.exit(0)
+        elif command.action == "compress":
+            self.compressor = Compressor(f"recorder-output/{self.recorder.id}")
+            self.compressor.compress()
+            return {"message": "Compression complete"}
 
 
+@logger.catch
 def main():
     initialize_logger()
     controller = Controller()

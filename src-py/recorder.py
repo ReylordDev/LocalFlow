@@ -10,7 +10,7 @@ import os
 
 
 class AudioRecorder:
-    MAX_DURATION = 250
+    MAX_DURATION = 20
 
     def __init__(self):
         self.recording = False
