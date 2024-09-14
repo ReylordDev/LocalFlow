@@ -4,6 +4,7 @@ import sys
 from pydantic import ValidationError
 from recorder import AudioRecorder
 from compressor import Compressor
+from transcriber import LocalTranscriber, GroqTranscriber
 from models import Command
 from loguru import logger
 
@@ -44,6 +45,10 @@ class Controller:
             self.compressor = Compressor(f"recorder-output/{self.recorder.id}")
             self.compressor.compress()
             return {"message": "Compression complete"}
+        elif command.action == "transcribe":
+            self.transcriber = LocalTranscriber(f"recorder-output/{self.recorder.id}")
+            transcription = self.transcriber.transcribe_files()
+            return {"transcription": transcription}
 
 
 @logger.catch
