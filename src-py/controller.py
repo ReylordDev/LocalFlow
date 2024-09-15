@@ -5,6 +5,7 @@ from pydantic import ValidationError
 from recorder import AudioRecorder
 from compressor import Compressor
 from transcriber import LocalTranscriber, GroqTranscriber
+from formatter import GroqFormatter, LocalFormatter
 from models import Command
 from loguru import logger
 
@@ -49,6 +50,12 @@ class Controller:
             self.transcriber = LocalTranscriber(f"recorder-output/{self.recorder.id}")
             transcription = self.transcriber.transcribe_files()
             return {"transcription": transcription}
+        elif command.action == "format":
+            self.transcriber = LocalTranscriber(f"recorder-output/{self.recorder.id}")
+            transcription = self.transcriber.transcribe_files()
+            self.formatter = GroqFormatter(raw_transcription=transcription)
+            formatted_transcription = self.formatter.format_transcription()
+            return {"formatted_transcription": formatted_transcription}
 
 
 @logger.catch
