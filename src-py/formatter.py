@@ -1,99 +1,48 @@
 import os
-from pyexpat import model
 from dotenv import load_dotenv
 from loguru import logger
-from models import CorrectedTranscription, CleanedTranscription, StructuredTranscription
-from openai import OpenAI
 
 import ollama
-import instructor
 from groq import Groq
+
+
+def generate_system_prompt():
+    return """You are an expert in the field of transcription. You have extensive knowledge of audio transcriptions, of filler words, and of the nuances of human speech. 
+
+    # CAPABAILITIES
+
+    - You can identify filler words such as "uh", "um", "so", "you know" and "like" in a transcription and remove them.
+    - You can identify and correct grammatical errors in a transcription.
+    - You can identify and correct punctuation errors in a transcription.
+    - You can identify and correct misheard words in a transcription, based on the context of the conversation.
+
+    # INSTRUCTIONS
+
+    - You should aim to make the transcription as close to the original audio as possible.
+    - You should aim to make the transcription grammatically correct.
+    - You should aim to make the transcription free of filler words.
+    - You should aim to make the transcription free of punctuation errors.
+    - You should aim to make the transcription free of misheard words.
+    - You should aim to make the transcription read like a coherent text.
+
+    # OUTPUT FORMAT
+
+    The output should be a text transcription that is free of filler words, grammatically correct, and free of punctuation errors.
+    You should not include anything other than the text transcription in the output.
+    Do not include any comments or annotations in the output. Don't write about the changes that you made to the transcription.
+
+    # INPUT
+
+    The transcription you are given is from a single speaker. 
+
+    """
 
 
 class Formatter:
     def __init__(self, raw_transcription: str):
         self.raw_transcription = raw_transcription
-        self.fix_transcription_errors_prompt = [
-            {
-                "role": "system",
-                "content": "Find and correct any words in the following transcription that were misheard or missed by the transcription software. Only output the corrected transcription and don't make any other changes beyond those misheard words. Use the following examples as a reference.",
-            },
-            {"role": "user", "content": "The knight was bold and weary."},
-            {"role": "assistant", "content": "The night was cold and dreary."},
-            {
-                "role": "user",
-                "content": "He bought a pair of new shews.",
-            },
-            {
-                "role": "assistant",
-                "content": "He bought a pair of new shoes.",
-            },
-            {
-                "role": "user",
-                "content": "The bare was chasing the dear.",
-            },
-            {
-                "role": "assistant",
-                "content": "The bear was chasing the deer.",
-            },
-            {
-                "role": "user",
-                "content": "I can't wait to meat you there.",
-            },
-            {
-                "role": "assistant",
-                "content": "I can't wait to meet you there.",
-            },
-            {
-                "role": "user",
-                "content": "She red the book in one sitting.",
-            },
-            {
-                "role": "assistant",
-                "content": "She read the book in one sitting.",
-            },
-        ]
 
-        self.remove_filler_words_prompt = [
-            {
-                "role": "system",
-                "content": "You are tasked with removing filler words from the following text. Filler words are words that do not add meaning to the sentence, such as 'um', 'uh', 'like', 'you know', etc. Do not make any other changes to the text and only output your resulting text.",
-            },
-            {
-                "role": "user",
-                "content": "Um, I think we should, like, go to the park.",
-            },
-            {
-                "role": "assistant",
-                "content": "I think we should go to the park.",
-            },
-            {
-                "role": "user",
-                "content": "Well, you know, I was just, um, wondering if you could help me.",
-            },
-            {
-                "role": "assistant",
-                "content": "I was wondering if you could help me.",
-            },
-            {
-                "role": "user",
-                "content": "So, uh, what time are we, like, meeting up?",
-            },
-            {
-                "role": "assistant",
-                "content": "What time are we meeting up?",
-            },
-        ]
-
-    def format_transcription(self):
-        transcription = self.fix_transcription_errors(self.raw_transcription)
-        transcription = self.remove_filler_words(transcription)
-        return transcription
-
-    def fix_transcription_errors(self, text: str):
-        raise NotImplementedError
-
-    def remove_filler_words(self, text: str):
+    def improve_transcription(self):
         raise NotImplementedError
 
 
@@ -101,46 +50,30 @@ class LocalFormatter(Formatter):
     MODEL = "llama3.1"
 
     def __init__(self, raw_transcription: str):
-        self.client = instructor.from_openai(
-            OpenAI(
-                base_url="http://localhost:11434/v1",
-                api_key="ollama",
-            ),
-            mode=instructor.Mode.JSON,
-        )
         super().__init__(raw_transcription)
 
-    def fix_transcription_errors(self, text: str):
-        # response = self.client.completions.create(
-        prompt = self.fix_transcription_errors_prompt + [
-            {"role": "user", "content": text}
-        ]
-        response = ollama.chat(
+    def improve_transcription(self):
+        response = ollama.generate(
             model=self.MODEL,
-            # response_model=CorrectedTranscription,
-            messages=prompt,  # type: ignore
+            keep_alive="15m",
+            system=generate_system_prompt(),
+            prompt=f"Please improve the following transcription:\n\n{self.raw_transcription}",
         )
         # logger.debug(response)
-        result = response["message"]["content"]
+        result = response["response"]
+        prompt_tokens = response["prompt_eval_count"]
+        response_tokens = response["eval_count"]
+        total_duration = response["total_duration"] / 10**9
         logger.info(result)
-        return result
-
-    def remove_filler_words(self, text: str):
-        # response = self.client.completions.create(
-        prompt = self.remove_filler_words_prompt + [{"role": "user", "content": text}]
-        response = ollama.chat(
-            model=self.MODEL,
-            # response_model=CleanedTranscription,
-            messages=prompt,  # type: ignore
+        logger.info(
+            f"Tokens: Prompt: {prompt_tokens}, Response: {response_tokens}, Total: {prompt_tokens + response_tokens}"
         )
-        # logger.debug(response)
-        result = response["message"]["content"]
-        logger.info(result)
+        logger.info(f"Total duration: {total_duration:.2f} seconds")
         return result
 
 
 class GroqFormatter(Formatter):
-    MODEL = "gemma2-9b-it"
+    MODEL = "llama-3.1-8b-instant"
 
     def __init__(self, raw_transcription: str):
         load_dotenv()
@@ -151,24 +84,26 @@ class GroqFormatter(Formatter):
         self.client = Groq(api_key=GROQ_API_KEY)
         super().__init__(raw_transcription)
 
-    def fix_transcription_errors(self, text: str):
-        prompt = self.fix_transcription_errors_prompt + [
-            {"role": "user", "content": text}
-        ]
-        chat_completion = self.client.chat.completions.create(
+    def improve_transcription(self):
+        response = self.client.chat.completions.create(
             model=self.MODEL,
-            messages=prompt,  # type: ignore
+            messages=[
+                {"role": "system", "content": generate_system_prompt()},
+                {
+                    "role": "user",
+                    "content": f"Please improve the following transcription:\n\n{self.raw_transcription}",
+                },
+            ],
         )
-        result = chat_completion.choices[0].message.content
+        result = response.choices[0].message.content
         logger.info(result)
-        return result
-
-    def remove_filler_words(self, text: str):
-        prompt = self.remove_filler_words_prompt + [{"role": "user", "content": text}]
-        chat_completion = self.client.chat.completions.create(
-            model=self.MODEL,
-            messages=prompt,  # type: ignore
-        )
-        result = chat_completion.choices[0].message.content
-        logger.info(result)
+        if response.usage:
+            prompt_tokens = response.usage.prompt_tokens
+            response_tokens = response.usage.completion_tokens
+            total_tokens = response.usage.total_tokens
+            logger.info(
+                f"Tokens: Prompt: {prompt_tokens}, Response: {response_tokens}, Total: {total_tokens}"
+            )
+            total_duration = response.usage.total_time
+            logger.info(f"Total duration: {total_duration:.2f} seconds")
         return result

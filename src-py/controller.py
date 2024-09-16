@@ -23,12 +23,28 @@ class Controller:
     def __init__(self):
         self.recorder = AudioRecorder()
 
+    def stop_steps(self):
+        if self.recorder.recording:
+            self.recorder.stop()
+        print("Recording stopped")
+        self.compressor = Compressor(f"recorder-output/{self.recorder.id}")
+        self.compressor.compress()
+        print("Compression complete")
+        self.transcriber = LocalTranscriber(f"recorder-output/{self.recorder.id}")
+        transcription = self.transcriber.transcribe_files()
+        print(transcription)
+        self.formatter = LocalFormatter(raw_transcription=transcription)
+        # self.formatter = GroqFormatter(raw_transcription=transcription)
+        formatted_transcription = self.formatter.improve_transcription()
+        print(formatted_transcription)
+
     def handle_command(self, command: Command):
         if command.action == "start":
             self.recorder.start()
             return {"message": "Recording started"}
         elif command.action == "stop":
             self.recorder.stop()
+            self.stop_steps()
             return {"message": "Recording stopped"}
         elif command.action == "status":
             return {
@@ -54,7 +70,7 @@ class Controller:
             self.transcriber = LocalTranscriber(f"recorder-output/{self.recorder.id}")
             transcription = self.transcriber.transcribe_files()
             self.formatter = GroqFormatter(raw_transcription=transcription)
-            formatted_transcription = self.formatter.format_transcription()
+            formatted_transcription = self.formatter.improve_transcription()
             return {"formatted_transcription": formatted_transcription}
 
 
