@@ -40,25 +40,31 @@ def generate_system_prompt():
 
 
 class Formatter:
-    def __init__(self, raw_transcription: str):
-        self.raw_transcription = raw_transcription
+    def __init__(self):
+        pass
 
-    def improve_transcription(self):
+    def improve_transcription(self, raw_transcription: str):
         raise NotImplementedError
 
 
 class LocalFormatter(Formatter):
     MODEL = "llama3.1"
 
-    def __init__(self, raw_transcription: str):
-        super().__init__(raw_transcription)
+    def __init__(self):
+        if not self.is_ollama_running():
+            logger.error("Ollama is not running. Starting Ollama...")
+            os.system("ollama serve")
+        self.wake_up()
+        super().__init__()
 
-    def check_ollama_status(self):
-        response = request(method="GET", url="localhost:11434")
+    def is_ollama_running(self):
+        response = request(method="GET", url="http://localhost:11434")
         if response.status_code == 200:
             logger.info("Ollama is running")
+            return True
         else:
             logger.error("Ollama is not running")
+            return False
 
     def wake_up(self, keep_alive_minutes="15"):
         ollama.generate(
@@ -68,12 +74,12 @@ class LocalFormatter(Formatter):
         )
         logger.info(f"Activated model {self.MODEL} for {keep_alive_minutes} Minutes.")
 
-    def improve_transcription(self):
+    def improve_transcription(self, raw_transcription: str):
         response = ollama.generate(
             model=self.MODEL,
             keep_alive="1m",
             system=generate_system_prompt(),
-            prompt=f"Please improve the following transcription:\n\n{self.raw_transcription}",
+            prompt=f"Please improve the following transcription:\n\n{raw_transcription}",
         )
         # logger.debug(response)
         result = response["response"]
@@ -91,23 +97,23 @@ class LocalFormatter(Formatter):
 class GroqFormatter(Formatter):
     MODEL = "llama-3.1-8b-instant"
 
-    def __init__(self, raw_transcription: str):
+    def __init__(self):
         load_dotenv()
 
         GROQ_API_KEY = os.getenv("GROQ_API_KEY")
         assert GROQ_API_KEY, "GROQ_API_KEY not found in .env"
 
         self.client = Groq(api_key=GROQ_API_KEY)
-        super().__init__(raw_transcription)
+        super().__init__()
 
-    def improve_transcription(self):
+    def improve_transcription(self, raw_transcription: str):
         response = self.client.chat.completions.create(
             model=self.MODEL,
             messages=[
                 {"role": "system", "content": generate_system_prompt()},
                 {
                     "role": "user",
-                    "content": f"Please improve the following transcription:\n\n{self.raw_transcription}",
+                    "content": f"Please improve the following transcription:\n\n{raw_transcription}",
                 },
             ],
         )

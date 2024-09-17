@@ -22,6 +22,9 @@ def initialize_logger():
 class Controller:
     def __init__(self):
         self.recorder = AudioRecorder()
+        self.transcriber = LocalTranscriber()
+        self.formatter = LocalFormatter()
+        print("Controller initialized")
 
     def stop_steps(self):
         if self.recorder.recording:
@@ -30,12 +33,11 @@ class Controller:
         self.compressor = Compressor(f"recorder-output/{self.recorder.id}")
         self.compressor.compress()
         print("Compression complete")
-        self.transcriber = LocalTranscriber(f"recorder-output/{self.recorder.id}")
-        transcription = self.transcriber.transcribe_files()
+        transcription = self.transcriber.transcribe_files(
+            f"recorder-output/{self.recorder.id}"
+        )
         print(transcription)
-        self.formatter = LocalFormatter(raw_transcription=transcription)
-        # self.formatter = GroqFormatter(raw_transcription=transcription)
-        formatted_transcription = self.formatter.improve_transcription()
+        formatted_transcription = self.formatter.improve_transcription(transcription)
         print(formatted_transcription)
 
     def handle_command(self, command: Command):
@@ -63,14 +65,17 @@ class Controller:
             self.compressor.compress()
             return {"message": "Compression complete"}
         elif command.action == "transcribe":
-            self.transcriber = LocalTranscriber(f"recorder-output/{self.recorder.id}")
-            transcription = self.transcriber.transcribe_files()
+            transcription = self.transcriber.transcribe_files(
+                f"recorder-output/{self.recorder.id}"
+            )
             return {"transcription": transcription}
         elif command.action == "format":
-            self.transcriber = LocalTranscriber(f"recorder-output/{self.recorder.id}")
-            transcription = self.transcriber.transcribe_files()
-            self.formatter = GroqFormatter(raw_transcription=transcription)
-            formatted_transcription = self.formatter.improve_transcription()
+            transcription = self.transcriber.transcribe_files(
+                f"recorder-output/{self.recorder.id}"
+            )
+            formatted_transcription = self.formatter.improve_transcription(
+                raw_transcription=transcription
+            )
             return {"formatted_transcription": formatted_transcription}
 
 
