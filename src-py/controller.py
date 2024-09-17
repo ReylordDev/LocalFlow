@@ -6,11 +6,11 @@ from recorder import AudioRecorder
 from compressor import Compressor
 from transcriber import LocalTranscriber, GroqTranscriber
 from formatter import LocalFormatter, GroqFormatter
-from models import Command
+from models import Command, Message, ProgressMessage
 from loguru import logger
 
 
-DEV_MODE = True
+DEV_MODE = False
 
 
 def initialize_logger():
@@ -19,43 +19,62 @@ def initialize_logger():
     logger.info("Logger initialized.")
 
 
+def print_message(message_type: str, data: dict):
+    print(Message(type=message_type, data=data).model_dump_json(), flush=True)
+
+
+def print_progress(step: str, status: str):
+    progress_message = Message(
+        type="progress", data=ProgressMessage(step=step, status=status)
+    )
+    print(progress_message.model_dump_json())
+    sys.stdout.flush()
+
+
 class Controller:
     def __init__(self):
         self.recorder = AudioRecorder()
         self.transcriber = LocalTranscriber()
         self.formatter = LocalFormatter()
-        print("Controller initialized")
+        print_progress("init", "complete")
 
     def stop_steps(self):
         if self.recorder.recording:
             self.recorder.stop()
-        print("Recording stopped")
+        print_progress("recording", "complete")
         self.compressor = Compressor(f"recorder-output/{self.recorder.id}")
         self.compressor.compress()
-        print("Compression complete")
+        print_progress("compression", "complete")
         transcription = self.transcriber.transcribe_files(
             f"recorder-output/{self.recorder.id}"
         )
-        print(transcription)
+        print_progress("transcription", "complete")
+        print_message("transcription", {"transcription": transcription})
         formatted_transcription = self.formatter.improve_transcription(transcription)
-        print(formatted_transcription)
+        print_progress("formatting", "complete")
+        print_message(
+            "formatted_transcription",
+            {"formatted_transcription": formatted_transcription},
+        )
 
     def handle_command(self, command: Command):
         if command.action == "start":
             self.recorder.start()
-            return {"message": "Recording started"}
+            print_progress("recording", "start")
         elif command.action == "stop":
             self.recorder.stop()
             self.stop_steps()
-            return {"message": "Recording stopped"}
+            print_progress("all", "complete")
         elif command.action == "status":
             return {
-                "message": "Recording is active"
+                print_message("status", {"status": "active"})
                 if self.recorder.recording
-                else "Recording is not active"
+                else print_message("status", {"status": "inactive"})
             }
         elif command.action == "audio_level":
-            return {"audio_level": self.recorder.current_audio_level}
+            print_message(
+                "audio_level", {"audio_level": self.recorder.current_audio_level}
+            )
         elif command.action == "quit":
             if self.recorder.recording:
                 self.recorder.stop()
@@ -63,12 +82,13 @@ class Controller:
         elif command.action == "compress":
             self.compressor = Compressor(f"recorder-output/{self.recorder.id}")
             self.compressor.compress()
-            return {"message": "Compression complete"}
+            print_progress("compression", "complete")
         elif command.action == "transcribe":
             transcription = self.transcriber.transcribe_files(
                 f"recorder-output/{self.recorder.id}"
             )
-            return {"transcription": transcription}
+            print_progress("transcription", "complete")
+            print_message("transcription", {"transcription": transcription})
         elif command.action == "format":
             transcription = self.transcriber.transcribe_files(
                 f"recorder-output/{self.recorder.id}"
@@ -76,7 +96,11 @@ class Controller:
             formatted_transcription = self.formatter.improve_transcription(
                 raw_transcription=transcription
             )
-            return {"formatted_transcription": formatted_transcription}
+            print_progress("formatting", "complete")
+            print_message(
+                "formatted_transcription",
+                {"formatted_transcription": formatted_transcription},
+            )
 
 
 @logger.catch
@@ -91,9 +115,7 @@ def main():
             else:
                 data = Command(action=message)
 
-            result = controller.handle_command(data)
-            print(json.dumps(result))
-            sys.stdout.flush()
+            controller.handle_command(data)
         except ValidationError as e:
             print(e)
             sys.stdout.flush()

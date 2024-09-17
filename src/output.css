@@ -554,6 +554,10 @@ video {
   display: none;
 }
 
+.flex {
+  display: flex;
+}
+
 .inline-flex {
   display: inline-flex;
 }
@@ -574,8 +578,16 @@ video {
   width: 2.5rem;
 }
 
+.w-full {
+  width: 100%;
+}
+
 .items-center {
   align-items: center;
+}
+
+.justify-start {
+  justify-content: flex-start;
 }
 
 .justify-center {
