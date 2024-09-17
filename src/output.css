@@ -154,7 +154,7 @@ html,
   -o-tab-size: 4;
      tab-size: 4;
   /* 3 */
-  font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   /* 4 */
   font-feature-settings: normal;
   /* 5 */
@@ -554,8 +554,101 @@ video {
   display: none;
 }
 
+.inline-flex {
+  display: inline-flex;
+}
+
+.h-10 {
+  height: 2.5rem;
+}
+
+.h-11 {
+  height: 2.75rem;
+}
+
+.h-9 {
+  height: 2.25rem;
+}
+
+.w-10 {
+  width: 2.5rem;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.whitespace-nowrap {
+  white-space: nowrap;
+}
+
+.rounded-md {
+  border-radius: calc(var(--radius) - 2px);
+}
+
+.border {
+  border-width: 1px;
+}
+
+.border-zinc-200 {
+  --tw-border-opacity: 1;
+  border-color: rgb(228 228 231 / var(--tw-border-opacity));
+}
+
+.bg-background {
+  background-color: var(--background);
+}
+
+.bg-red-500 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(239 68 68 / var(--tw-bg-opacity));
+}
+
+.bg-white {
+  --tw-bg-opacity: 1;
+  background-color: rgb(255 255 255 / var(--tw-bg-opacity));
+}
+
+.bg-zinc-100 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(244 244 245 / var(--tw-bg-opacity));
+}
+
+.bg-zinc-900 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(24 24 27 / var(--tw-bg-opacity));
+}
+
+.px-3 {
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
+}
+
+.px-4 {
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+.px-8 {
+  padding-left: 2rem;
+  padding-right: 2rem;
+}
+
+.py-2 {
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+
 .text-center {
   text-align: center;
+}
+
+.font-sans {
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
 
 .text-4xl {
@@ -563,21 +656,45 @@ video {
   line-height: 2.5rem;
 }
 
-.text-green-500 {
-  --tw-text-opacity: 1;
-  color: rgb(34 197 94 / var(--tw-text-opacity));
+.text-sm {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
 }
 
-.text-primary {
-  color: var(--primary);
-}
-
-.text-primary-300 {
-  color: var(--primary-300);
+.font-medium {
+  font-weight: 500;
 }
 
 .text-text {
   color: var(--text);
+}
+
+.text-zinc-50 {
+  --tw-text-opacity: 1;
+  color: rgb(250 250 250 / var(--tw-text-opacity));
+}
+
+.text-zinc-900 {
+  --tw-text-opacity: 1;
+  color: rgb(24 24 27 / var(--tw-text-opacity));
+}
+
+.underline-offset-4 {
+  text-underline-offset: 4px;
+}
+
+.outline {
+  outline-style: solid;
+}
+
+.ring-offset-white {
+  --tw-ring-offset-color: #fff;
+}
+
+.transition-colors {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
 }
 
 :root {
@@ -704,4 +821,470 @@ video {
   --accent-800: #9c99ff;
   --accent-900: #ceccff;
   --accent-950: #e6e5ff;
+}
+
+:root {
+  --foreground: 222.2 47.4% 11.2%;
+  --muted: 210 40% 96.1%;
+  --muted-foreground: 215.4 16.3% 46.9%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222.2 47.4% 11.2%;
+  --border: 214.3 31.8% 91.4%;
+  --input: 214.3 31.8% 91.4%;
+  --card: 0 0% 100%;
+  --card-foreground: 222.2 47.4% 11.2%;
+  --primary-foreground: 210 40% 98%;
+  --secondary-foreground: 222.2 47.4% 11.2%;
+  --accent-foreground: 222.2 47.4% 11.2%;
+  --destructive: 0 100% 50%;
+  --destructive-foreground: 210 40% 98%;
+  --ring: 215 20.2% 65.1%;
+  --radius: 0.5rem;
+}
+
+.dark {
+  --foreground: 213 31% 91%;
+  --muted: 223 47% 11%;
+  --muted-foreground: 215.4 16.3% 56.9%;
+  --accent-foreground: 210 40% 98%;
+  --popover: 224 71% 4%;
+  --popover-foreground: 215 20.2% 65.1%;
+  --border: 216 34% 17%;
+  --input: 216 34% 17%;
+  --card: 224 71% 4%;
+  --card-foreground: 213 31% 91%;
+  --primary-foreground: 222.2 47.4% 1.2%;
+  --secondary-foreground: 210 40% 98%;
+  --destructive: 0 63% 31%;
+  --destructive-foreground: 210 40% 98%;
+  --ring: 216 34% 17%;
+  --radius: 0.5rem;
+}
+
+* {
+  border-color: hsl(var(--border));
+}
+
+body {
+  background-color: var(--background);
+  color: hsl(var(--foreground));
+  font-feature-settings:
+    "rlig" 1,
+    "calt" 1;
+}
+
+@font-face {
+  font-family: "Inter";
+
+  font-style: normal;
+
+  font-weight: 100;
+
+  font-display: swap;
+
+  src:
+    url("../public/fonts/Inter-Thin.woff2") format("woff2"),
+    url("../public/fonts/Inter-Thin.woff") format("woff");
+}
+
+@font-face {
+  font-family: "Inter";
+
+  font-style: italic;
+
+  font-weight: 100;
+
+  font-display: swap;
+
+  src:
+    url("../public/fonts/Inter-ThinItalic.woff2") format("woff2"),
+    url("../public/fonts/Inter-ThinItalic.woff") format("woff");
+}
+
+@font-face {
+  font-family: "Inter";
+
+  font-style: normal;
+
+  font-weight: 200;
+
+  font-display: swap;
+
+  src:
+    url("../public/fonts/Inter-ExtraLight.woff2") format("woff2"),
+    url("../public/fonts/Inter-ExtraLight.woff") format("woff");
+}
+
+@font-face {
+  font-family: "Inter";
+
+  font-style: italic;
+
+  font-weight: 200;
+
+  font-display: swap;
+
+  src:
+    url("../public/fonts/Inter-ExtraLightItalic.woff2") format("woff2"),
+    url("../public/fonts/Inter-ExtraLightItalic.woff") format("woff");
+}
+
+@font-face {
+  font-family: "Inter";
+
+  font-style: normal;
+
+  font-weight: 300;
+
+  font-display: swap;
+
+  src:
+    url("../public/fonts/Inter-Light.woff2") format("woff2"),
+    url("../public/fonts/Inter-Light.woff") format("woff");
+}
+
+@font-face {
+  font-family: "Inter";
+
+  font-style: italic;
+
+  font-weight: 300;
+
+  font-display: swap;
+
+  src:
+    url("../public/fonts/Inter-LightItalic.woff2") format("woff2"),
+    url("../public/fonts/Inter-LightItalic.woff") format("woff");
+}
+
+@font-face {
+  font-family: "Inter";
+
+  font-style: normal;
+
+  font-weight: 400;
+
+  font-display: swap;
+
+  src:
+    url("../public/fonts/Inter-Regular.woff2") format("woff2"),
+    url("../public/fonts/Inter-Regular.woff") format("woff");
+}
+
+@font-face {
+  font-family: "Inter";
+
+  font-style: italic;
+
+  font-weight: 400;
+
+  font-display: swap;
+
+  src:
+    url("../public/fonts/Inter-Italic.woff2") format("woff2"),
+    url("../public/fonts/Inter-Italic.woff") format("woff");
+}
+
+@font-face {
+  font-family: "Inter";
+
+  font-style: normal;
+
+  font-weight: 500;
+
+  font-display: swap;
+
+  src:
+    url("../public/fonts/Inter-Medium.woff2") format("woff2"),
+    url("../public/fonts/Inter-Medium.woff") format("woff");
+}
+
+@font-face {
+  font-family: "Inter";
+
+  font-style: italic;
+
+  font-weight: 500;
+
+  font-display: swap;
+
+  src:
+    url("../public/fonts/Inter-MediumItalic.woff2") format("woff2"),
+    url("../public/fonts/Inter-MediumItalic.woff") format("woff");
+}
+
+@font-face {
+  font-family: "Inter";
+
+  font-style: normal;
+
+  font-weight: 600;
+
+  font-display: swap;
+
+  src:
+    url("../public/fonts/Inter-SemiBold.woff2") format("woff2"),
+    url("../public/fonts/Inter-SemiBold.woff") format("woff");
+}
+
+@font-face {
+  font-family: "Inter";
+
+  font-style: italic;
+
+  font-weight: 600;
+
+  font-display: swap;
+
+  src:
+    url("../public/fonts/Inter-SemiBoldItalic.woff2") format("woff2"),
+    url("../public/fonts/Inter-SemiBoldItalic.woff") format("woff");
+}
+
+@font-face {
+  font-family: "Inter";
+
+  font-style: normal;
+
+  font-weight: 700;
+
+  font-display: swap;
+
+  src:
+    url("../public/fonts/Inter-Bold.woff2") format("woff2"),
+    url("../public/fonts/Inter-Bold.woff") format("woff");
+}
+
+@font-face {
+  font-family: "Inter";
+
+  font-style: italic;
+
+  font-weight: 700;
+
+  font-display: swap;
+
+  src:
+    url("../public/fonts/Inter-BoldItalic.woff2") format("woff2"),
+    url("../public/fonts/Inter-BoldItalic.woff") format("woff");
+}
+
+@font-face {
+  font-family: "Inter";
+
+  font-style: normal;
+
+  font-weight: 800;
+
+  font-display: swap;
+
+  src:
+    url("../public/fonts/Inter-ExtraBold.woff2") format("woff2"),
+    url("../public/fonts/Inter-ExtraBold.woff") format("woff");
+}
+
+@font-face {
+  font-family: "Inter";
+
+  font-style: italic;
+
+  font-weight: 800;
+
+  font-display: swap;
+
+  src:
+    url("../public/fonts/Inter-ExtraBoldItalic.woff2") format("woff2"),
+    url("../public/fonts/Inter-ExtraBoldItalic.woff") format("woff");
+}
+
+@font-face {
+  font-family: "Inter";
+
+  font-style: normal;
+
+  font-weight: 900;
+
+  font-display: swap;
+
+  src:
+    url("../public/fonts/Inter-Black.woff2") format("woff2"),
+    url("../public/fonts/Inter-Black.woff") format("woff");
+}
+
+@font-face {
+  font-family: "Inter";
+
+  font-style: italic;
+
+  font-weight: 900;
+
+  font-display: swap;
+
+  src:
+    url("../public/fonts/Inter-BlackItalic.woff2") format("woff2"),
+    url("../public/fonts/Inter-BlackItalic.woff") format("woff");
+}
+
+/* -------------------------------------------------------
+Variable font.
+Usage:
+
+  html { font-family: 'Inter', sans-serif; }
+  @supports (font-variation-settings: normal) {
+    html { font-family: 'Inter var', sans-serif; }
+  }
+*/
+
+@font-face {
+  font-family: "Inter var";
+
+  font-weight: 100 900;
+
+  font-display: swap;
+
+  font-style: normal;
+
+  font-named-instance: "Regular";
+
+  src: url("../public/fonts/Inter-roman.var.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Inter var";
+
+  font-weight: 100 900;
+
+  font-display: swap;
+
+  font-style: italic;
+
+  font-named-instance: "Italic";
+
+  src: url("../public/fonts/Inter-italic.var.woff2") format("woff2");
+}
+
+:root {
+  --font-sans: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+}
+
+.hover\:bg-red-500\/90:hover {
+  background-color: rgb(239 68 68 / 0.9);
+}
+
+.hover\:bg-zinc-100:hover {
+  --tw-bg-opacity: 1;
+  background-color: rgb(244 244 245 / var(--tw-bg-opacity));
+}
+
+.hover\:bg-zinc-100\/80:hover {
+  background-color: rgb(244 244 245 / 0.8);
+}
+
+.hover\:bg-zinc-900\/90:hover {
+  background-color: rgb(24 24 27 / 0.9);
+}
+
+.hover\:text-zinc-900:hover {
+  --tw-text-opacity: 1;
+  color: rgb(24 24 27 / var(--tw-text-opacity));
+}
+
+.hover\:underline:hover {
+  text-decoration-line: underline;
+}
+
+.focus-visible\:outline-none:focus-visible {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+}
+
+.focus-visible\:ring-2:focus-visible {
+  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
+  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);
+  box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);
+}
+
+.focus-visible\:ring-zinc-950:focus-visible {
+  --tw-ring-opacity: 1;
+  --tw-ring-color: rgb(9 9 11 / var(--tw-ring-opacity));
+}
+
+.focus-visible\:ring-offset-2:focus-visible {
+  --tw-ring-offset-width: 2px;
+}
+
+.disabled\:pointer-events-none:disabled {
+  pointer-events: none;
+}
+
+.disabled\:opacity-50:disabled {
+  opacity: 0.5;
+}
+
+.dark\:border-zinc-800:where(.dark, .dark *) {
+  --tw-border-opacity: 1;
+  border-color: rgb(39 39 42 / var(--tw-border-opacity));
+}
+
+.dark\:bg-red-900:where(.dark, .dark *) {
+  --tw-bg-opacity: 1;
+  background-color: rgb(127 29 29 / var(--tw-bg-opacity));
+}
+
+.dark\:bg-zinc-50:where(.dark, .dark *) {
+  --tw-bg-opacity: 1;
+  background-color: rgb(250 250 250 / var(--tw-bg-opacity));
+}
+
+.dark\:bg-zinc-800:where(.dark, .dark *) {
+  --tw-bg-opacity: 1;
+  background-color: rgb(39 39 42 / var(--tw-bg-opacity));
+}
+
+.dark\:bg-zinc-950:where(.dark, .dark *) {
+  --tw-bg-opacity: 1;
+  background-color: rgb(9 9 11 / var(--tw-bg-opacity));
+}
+
+.dark\:text-zinc-50:where(.dark, .dark *) {
+  --tw-text-opacity: 1;
+  color: rgb(250 250 250 / var(--tw-text-opacity));
+}
+
+.dark\:text-zinc-900:where(.dark, .dark *) {
+  --tw-text-opacity: 1;
+  color: rgb(24 24 27 / var(--tw-text-opacity));
+}
+
+.dark\:ring-offset-zinc-950:where(.dark, .dark *) {
+  --tw-ring-offset-color: #09090b;
+}
+
+.dark\:hover\:bg-red-900\/90:hover:where(.dark, .dark *) {
+  background-color: rgb(127 29 29 / 0.9);
+}
+
+.dark\:hover\:bg-zinc-50\/90:hover:where(.dark, .dark *) {
+  background-color: rgb(250 250 250 / 0.9);
+}
+
+.dark\:hover\:bg-zinc-800:hover:where(.dark, .dark *) {
+  --tw-bg-opacity: 1;
+  background-color: rgb(39 39 42 / var(--tw-bg-opacity));
+}
+
+.dark\:hover\:bg-zinc-800\/80:hover:where(.dark, .dark *) {
+  background-color: rgb(39 39 42 / 0.8);
+}
+
+.dark\:hover\:text-zinc-50:hover:where(.dark, .dark *) {
+  --tw-text-opacity: 1;
+  color: rgb(250 250 250 / var(--tw-text-opacity));
+}
+
+.dark\:focus-visible\:ring-zinc-300:focus-visible:where(.dark, .dark *) {
+  --tw-ring-opacity: 1;
+  --tw-ring-color: rgb(212 212 216 / var(--tw-ring-opacity));
 }
