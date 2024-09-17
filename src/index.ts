@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, webContents } from "electron";
+import { app, BrowserWindow, ipcMain } from "electron";
 import log from "electron-log/main";
 import path from "path";
 import { PythonShell } from "python-shell";

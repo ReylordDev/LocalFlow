@@ -10,7 +10,7 @@ export interface Message {
     | "formatted_transcription"
     | "status"
     | "audio_level";
-  data: any | ProgressMessage;
+  data: object | ProgressMessage;
 }
 
 export interface Command {

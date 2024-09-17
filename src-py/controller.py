@@ -1,11 +1,10 @@
-import json
 import sys
 
 from pydantic import ValidationError
 from recorder import AudioRecorder
 from compressor import Compressor
-from transcriber import LocalTranscriber, GroqTranscriber
-from formatter import LocalFormatter, GroqFormatter
+from transcriber import LocalTranscriber, GroqTranscriber  # noqa: F401
+from formatter import LocalFormatter, GroqFormatter  # noqa: F401
 from models import Command, Message, ProgressMessage
 from loguru import logger
 
