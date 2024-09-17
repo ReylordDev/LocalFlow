@@ -1,7 +1,7 @@
 {
-  "name": "electron-init",
-  "productName": "electron-init",
-  "version": "1.0.0",
+  "name": "whisper-flow",
+  "productName": "whisper-flow",
+  "version": "0.0.1",
   "description": "My Electron application description",
   "main": ".webpack/main",
   "scripts": {
@@ -43,6 +43,10 @@
   "license": "MIT",
   "packageManager": "yarn@1.22.22+sha1.ac34549e6aa8e7ead463a7407e1c7390f61a6610",
   "dependencies": {
-    "electron-squirrel-startup": "^1.0.1"
+    "@types/react": "^18.3.7",
+    "@types/react-dom": "^18.3.0",
+    "electron-squirrel-startup": "^1.0.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
   }
 }
