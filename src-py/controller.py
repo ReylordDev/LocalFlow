@@ -5,7 +5,7 @@ from pydantic import ValidationError
 from recorder import AudioRecorder
 from compressor import Compressor
 from transcriber import LocalTranscriber, GroqTranscriber
-from formatter import GroqFormatter, LocalFormatter
+from formatter import LocalFormatter, GroqFormatter
 from models import Command
 from loguru import logger
 
