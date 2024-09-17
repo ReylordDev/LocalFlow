@@ -60,8 +60,9 @@ class GroqTranscriber(Transcriber):
 
 
 class LocalTranscriber(Transcriber):
-    def __init__(self, input_dir, model_size="large-v3"):
+    def __init__(self, input_dir, model_size="distil-large-v3"):
         self.model = WhisperModel(model_size, device="cuda", compute_type="int8")
+        logger.info(f"Local Whisper Model {model_size} loaded")
         super().__init__(input_dir)
 
     def transcribe_audio(self, file_name: str):

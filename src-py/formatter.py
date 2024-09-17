@@ -1,5 +1,6 @@
 import os
 from dotenv import load_dotenv
+from httpx import request
 from loguru import logger
 
 import ollama
@@ -52,10 +53,25 @@ class LocalFormatter(Formatter):
     def __init__(self, raw_transcription: str):
         super().__init__(raw_transcription)
 
+    def check_ollama_status(self):
+        response = request(method="GET", url="localhost:11434")
+        if response.status_code == 200:
+            logger.info("Ollama is running")
+        else:
+            logger.error("Ollama is not running")
+
+    def wake_up(self, keep_alive_minutes="15"):
+        ollama.generate(
+            model=self.MODEL,
+            prompt="Wake up!",
+            keep_alive=keep_alive_minutes + "m",
+        )
+        logger.info(f"Activated model {self.MODEL} for {keep_alive_minutes} Minutes.")
+
     def improve_transcription(self):
         response = ollama.generate(
             model=self.MODEL,
-            keep_alive="15m",
+            keep_alive="1m",
             system=generate_system_prompt(),
             prompt=f"Please improve the following transcription:\n\n{self.raw_transcription}",
         )
