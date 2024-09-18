@@ -15,6 +15,10 @@ class FormattedTranscription(BaseModel):
     formatted_transcription: str
 
 
+class AudioLevel(BaseModel):
+    audio_level: float
+
+
 class Message(BaseModel):
     type: str
-    data: Union[dict, ProgressMessage, FormattedTranscription]
+    data: Union[dict, ProgressMessage, FormattedTranscription, AudioLevel]

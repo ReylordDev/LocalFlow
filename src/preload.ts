@@ -22,6 +22,14 @@ contextBridge.exposeInMainWorld("controller", {
   stop: () => {
     ipcRenderer.send("controller:stop");
   },
+  requestAudioLevel: async () => {
+    return ipcRenderer.send("controller:requestAudioLevel");
+  },
+  onReceiveAudioLevel: (callback: (audioLevel: number) => void) => {
+    ipcRenderer.on("controller:audioLevel", (_, audioLevel) => {
+      callback(audioLevel);
+    });
+  },
   onReceiveTranscription: (
     callback: (transcription: FormattedTranscripton) => void
   ) => {

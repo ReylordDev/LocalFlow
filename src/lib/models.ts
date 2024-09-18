@@ -20,3 +20,7 @@ export interface Command {
 export interface FormattedTranscripton {
   formatted_transcription: string;
 }
+
+export interface AudioLevel {
+  audio_level: number;
+}

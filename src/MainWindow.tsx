@@ -1,4 +1,5 @@
 import { Button } from "./components/ui/button";
+import SpeechVocalization from "./components/SpeechVocalization";
 import { useEffect, useState } from "react";
 
 const MainWindow = () => {
@@ -30,16 +31,19 @@ const MainWindow = () => {
   }
 
   return (
-    <div className="bg-green-400 flex flex-col justify-start items-center p-12">
+    <div className="flex flex-col justify-start items-center p-12">
       {recording ? (
-        <Button
-          onClick={() => {
-            window.controller.stop();
-            setRecording(false);
-          }}
-        >
-          Stop Recording
-        </Button>
+        <div className="flex gap-4 items-center justify-between">
+          <Button
+            onClick={() => {
+              window.controller.stop();
+              setRecording(false);
+            }}
+          >
+            Stop Recording
+          </Button>
+          <SpeechVocalization />
+        </div>
       ) : (
         <Button
           onClick={() => {
@@ -52,7 +56,7 @@ const MainWindow = () => {
       )}
       <div>
         <h1>Transcription</h1>
-        <div className="bg-white p-4 rounded-lg w-96 h-96 overflow-y-auto">
+        <div className="border p-4 rounded-lg w-96 h-96 overflow-y-auto">
           <p id="transcription">{transcription}</p>
         </div>
       </div>
