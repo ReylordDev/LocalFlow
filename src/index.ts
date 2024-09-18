@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain } from "electron";
+import { app, BrowserWindow, ipcMain, screen, globalShortcut } from "electron";
 import log from "electron-log/main";
 import path from "path";
 import { PythonShell } from "python-shell";
@@ -14,6 +14,8 @@ import {
 // whether you're running in development or production).
 declare const MAIN_WINDOW_WEBPACK_ENTRY: string;
 declare const MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY: string;
+declare const MINI_WEBPACK_ENTRY: string;
+declare const MINI_PRELOAD_WEBPACK_ENTRY: string;
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require("electron-squirrel-startup")) {
@@ -41,9 +43,10 @@ app.setAppLogsPath(path.join(dataDir, "logs"));
 console.log(`Root directory: ${rootDir}`);
 console.log(`Data directory: ${dataDir}`);
 
+let miniWindow: BrowserWindow;
 let backendInitialized = false;
 
-const createWindow = () => {
+const createMainWindow = () => {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
     height: 600,
@@ -58,7 +61,54 @@ const createWindow = () => {
 
   // Open the DevTools.
   mainWindow.webContents.openDevTools();
+
+  mainWindow.on("closed", () => {
+    mainWindow.destroy();
+    if (miniWindow) {
+      miniWindow.destroy();
+    }
+  });
   return mainWindow;
+};
+
+const createMiniWindow = (pyShell: PythonShell) => {
+  const { width: screenWidth, height: screenHeight } =
+    screen.getPrimaryDisplay().workAreaSize;
+  const height = 40;
+  const width = 128;
+
+  const centerX = screenWidth / 2;
+  const centerY = screenHeight - height - 60;
+
+  const miniWindow = new BrowserWindow({
+    frame: false,
+    width: width,
+    height: height,
+    x: centerX,
+    y: centerY,
+    useContentSize: true,
+    transparent: true,
+    alwaysOnTop: true,
+    hiddenInMissionControl: true,
+    webPreferences: {
+      preload: MINI_PRELOAD_WEBPACK_ENTRY,
+    },
+  });
+  miniWindow.hide();
+
+  // and load the index.html of the app.
+  miniWindow.loadURL(MINI_WEBPACK_ENTRY);
+
+  globalShortcut.register("Alt+CommandOrControl+Y", () => {
+    if (miniWindow.isVisible()) {
+      miniWindow.hide();
+      pyShell.send({ action: "stop" } as Command);
+    } else {
+      miniWindow.show();
+      pyShell.send({ action: "start" } as Command);
+    }
+  });
+  return miniWindow;
 };
 
 // This method will be called when Electron has finished
@@ -79,7 +129,7 @@ app.on("activate", () => {
   // On OS X it's common to re-create a window in the app when the
   // dock icon is clicked and there are no other windows open.
   if (BrowserWindow.getAllWindows().length === 0) {
-    createWindow();
+    createMainWindow();
   }
 });
 
@@ -87,7 +137,8 @@ app.on("activate", () => {
 // code. You can also put them in separate files and import them here.
 
 function main() {
-  const mainWindow = createWindow();
+  const mainWindow = createMainWindow();
+
   const pyshell = new PythonShell(pythonPath, {
     cwd: rootDir,
     mode: "json",
@@ -104,6 +155,7 @@ function main() {
         backendInitialized = true;
         console.log("Backend initialized");
         mainWindow.webContents.send("controller:setInitialized", true);
+        miniWindow = createMiniWindow(pyshell);
       } else {
         console.log(
           `Progress: ${progressMessage.step} - ${progressMessage.status}`
@@ -116,12 +168,20 @@ function main() {
         "controller:transcription",
         message.data as FormattedTranscripton
       );
+      if (miniWindow) {
+        miniWindow.webContents.send(
+          "controller:transcription",
+          message.data as FormattedTranscripton
+        );
+      }
       console.log("Transcription complete");
       return;
     }
     if (message.type === "audio_level") {
       mainWindow.webContents.send("controller:audioLevel", message.data);
-      console.log("Audio level", message.data);
+      if (miniWindow) {
+        miniWindow.webContents.send("controller:audioLevel", message.data);
+      }
       return;
     }
     console.log("Message", message);
@@ -155,7 +215,6 @@ function ipcHandling(pyShell: PythonShell) {
     if (!backendInitialized) {
       throw new Error("Backend not initialized");
     }
-    console.log("Requesting audio level");
     pyShell.send({
       action: "audio_level",
     } as Command);
@@ -175,11 +234,15 @@ declare global {
       start: () => void;
       stop: () => void;
       requestAudioLevel: () => void;
-      onReceiveAudioLevel: (callback: (audioLevel: AudioLevel) => void) => void;
+      onReceiveAudioLevel: (callback: (audioLevel: number) => void) => void;
       onReceiveTranscription: (
         callback: (transcription: FormattedTranscripton) => void
       ) => void;
       quit: () => void;
+    };
+    clipboard: {
+      writeText: (text: string) => void;
+      readText: () => string;
     };
   }
 }

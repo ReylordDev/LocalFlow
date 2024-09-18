@@ -16,11 +16,12 @@ class Transcriber:
 
     def transcribe_files(self, input_dir):
         file_names = os.listdir(input_dir)
+        file_names = [
+            file_name for file_name in file_names if file_name.endswith(".flac")
+        ]
         file_names.sort(key=lambda x: int(x.split(".")[0]))
         complete_transcription: list[str] = []
         for file_name in file_names:
-            if not file_name.endswith(".flac"):
-                continue
             transcription = self.transcribe_audio(os.path.join(input_dir, file_name))
             complete_transcription.append(transcription)
         transcription = " ".join(complete_transcription)

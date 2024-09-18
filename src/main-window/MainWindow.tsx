@@ -1,5 +1,5 @@
-import { Button } from "./components/ui/button";
-import SpeechVocalization from "./components/SpeechVocalization";
+import { Button } from "../components/ui/button";
+import SpeechVocalization from "../components/SpeechVocalization";
 import { useEffect, useState } from "react";
 
 const MainWindow = () => {

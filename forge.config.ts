@@ -31,11 +31,19 @@ const config: ForgeConfig = {
         config: rendererConfig,
         entryPoints: [
           {
-            html: "./src/index.html",
-            js: "./src/renderer.ts",
+            html: "./src/main-window/index.html",
+            js: "./src/main-window/renderer.ts",
             name: "main_window",
             preload: {
-              js: "./src/preload.ts",
+              js: "./src/main-window/preload.ts",
+            },
+          },
+          {
+            html: "./src/mini/index.html",
+            js: "./src/mini/renderer.ts",
+            name: "mini",
+            preload: {
+              js: "./src/mini/preload.ts",
             },
           },
         ],

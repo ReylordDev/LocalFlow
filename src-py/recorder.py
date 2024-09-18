@@ -7,6 +7,33 @@ from threading import Thread
 from typing import Optional
 from loguru import logger
 import os
+import math
+
+
+class Stack:
+    def __init__(self, max_length=10):
+        self.stack = []
+        self.max_length = max_length
+
+    def push(self, item):
+        if len(self.stack) >= self.max_length:
+            self.stack.pop(0)
+        self.stack.append(item)
+
+    def get(self):
+        return self.stack
+
+    def clear(self):
+        self.stack = []
+
+    def __len__(self):
+        return len(self.stack)
+
+    def __getitem__(self, key):
+        return self.stack[key]
+
+    def __iter__(self):
+        return iter(self.stack)
 
 
 class AudioRecorder:
@@ -19,6 +46,7 @@ class AudioRecorder:
         self.record_thread: Optional[Thread] = None
         self.stream: Optional[sd.InputStream] = None
         self.current_audio_level: float = 0
+        self.audio_levels = Stack(max_length=20)
         self.id = int(time.time())
         self.output_path = f"recorder-output/{self.id}"
         os.makedirs(self.output_path, exist_ok=True)
@@ -45,6 +73,7 @@ class AudioRecorder:
             if self.recording:
                 self.audio_data.append(indata.copy())
             self.current_audio_level = float(np.linalg.norm(indata) * 10)
+            self.audio_levels.push(self.current_audio_level)
             if self.current_audio_level > 10:
                 logger.debug(f"Audio level: {self.current_audio_level:.1f}")
 
@@ -84,4 +113,5 @@ class AudioRecorder:
         self.audio_data = []
 
     def get_audio_level(self):
-        return self.current_audio_level
+        average = sum(self.audio_levels.get()) / len(self.audio_levels)
+        return average
