@@ -1,11 +1,12 @@
 import sys
+from typing import Union
 
 from pydantic import ValidationError
 from recorder import AudioRecorder
 from compressor import Compressor
 from transcriber import LocalTranscriber, GroqTranscriber  # noqa: F401
 from formatter import LocalFormatter, GroqFormatter  # noqa: F401
-from models import Command, Message, ProgressMessage
+from models import Command, FormattedTranscription, Message, ProgressMessage
 from loguru import logger
 
 
@@ -18,7 +19,7 @@ def initialize_logger():
     logger.info("Logger initialized.")
 
 
-def print_message(message_type: str, data: dict):
+def print_message(message_type: str, data: Union[dict, FormattedTranscription]):
     print(Message(type=message_type, data=data).model_dump_json(), flush=True)
 
 
@@ -53,7 +54,7 @@ class Controller:
         print_progress("formatting", "complete")
         print_message(
             "formatted_transcription",
-            {"formatted_transcription": formatted_transcription},
+            FormattedTranscription(formatted_transcription=formatted_transcription),
         )
 
     def handle_command(self, command: Command):
@@ -98,7 +99,7 @@ class Controller:
             print_progress("formatting", "complete")
             print_message(
                 "formatted_transcription",
-                {"formatted_transcription": formatted_transcription},
+                FormattedTranscription(formatted_transcription=formatted_transcription),
             )
 
 

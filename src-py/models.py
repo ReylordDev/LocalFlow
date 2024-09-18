@@ -11,6 +11,10 @@ class ProgressMessage(BaseModel):
     status: str
 
 
+class FormattedTranscription(BaseModel):
+    formatted_transcription: str
+
+
 class Message(BaseModel):
     type: str
-    data: Union[dict, ProgressMessage]
+    data: Union[dict, ProgressMessage, FormattedTranscription]
