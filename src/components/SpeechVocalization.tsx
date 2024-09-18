@@ -41,9 +41,7 @@ const SpeechVocalization = () => {
             animationDuration: `${0.5 + Math.random() * 0.1}s`,
             animationIterationCount: "infinite",
             height:
-              audioLevel > 1
-                ? `${Math.min(10 + audioLevel * 7 * factor, 70)}%`
-                : "10%",
+              audioLevel > 1 ? `${Math.min(10 + 60 * factor, 70)}%` : "10%",
           }}
         />
       ))}
