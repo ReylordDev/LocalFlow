@@ -14,7 +14,7 @@ export interface Message {
 }
 
 export interface Command {
-  action: "start" | "stop" | "audio_level" | "status" | "quit";
+  action: "start" | "stop" | "reset" | "audio_level" | "status" | "quit";
 }
 
 export interface FormattedTranscripton {

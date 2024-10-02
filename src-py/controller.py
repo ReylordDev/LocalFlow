@@ -67,6 +67,11 @@ class Controller:
             self.recorder.stop()
             self.stop_steps()
             print_progress("all", "complete")
+        elif command.action == "reset":
+            if self.recorder.recording:
+                self.recorder.stop()
+            self.recorder = AudioRecorder()
+            print_progress("reset", "complete")
         elif command.action == "status":
             return {
                 print_message("status", {"status": "active"})

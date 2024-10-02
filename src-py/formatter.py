@@ -48,7 +48,7 @@ class Formatter:
 
 
 class LocalFormatter(Formatter):
-    MODEL = "llama3.1"
+    MODEL = "llama3.2"
 
     def __init__(self):
         if not self.is_ollama_running():

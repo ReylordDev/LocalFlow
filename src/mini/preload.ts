@@ -2,7 +2,7 @@
 // https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
 
 import { FormattedTranscripton, AudioLevel } from "../lib/models";
-import { contextBridge, ipcRenderer, clipboard } from "electron";
+import { contextBridge, ipcRenderer } from "electron";
 
 // Expose protected methods that allow the renderer process to use
 // the ipcRenderer without exposing the entire object
@@ -21,6 +21,9 @@ contextBridge.exposeInMainWorld("controller", {
   },
   stop: () => {
     ipcRenderer.send("controller:stop");
+  },
+  reset: () => {
+    ipcRenderer.send("controller:reset");
   },
   requestAudioLevel: async () => {
     return ipcRenderer.send("controller:requestAudioLevel");
@@ -41,9 +44,9 @@ contextBridge.exposeInMainWorld("controller", {
 
 contextBridge.exposeInMainWorld("clipboard", {
   writeText: (text: string) => {
-    clipboard.writeText(text);
+    ipcRenderer.invoke("clipboard:writeText", text);
   },
   readText: () => {
-    return clipboard.readText();
+    ipcRenderer.invoke("clipboard:readText");
   },
 });
