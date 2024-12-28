@@ -1,4 +1,4 @@
-const MainWindow = () => {
+const Settings = () => {
   console.log("Settings");
 
   return (
@@ -18,4 +18,4 @@ const MainWindow = () => {
   );
 };
 
-export default MainWindow;
+export default Settings;
