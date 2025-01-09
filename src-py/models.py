@@ -9,6 +9,7 @@ class Command(BaseModel):
 class ProgressMessage(BaseModel):
     step: str
     status: str
+    timestamp: float
 
 
 class FormattedTranscription(BaseModel):

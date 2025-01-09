@@ -1,4 +1,5 @@
 import os
+import time
 from dotenv import load_dotenv
 from httpx import request
 from loguru import logger
@@ -48,13 +49,13 @@ class Formatter:
 
 
 class LocalFormatter(Formatter):
-    MODEL = "llama3.2"
-
     def __init__(self):
         if not self.is_ollama_running():
             logger.error("Ollama is not running. Starting Ollama...")
             os.system("ollama serve")
-        self.wake_up()
+        self.MODEL = "llama3.2"
+        self.status = "offline"
+        logger.info(f"Using model {self.MODEL}")
         super().__init__()
 
     def is_ollama_running(self):
@@ -66,13 +67,34 @@ class LocalFormatter(Formatter):
             logger.error("Ollama is not running")
             return False
 
-    def wake_up(self, keep_alive_minutes="15"):
+    def load_model(self, keep_alive_minutes="15"):
+        self.status = "loading"
         ollama.generate(
             model=self.MODEL,
             prompt="Wake up!",
             keep_alive=keep_alive_minutes + "m",
         )
-        logger.info(f"Activated model {self.MODEL} for {keep_alive_minutes} Minutes.")
+        current_time = time.time()
+        self.timeout = current_time + int(keep_alive_minutes) * 60
+        self.status = "online"
+        logger.info(
+            f"Activated formatting model {self.MODEL} for {keep_alive_minutes} Minutes."
+        )
+
+    def unload_model(self):
+        if self.status == "online":
+            os.system(f"ollama stop {self.MODEL}")
+            self.status = "offline"
+            logger.info(f"Deactivated formatting model {self.MODEL}")
+
+    def get_status(self):
+        if self.status == "online":
+            current_time = time.time()
+            if current_time > self.timeout:
+                self.status = "offline"
+            return self.status
+        else:
+            return self.status
 
     def improve_transcription(self, raw_transcription: str):
         response = ollama.generate(

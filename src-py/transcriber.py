@@ -35,6 +35,7 @@ class Transcriber:
         return transcription
 
 
+# I want to work on the local one first, it's okay if the groq one doesn't work for now
 class GroqTranscriber(Transcriber):
     def __init__(self):
         load_dotenv()
@@ -59,12 +60,37 @@ class GroqTranscriber(Transcriber):
 
 
 class LocalTranscriber(Transcriber):
+    # Maybe I should turn this into into a type safe class
+
     def __init__(self, model_size="distil-large-v3"):
-        self.model = WhisperModel(model_size, device="cuda", compute_type="int8")
-        logger.info(f"Local Whisper Model {model_size} loaded")
+        self.model = None
+        self.model_size = model_size
+        self.status = "offline"
+        logger.info(f"Using Whisper Model: {model_size}")
         super().__init__()
 
+    def load_model(self):
+        self.status = "loading"
+        self.model = WhisperModel(model_size_or_path=self.model_size)
+        self.status = "online"
+        logger.info("Whisper Model loaded into memory")
+        # How can I check if the model is loaded?
+
+    def unload_model(self):
+        # Unsure if this actually works. Let's investigate
+        if self.model:
+            del self.model
+            self.model = None
+            self.status = "offline"
+            logger.info("Whisper Model unloaded from memory")
+
+    def get_status(self):
+        logger.info(f"Whisper Model status: {self.status}")
+        return self.status
+
     def transcribe_audio(self, file_name: str):
+        if not self.model:
+            raise Exception("Model not loaded")
         with open(file_name, "rb") as file:
             logger.info(f"Transcribing {file_name} using Local Whisper Model")
             segments, info = self.model.transcribe(file, beam_size=5, temperature=0)

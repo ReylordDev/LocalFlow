@@ -1,4 +1,5 @@
 import sys
+import time
 from typing import Union
 
 from pydantic import ValidationError
@@ -10,7 +11,7 @@ from models import AudioLevel, Command, FormattedTranscription, Message, Progres
 from loguru import logger
 
 
-DEV_MODE = False
+DEV_MODE = True
 
 
 def initialize_logger():
@@ -27,7 +28,8 @@ def print_message(
 
 def print_progress(step: str, status: str):
     progress_message = Message(
-        type="progress", data=ProgressMessage(step=step, status=status)
+        type="progress",
+        data=ProgressMessage(step=step, status=status, timestamp=time.time()),
     )
     print(progress_message.model_dump_json())
     sys.stdout.flush()
@@ -35,10 +37,14 @@ def print_progress(step: str, status: str):
 
 class Controller:
     def __init__(self):
+        print_progress("init", "start")
         self.recorder = AudioRecorder()
+        # Create the transcriber and formatter objects (models not loaded yet)
         self.transcriber = LocalTranscriber()
         self.formatter = LocalFormatter()
+
         print_progress("init", "complete")
+        logger.info("Controller initialized.")
 
     def stop_steps(self):
         if self.recorder.recording:
@@ -59,6 +65,7 @@ class Controller:
             FormattedTranscription(formatted_transcription=formatted_transcription),
         )
 
+    # TODO: Move each command into their own functions
     def handle_command(self, command: Command):
         if command.action == "start":
             self.recorder.start()
@@ -108,6 +115,39 @@ class Controller:
                 "formatted_transcription",
                 FormattedTranscription(formatted_transcription=formatted_transcription),
             )
+        elif command.action == "model_status":
+            print_message(
+                "model_status",
+                {
+                    "transcriber_status": self.transcriber.get_status(),
+                    "formatter_status": self.formatter.get_status(),
+                },
+            )
+        elif command.action == "model_load":
+            print_progress("model_load", "start")
+            self.transcriber.load_model()
+            self.formatter.load_model()
+            print_progress("model_load", "complete")
+        elif command.action == "model_unload":
+            print_progress("model_unload", "start")
+            self.formatter.unload_model()
+            print_progress("model_unload", "complete")
+        elif command.action == "transcriber_load":
+            print_progress("transcriber_load", "start")
+            self.transcriber.load_model()
+            print_progress("transcriber_load", "complete")
+        elif command.action == "transcriber_unload":
+            print_progress("transcriber_unload", "start")
+            self.transcriber.unload_model()
+            print_progress("transcriber_unload", "complete")
+        elif command.action == "formatter_load":
+            print_progress("formatter_load", "start")
+            self.formatter.load_model()
+            print_progress("formatter_load", "complete")
+        elif command.action == "formatter_unload":
+            print_progress("formatter_unload", "start")
+            self.formatter.unload_model()
+            print_progress("formatter_unload", "complete")
         else:
             print_message("error", {"error": "Invalid command"})
 
