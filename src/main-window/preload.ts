@@ -1,7 +1,7 @@
 // See the Electron documentation for details on how to use preload scripts:
 // https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
 
-import { FormattedTranscripton } from "../lib/models";
+import { FormattedTranscripton, ModelStatus } from "../lib/models";
 import { contextBridge, ipcRenderer } from "electron";
 
 // Expose protected methods that allow the renderer process to use
@@ -22,12 +22,26 @@ contextBridge.exposeInMainWorld("controller", {
   stop: () => {
     ipcRenderer.send("controller:stop");
   },
+  loadModels: () => {
+    ipcRenderer.send("controller:loadModels");
+  },
+  unloadModels: () => {
+    ipcRenderer.send("controller:unloadModels");
+  },
   requestAudioLevel: async () => {
     return ipcRenderer.send("controller:requestAudioLevel");
   },
   onReceiveAudioLevel: (callback: (audioLevel: number) => void) => {
     ipcRenderer.on("controller:audioLevel", (_, audioLevel) => {
       callback(audioLevel);
+    });
+  },
+  requestModelStatus: async () => {
+    return ipcRenderer.send("controller:requestModelStatus");
+  },
+  onReceiveModelStatus: (callback: (status: ModelStatus) => void) => {
+    ipcRenderer.on("controller:modelStatus", (_, status) => {
+      callback(status);
     });
   },
   onReceiveTranscription: (

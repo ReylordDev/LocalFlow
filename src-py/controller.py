@@ -11,7 +11,7 @@ from models import AudioLevel, Command, FormattedTranscription, Message, Progres
 from loguru import logger
 
 
-DEV_MODE = True
+DEV_MODE = False
 
 
 def initialize_logger():
@@ -130,6 +130,7 @@ class Controller:
             print_progress("model_load", "complete")
         elif command.action == "model_unload":
             print_progress("model_unload", "start")
+            self.transcriber.unload_model()
             self.formatter.unload_model()
             print_progress("model_unload", "complete")
         elif command.action == "transcriber_load":
