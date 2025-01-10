@@ -23,3 +23,10 @@ class AudioLevel(BaseModel):
 class Message(BaseModel):
     type: str
     data: Union[dict, ProgressMessage, FormattedTranscription, AudioLevel]
+
+
+class HistoryItem(BaseModel):
+    id: int
+    raw_transcription: str
+    formatted_transcription: str
+    created_at: str

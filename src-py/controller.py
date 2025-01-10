@@ -1,5 +1,7 @@
 import sys
 import time
+import sqlite3
+from sqlite3 import Connection
 from typing import Union
 
 from pydantic import ValidationError
@@ -7,7 +9,14 @@ from recorder import AudioRecorder
 from compressor import Compressor
 from transcriber import LocalTranscriber, GroqTranscriber  # noqa: F401
 from formatter import LocalFormatter, GroqFormatter  # noqa: F401
-from models import AudioLevel, Command, FormattedTranscription, Message, ProgressMessage
+from models import (
+    AudioLevel,
+    Command,
+    FormattedTranscription,
+    HistoryItem,
+    Message,
+    ProgressMessage,
+)
 from loguru import logger
 
 
@@ -35,6 +44,51 @@ def print_progress(step: str, status: str):
     sys.stdout.flush()
 
 
+def initialize_db():
+    # Intialize the database that contains a history of the transcriptions
+    conn = sqlite3.connect("transcriptions.db")
+    c = conn.cursor()
+
+    c.execute(
+        """CREATE TABLE IF NOT EXISTS transcriptions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            raw_transcription TEXT,
+            formatted_transcription TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )"""
+    )
+
+    conn.commit()
+
+    return conn
+
+
+def commit_transcription_to_db(
+    db: Connection, transcription: str, formatted_transcription: str
+):
+    db.cursor().execute(
+        "INSERT INTO transcriptions (raw_transcription, formatted_transcription) VALUES (?, ?)",
+        (transcription, formatted_transcription),
+    )
+
+    db.commit()
+
+
+def get_transcriptions_from_db(db: Connection):
+    c = db.cursor()
+    c.execute("SELECT * FROM transcriptions")
+    transcriptions = c.fetchall()
+    return [
+        HistoryItem(
+            id=row[0],
+            raw_transcription=row[1],
+            formatted_transcription=row[2],
+            created_at=row[3],
+        )
+        for row in transcriptions
+    ]
+
+
 class Controller:
     def __init__(self):
         print_progress("init", "start")
@@ -42,6 +96,8 @@ class Controller:
         # Create the transcriber and formatter objects (models not loaded yet)
         self.transcriber = LocalTranscriber()
         self.formatter = LocalFormatter()
+
+        self.db_con = initialize_db()
 
         print_progress("init", "complete")
         logger.info("Controller initialized.")
@@ -64,6 +120,9 @@ class Controller:
             "formatted_transcription",
             FormattedTranscription(formatted_transcription=formatted_transcription),
         )
+        print_progress("commit_transcription", "start")
+        commit_transcription_to_db(self.db_con, transcription, formatted_transcription)
+        print_progress("commit_transcription", "complete")
 
     # TODO: Move each command into their own functions
     def handle_command(self, command: Command):
@@ -149,6 +208,11 @@ class Controller:
             print_progress("formatter_unload", "start")
             self.formatter.unload_model()
             print_progress("formatter_unload", "complete")
+        elif command.action == "get_transcriptions":
+            print_progress("get_transcriptions", "start")
+            transcriptions = get_transcriptions_from_db(self.db_con)
+            print_message("transcriptions", {"transcriptions": transcriptions})
+            print_progress("get_transcriptions", "complete")
         else:
             print_message("error", {"error": "Invalid command"})
 

@@ -98,3 +98,5 @@ typings/
 
 # Electron-Forge
 out/
+
+*.db
