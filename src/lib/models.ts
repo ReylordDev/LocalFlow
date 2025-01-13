@@ -31,7 +31,9 @@ export interface Command {
     | "transcriber_unload"
     | "formatter_load"
     | "formatter_unload"
-    | "get_transcriptions";
+    | "get_transcriptions"
+    | "set_language";
+  data?: object;
 }
 
 // TODO: Fix snake case

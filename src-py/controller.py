@@ -220,6 +220,13 @@ class Controller:
             transcriptions = get_transcriptions_from_db(self.db_con)
             print_message("transcriptions", {"transcriptions": transcriptions})
             print_progress("get_transcriptions", "complete")
+        elif command.action == "set_language":
+            if command.data and "language" in command.data:
+                self.transcriber.set_language(command.data["language"])
+                self.formatter.set_language(command.data["language"])
+                print_message("language", {"language": command.data["language"]})
+            else:
+                print_message("error", {"error": "Language not provided"})
         else:
             print_message("error", {"error": "Invalid command"})
 

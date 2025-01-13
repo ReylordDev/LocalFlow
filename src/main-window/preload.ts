@@ -75,3 +75,12 @@ contextBridge.exposeInMainWorld("startShortcut", {
     return ipcRenderer.invoke("start-shortcut:set", shortcut);
   },
 });
+
+contextBridge.exposeInMainWorld("language", {
+  get: async () => {
+    return ipcRenderer.invoke("language:get");
+  },
+  set: (language: string) => {
+    ipcRenderer.invoke("language:set", language);
+  },
+});

@@ -4,10 +4,18 @@ const Settings = () => {
   console.log("Settings");
 
   const [startShortcut, setStartShortcut] = useState("");
+  const [language, setLanguage] = useState("");
 
   useEffect(() => {
     window.startShortcut.get().then((shortcut: string) => {
       setStartShortcut(shortcut);
+    });
+  }, []);
+
+  useEffect(() => {
+    window.language.get().then((lang: string) => {
+      console.log("Language", lang);
+      setLanguage(lang);
     });
   }, []);
 
@@ -27,10 +35,29 @@ const Settings = () => {
             }}
           />
         </div>
-        <div className="flex justify-between gap-8">
-          <p>Mini-Window Position</p>
-          <div>Center - Middle</div>
-        </div>
+      </div>
+      <div className="flex justify-between gap-8">
+        <p>Language</p>
+        <select
+          className="px-4 py-2 bg-gray-200 rounded"
+          onChange={(e) => {
+            console.log("Selected Language", e.target.value);
+            const selectedLanguage = e.target.value;
+            window.language.set(selectedLanguage);
+            setLanguage(selectedLanguage);
+          }}
+          value={language}
+        >
+          <option value="auto">Auto</option>
+          <option value="en">English</option>
+          <option value="de">German</option>
+          <option value="fr">French</option>
+          <option value="it">Italian</option>
+          <option value="es">Spanish</option>
+          <option value="pt">Portuguese</option>
+          <option value="hi">Hindi</option>
+          <option value="th">Thai</option>
+        </select>
       </div>
     </div>
   );

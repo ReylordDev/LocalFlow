@@ -71,14 +71,13 @@ let activeRecording = false;
 const settingsPath = path.join(dataDir, "settings.json");
 const defaultSettings = {
   "start-shortcut": "Alt+CommandOrControl+Y",
+  language: "",
 };
-let startShortcut: string;
 
 if (!fs.existsSync(settingsPath)) {
   fs.writeFileSync(settingsPath, JSON.stringify(defaultSettings));
 }
 const settings = JSON.parse(fs.readFileSync(settingsPath).toString());
-startShortcut = settings["start-shortcut"];
 
 const createMainWindow = () => {
   // Create the browser window.
@@ -139,7 +138,7 @@ const createMiniWindow = (pyShell: PythonShell) => {
   // miniWindow.webContents.openDevTools();
 
   // register the start / stop shortcut
-  registerStartShortcut(pyShell, startShortcut);
+  registerStartShortcut(pyShell, settings["start-shortcut"]);
 
   return miniWindow;
 };
@@ -324,15 +323,32 @@ function ipcHandling(pyShell: PythonShell) {
 
   // Start Shortcut
   ipcMain.handle("start-shortcut:get", () => {
-    return startShortcut;
+    return settings["start-shortcut"];
   });
 
   ipcMain.handle("start-shortcut:set", (_, shortcut: string) => {
-    startShortcut = shortcut;
     settings["start-shortcut"] = shortcut;
     fs.writeFileSync(settingsPath, JSON.stringify(settings));
     registerStartShortcut(pyShell, shortcut);
-    return startShortcut;
+    return shortcut;
+  });
+
+  // Language
+  ipcMain.handle("language:get", () => {
+    return settings["language"];
+  });
+
+  ipcMain.handle("language:set", (_, language: string) => {
+    if (language === "auto") {
+      language = "";
+    }
+    settings["language"] = language;
+    fs.writeFileSync(settingsPath, JSON.stringify(settings));
+    pyShell.send({
+      action: "set_language",
+      data: { language: language },
+    } as Command);
+    return language;
   });
 }
 
@@ -366,6 +382,10 @@ declare global {
     startShortcut: {
       get: () => Promise<string>;
       set: (shortcut: string) => Promise<string>;
+    };
+    language: {
+      get: () => Promise<string>;
+      set: (language: string) => Promise<string>;
     };
   }
 }

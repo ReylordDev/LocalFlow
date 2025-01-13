@@ -1,10 +1,11 @@
 import time
-from typing import Union
+from typing import Optional, Union
 from pydantic import BaseModel
 
 
 class Command(BaseModel):
     action: str
+    data: Optional[dict] = None
 
 
 class ProgressMessage(BaseModel):
