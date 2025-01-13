@@ -8,6 +8,7 @@ import {
 } from "electron";
 import log from "electron-log/main";
 import path from "path";
+import fs from "fs";
 import { PythonShell } from "python-shell";
 import {
   Message,
@@ -57,6 +58,18 @@ let miniWindow: BrowserWindow;
 // temp
 let activeRecording = false;
 
+const settingsPath = path.join(dataDir, "settings.json");
+const defaultSettings = {
+  "start-shortcut": "Alt+CommandOrControl+Y",
+};
+let startShortcut: string;
+
+if (!fs.existsSync(settingsPath)) {
+  fs.writeFileSync(settingsPath, JSON.stringify(defaultSettings));
+}
+const settings = JSON.parse(fs.readFileSync(settingsPath).toString());
+startShortcut = settings["start-shortcut"];
+
 const createMainWindow = () => {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
@@ -82,6 +95,24 @@ const createMainWindow = () => {
   });
   return mainWindow;
 };
+
+function registerStartShortcut(pyShell: PythonShell, shortcut: string) {
+  globalShortcut.unregisterAll(); // Unregister all shortcuts (for now) can be improved by using the global variable.
+
+  globalShortcut.register(shortcut, () => {
+    // if (miniWindow.isVisible()) {
+    if (activeRecording) {
+      miniWindow.hide();
+      pyShell.send({ action: "stop" } as Command);
+      activeRecording = false;
+    } else {
+      miniWindow.showInactive();
+      pyShell.send({ action: "reset" } as Command);
+      pyShell.send({ action: "start" } as Command);
+      activeRecording = true;
+    }
+  });
+}
 
 const createMiniWindow = (pyShell: PythonShell) => {
   const { width: screenWidth, height: screenHeight } =
@@ -116,19 +147,8 @@ const createMiniWindow = (pyShell: PythonShell) => {
   // miniWindow.webContents.openDevTools();
 
   // register the start / stop shortcut
-  globalShortcut.register("Alt+CommandOrControl+Y", () => {
-    // if (miniWindow.isVisible()) {
-    if (activeRecording) {
-      miniWindow.hide();
-      pyShell.send({ action: "stop" } as Command);
-      activeRecording = false;
-    } else {
-      miniWindow.showInactive();
-      pyShell.send({ action: "reset" } as Command);
-      pyShell.send({ action: "start" } as Command);
-      activeRecording = true;
-    }
-  });
+  registerStartShortcut(pyShell, startShortcut);
+
   return miniWindow;
 };
 
@@ -289,6 +309,19 @@ function ipcHandling(pyShell: PythonShell) {
   ipcMain.handle("clipboard:readText", () => {
     return clipboard.readText();
   });
+
+  // Start Shortcut
+  ipcMain.handle("start-shortcut:get", () => {
+    return startShortcut;
+  });
+
+  ipcMain.handle("start-shortcut:set", (_, shortcut: string) => {
+    startShortcut = shortcut;
+    settings["start-shortcut"] = shortcut;
+    fs.writeFileSync(settingsPath, JSON.stringify(settings));
+    registerStartShortcut(pyShell, shortcut);
+    return startShortcut;
+  });
 }
 
 declare global {
@@ -317,6 +350,10 @@ declare global {
     clipboard: {
       writeText: (text: string) => void;
       readText: () => Promise<string>;
+    };
+    startShortcut: {
+      get: () => Promise<string>;
+      set: (shortcut: string) => Promise<string>;
     };
   }
 }

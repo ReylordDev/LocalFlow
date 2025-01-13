@@ -66,3 +66,12 @@ contextBridge.exposeInMainWorld("controller", {
     });
   },
 });
+
+contextBridge.exposeInMainWorld("startShortcut", {
+  get: async () => {
+    return ipcRenderer.invoke("start-shortcut:get");
+  },
+  set: async (shortcut: string) => {
+    return ipcRenderer.invoke("start-shortcut:set", shortcut);
+  },
+});

@@ -1,3 +1,4 @@
+import time
 from typing import Union
 from pydantic import BaseModel
 
@@ -12,6 +13,11 @@ class ProgressMessage(BaseModel):
     timestamp: float
 
 
+class ExceptionMessage(BaseModel):
+    exception: str
+    timestamp: float
+
+
 class FormattedTranscription(BaseModel):
     formatted_transcription: str
 
@@ -22,7 +28,9 @@ class AudioLevel(BaseModel):
 
 class Message(BaseModel):
     type: str
-    data: Union[dict, ProgressMessage, FormattedTranscription, AudioLevel]
+    data: Union[
+        dict, ProgressMessage, FormattedTranscription, AudioLevel, ExceptionMessage
+    ]
 
 
 class HistoryItem(BaseModel):
@@ -30,3 +38,9 @@ class HistoryItem(BaseModel):
     raw_transcription: str
     formatted_transcription: str
     created_at: str
+
+
+class ModelNotLoadedException(Exception):
+    def __init__(self, message="Model not loaded"):
+        self.message = ExceptionMessage(exception=message, timestamp=time.time())
+        super().__init__(self.message.model_dump_json())

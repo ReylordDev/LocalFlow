@@ -770,6 +770,11 @@ video {
   background-color: rgb(24 24 27 / var(--tw-bg-opacity));
 }
 
+.bg-gray-200 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(229 231 235 / var(--tw-bg-opacity));
+}
+
 .p-4 {
   padding: 1rem;
 }
@@ -1381,6 +1386,11 @@ Usage:
 
 .hover\:bg-zinc-900\/90:hover {
   background-color: rgb(24 24 27 / 0.9);
+}
+
+.hover\:bg-gray-300:hover {
+  --tw-bg-opacity: 1;
+  background-color: rgb(209 213 219 / var(--tw-bg-opacity));
 }
 
 .hover\:text-zinc-900:hover {

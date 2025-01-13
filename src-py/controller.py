@@ -15,6 +15,7 @@ from models import (
     FormattedTranscription,
     HistoryItem,
     Message,
+    ModelNotLoadedException,
     ProgressMessage,
 )
 from loguru import logger
@@ -231,6 +232,9 @@ def main():
 
             controller.handle_command(data)
         except ValidationError as e:
+            print(e)
+            sys.stdout.flush()
+        except ModelNotLoadedException as e:
             print(e)
             sys.stdout.flush()
 

@@ -100,3 +100,5 @@ typings/
 out/
 
 *.db
+
+settings.json

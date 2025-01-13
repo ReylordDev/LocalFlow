@@ -2,6 +2,7 @@ from groq import Groq
 from loguru import logger
 from faster_whisper import WhisperModel
 from dotenv import load_dotenv
+from models import ModelNotLoadedException
 import os
 
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
@@ -90,12 +91,12 @@ class LocalTranscriber(Transcriber):
 
     def transcribe_audio(self, file_name: str):
         if not self.model:
-            raise Exception("Model not loaded")
+            raise ModelNotLoadedException()
         with open(file_name, "rb") as file:
             logger.info(f"Transcribing {file_name} using Local Whisper Model")
             segments, info = self.model.transcribe(file, beam_size=5, temperature=0)
             logger.debug(
-                f"Language: {info.language} ({info.language_probability * 100 :.2f}%)"
+                f"Language: {info.language} ({info.language_probability * 100:.2f}%)"
             )
             transcription = ""
             for segment in segments:
