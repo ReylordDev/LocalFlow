@@ -105,14 +105,6 @@ const createMainWindow = () => {
   return mainWindow;
 };
 
-function registerStartShortcut(pyShell: PythonShell, shortcut: string) {
-  globalShortcut.unregisterAll(); // Unregister all shortcuts (for now) can be improved by using the global variable.
-
-  globalShortcut.register(shortcut, () => {
-    toggleRecording(pyShell);
-  });
-}
-
 const createMiniWindow = (pyShell: PythonShell) => {
   const { width: screenWidth, height: screenHeight } =
     screen.getPrimaryDisplay().workAreaSize;
@@ -452,4 +444,12 @@ function constructTrayContextMenu(pyShell: PythonShell) {
       },
     },
   ]);
+}
+
+function registerStartShortcut(pyShell: PythonShell, shortcut: string) {
+  globalShortcut.unregisterAll(); // Unregister all shortcuts (for now) can be improved by using the global variable.
+
+  globalShortcut.register(shortcut, () => {
+    toggleRecording(pyShell);
+  });
 }

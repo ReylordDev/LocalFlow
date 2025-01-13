@@ -51,6 +51,10 @@ function ShortcutRecorder({
     if (recording) {
       const handleKeyDown = (e: KeyboardEvent) => {
         e.preventDefault();
+        if (e.key === "Escape") {
+          setRecording(false);
+          return;
+        }
         const keys = [];
         if (e.ctrlKey) keys.push("Ctrl");
         if (e.shiftKey) keys.push("Shift");
