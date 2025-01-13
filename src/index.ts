@@ -63,6 +63,7 @@ let modelStatus: ModelStatus = {
   transcriber_status: "offline",
   formatter_status: "offline",
 };
+let globalPyShell: PythonShell;
 
 // temp
 let activeRecording = false;
@@ -157,6 +158,11 @@ app.on("window-all-closed", () => {
   }
 });
 
+app.on("quit", () => {
+  globalShortcut.unregisterAll();
+  globalPyShell.send({ action: "quit" } as Command);
+});
+
 app.on("activate", () => {
   // On OS X it's common to re-create a window in the app when the
   // dock icon is clicked and there are no other windows open.
@@ -176,6 +182,7 @@ function main() {
     mode: "json",
     pythonPath: venvPath,
   });
+  globalPyShell = pyShell;
 
   setupTrayIcon(mainWindow, pyShell);
 
@@ -233,6 +240,7 @@ function main() {
 
   ipcHandling(pyShell);
   requestModelStatusPeriodically(pyShell);
+  autoExtendModels(pyShell);
 }
 
 function ipcHandling(pyShell: PythonShell) {
@@ -388,6 +396,21 @@ function requestModelStatusPeriodically(pyShell: PythonShell) {
     // console.log("Periodic model status request");
     pyShell.send({ action: "model_status" } as Command);
   }, 5 * 1000); // 5 seconds in milliseconds
+}
+
+function autoExtendModels(pyShell: PythonShell) {
+  setInterval(
+    () => {
+      if (
+        modelStatus.formatter_status === "online" &&
+        modelStatus.transcriber_status === "online"
+      ) {
+        console.log("Auto extending models");
+        pyShell.send({ action: "model_load" } as Command);
+      }
+    },
+    14 * 60 * 1000
+  ); // 14 minutes in milliseconds, should slightly undercut the keep_alive time of the models
 }
 
 function toggleRecording(pyShell: PythonShell) {

@@ -156,6 +156,8 @@ class Controller:
         elif command.action == "quit":
             if self.recorder.recording:
                 self.recorder.stop()
+            self.transcriber.unload_model()
+            self.formatter.unload_model()
             sys.exit(0)
         elif command.action == "compress":
             self.compressor = Compressor(f"recorder-output/{self.recorder.id}")
