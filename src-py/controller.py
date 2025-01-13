@@ -100,6 +100,10 @@ class Controller:
 
         self.db_con = initialize_db()
 
+        # Load the models for the transcriber and formatter
+        self.transcriber.load_model()
+        self.formatter.load_model()
+
         print_progress("init", "complete")
         logger.info("Controller initialized.")
 

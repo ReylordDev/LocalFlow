@@ -5,6 +5,7 @@ const App = () => {
   window.controller.onReceiveTranscription((transcription) => {
     console.log("Transcription", transcription);
     window.clipboard.writeText(transcription.formatted_transcription); // Copy to clipboard
+    // The notification should not be here.
     new Notification("Transcription", {
       body: transcription.formatted_transcription,
     });
