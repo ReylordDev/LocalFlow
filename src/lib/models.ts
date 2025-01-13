@@ -11,7 +11,8 @@ export interface Message {
     | "formatted_transcription"
     | "status"
     | "audio_level"
-    | "model_status";
+    | "model_status"
+    | "transcriptions";
   data: object | ProgressMessage | FormattedTranscripton;
 }
 
@@ -29,7 +30,8 @@ export interface Command {
     | "transcriber_load"
     | "transcriber_unload"
     | "formatter_load"
-    | "formatter_unload";
+    | "formatter_unload"
+    | "get_transcriptions";
 }
 
 // TODO: Fix snake case
@@ -45,4 +47,15 @@ export interface AudioLevel {
 export interface ModelStatus {
   transcriber_status: "offline" | "loading" | "online";
   formatter_status: "offline" | "loading" | "online";
+}
+
+export interface HistoryItem {
+  id: number;
+  raw_transcription: string;
+  formatted_transcription: string;
+  created_at: string;
+}
+
+export interface Transcriptions {
+  transcriptions: HistoryItem[];
 }
