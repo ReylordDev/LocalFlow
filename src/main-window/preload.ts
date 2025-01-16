@@ -74,6 +74,9 @@ contextBridge.exposeInMainWorld("startShortcut", {
   set: async (shortcut: string) => {
     return ipcRenderer.invoke("start-shortcut:set", shortcut);
   },
+  disable: () => {
+    return ipcRenderer.send("start-shortcut:disable");
+  },
 });
 
 contextBridge.exposeInMainWorld("language", {

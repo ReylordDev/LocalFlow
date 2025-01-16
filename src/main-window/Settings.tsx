@@ -74,12 +74,18 @@ function ShortcutRecorder({
 }) {
   const [recording, setRecording] = useState(false);
 
+  function abortShortcutRecording() {
+    setRecording(false);
+    onNewShortcut(currentShortcut);
+    console.log("Stopped Recording");
+  }
+
   useEffect(() => {
     if (recording) {
       const handleKeyDown = (e: KeyboardEvent) => {
         e.preventDefault();
         if (e.key === "Escape") {
-          setRecording(false);
+          abortShortcutRecording();
           return;
         }
         const keys = [];
@@ -102,7 +108,15 @@ function ShortcutRecorder({
 
   return (
     <button
-      onClick={() => setRecording(true)}
+      onClick={() => {
+        if (recording) {
+          abortShortcutRecording();
+        } else {
+          setRecording(true);
+          window.startShortcut.disable(); // Disable the current shortcut while recording a new one
+          console.log("Recording Shortcut Setting");
+        }
+      }}
       className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
     >
       {recording

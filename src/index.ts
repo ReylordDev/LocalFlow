@@ -333,6 +333,10 @@ function ipcHandling(pyShell: PythonShell) {
     return shortcut;
   });
 
+  ipcMain.on("start-shortcut:disable", () => {
+    globalShortcut.unregisterAll();
+  });
+
   // Language
   ipcMain.handle("language:get", () => {
     return settings["language"];
@@ -382,6 +386,7 @@ declare global {
     startShortcut: {
       get: () => Promise<string>;
       set: (shortcut: string) => Promise<string>;
+      disable: () => void;
     };
     language: {
       get: () => Promise<string>;
