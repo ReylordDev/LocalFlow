@@ -34,24 +34,36 @@ class Formatter:
         self.language = language
 
     def generate_system_prompt(self):
-        prompt = f"""# IDENTITY and PURPOSE
+        prompt = """# IDENTITY and PURPOSE
 
-    You are a writing expert. You refine the input text to enhance clarity, coherence, grammar, and style. {"" if not self.language else f"You are fluent in {LANGUAGES[self.language]}."}
+    You are a writing expert. You refine the input text to enhance clarity, coherence and grammar.
 
     # Steps
 
-    {"" if not self.language else f"- Translate the input into {LANGUAGES[self.language]}."}
-    - Analyze the input text for grammatical errors, stylistic inconsistencies, clarity issues, and coherence.
+    - Analyze the input text for grammatical errors, clarity issues, and coherence.
     - Apply corrections and improvements directly to the text.
-    - Maintain the original meaning and intent of the user's text, ensuring that the improvements are made within the context of the input language's grammatical norms and stylistic conventions.
+    - Maintain the original meaning and intent of the user's text, ensuring that the improvements are made within the context of the input language's grammatical norms.
 
     # OUTPUT INSTRUCTIONS
 
     - Refined and improved text that has no grammar mistakes.
-    {"- Return in the same language as the input." if not self.language else f"- Translate the input into {LANGUAGES[self.language]}."}
     - Include NO additional commentary or explanation in the response.
 
-    # INPUT:
+    # EXAMPLE
+
+    INPUT:Okay, so, um... today’s meeting was pretty productive, I think. Uh, we talked about the main deliverables for the next quarter. Oh, and—right—I have to remember to send out the slides. Uh, let me make a note of that.
+
+    Also, Sarah mentioned that the budget for the project might be tighter than we thought, so I should probably follow up with her to confirm. Hm... oh, and during the brainstorming session, uh, Mike brought up this really interesting idea about automating some of the reporting tasks. I think we should explore that more.
+
+    What else? Oh yeah—team morale seems good overall, but I do think we need to schedule another check-in soon, just to, y'know, keep everyone aligned. Okay, uh, that’s about it for now, I guess. I’ll review this later and organize my notes better
+
+    OUTPUT:Today's meeting was productive, I believe. We discussed the main deliverables for the next quarter, as well as other key topics. I should also send out the slides soon.
+    
+    Sarah mentioned that the project budget may be tighter than initially thought, so I will follow up with her to confirm this information. During the brainstorming session, Mike shared an interesting idea about automating reporting tasks – we should explore this further.
+    
+    Additionally, while team morale appears to be good overall, I think it would be beneficial to schedule another check-in in the near future to ensure everyone remains aligned. That's my summary of the meeting for now; I'll review and organize my notes later.
+
+    ## INPUT:
 
     INPUT:"""
         logger.info(prompt)
@@ -160,3 +172,16 @@ class GroqFormatter(Formatter):
             total_duration = response.usage.total_time
             logger.info(f"Total duration: {total_duration:.2f} seconds")
         return result
+
+
+if __name__ == "__main__":
+    formatter = LocalFormatter()
+    formatter.load_model()
+    result = formatter.improve_transcription("""Alright, so, uh... I was thinking about the vacation plans for next month. I mean, we still haven’t decided on the destination, but I’m kinda leaning toward Italy. Like, I keep hearing about how amazing the food is, and—oh!—those little towns with cobblestone streets? They sound so charming.
+
+    But then again, there’s Spain. Uh, Barcelona, in particular. I’ve always wanted to see the Sagrada Familia in person. Hmm... decisions, decisions. Oh, and I guess we should also think about the budget. Flights are, like, super expensive right now, and we’ll probably want to stay somewhere decent, y'know?
+
+    Oh! Another thing—activities. Should we focus on, like, sightseeing, or do we want more of a relaxing vibe? Maybe a mix of both? Gosh, there’s so much to figure out. Anyway, I’ll need to look up some options later and maybe ask a few friends who’ve been to those places for their recommendations.
+
+    Okay, uh, that’s it for now. I’ll check back after I’ve done some research.""")
+    print(result)
