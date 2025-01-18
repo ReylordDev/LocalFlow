@@ -30,42 +30,46 @@ class Formatter:
     def get_language(self):
         return self.language
 
-    def set_language(self, language: str):
+    def set_language(self, language: str | None):
         self.language = language
 
     def generate_system_prompt(self):
-        prompt = """# IDENTITY and PURPOSE
+        prompt = f"""# IDENTITY and PURPOSE
 
-    You are a writing expert. You refine the input text to enhance clarity, coherence and grammar.
+        You are a writing expert. You refine the input text to enhance clarity, coherence and grammar.
 
-    # Steps
+        # Steps
 
-    - Analyze the input text for grammatical errors, clarity issues, and coherence.
-    - Apply corrections and improvements directly to the text.
-    - Maintain the original meaning and intent of the user's text, ensuring that the improvements are made within the context of the input language's grammatical norms.
+        - Analyze the input text for grammatical errors, clarity issues, and coherence.
+        - Apply corrections and improvements directly to the text.
+        - Maintain the original meaning and intent of the user's text, ensuring that the improvements are made within the context of the input language's grammatical norms.
 
-    # OUTPUT INSTRUCTIONS
+        # OUTPUT INSTRUCTIONS
 
-    - Refined and improved text that has no grammar mistakes.
-    - Include NO additional commentary or explanation in the response.
+        - Refined and improved text that has no grammar mistakes.
+        - Include NO additional commentary or explanation in the response.
+        - Ensure that the output is in {LANGUAGES[self.language] if self.language else "English"}.
 
-    # EXAMPLE
+        # EXAMPLE
 
-    INPUT:Okay, so, um... today’s meeting was pretty productive, I think. Uh, we talked about the main deliverables for the next quarter. Oh, and—right—I have to remember to send out the slides. Uh, let me make a note of that.
+        INPUT:Okay, so, um... today’s meeting was pretty productive, I think. Uh, we talked about the main deliverables for the next quarter. Oh, and—right—I have to remember to send out the slides. Uh, let me make a note of that.
 
-    Also, Sarah mentioned that the budget for the project might be tighter than we thought, so I should probably follow up with her to confirm. Hm... oh, and during the brainstorming session, uh, Mike brought up this really interesting idea about automating some of the reporting tasks. I think we should explore that more.
+        Also, Sarah mentioned that the budget for the project might be tighter than we thought, so I should probably follow up with her to confirm. Hm... oh, and during the brainstorming session, uh, Mike brought up this really interesting idea about automating some of the reporting tasks. I think we should explore that more.
 
-    What else? Oh yeah—team morale seems good overall, but I do think we need to schedule another check-in soon, just to, y'know, keep everyone aligned. Okay, uh, that’s about it for now, I guess. I’ll review this later and organize my notes better
+        What else? Oh yeah—team morale seems good overall, but I do think we need to schedule another check-in soon, just to, y'know, keep everyone aligned. Okay, uh, that’s about it for now, I guess. I’ll review this later and organize my notes better
 
-    OUTPUT:Today's meeting was productive, I believe. We discussed the main deliverables for the next quarter, as well as other key topics. I should also send out the slides soon.
-    
-    Sarah mentioned that the project budget may be tighter than initially thought, so I will follow up with her to confirm this information. During the brainstorming session, Mike shared an interesting idea about automating reporting tasks – we should explore this further.
-    
-    Additionally, while team morale appears to be good overall, I think it would be beneficial to schedule another check-in in the near future to ensure everyone remains aligned. That's my summary of the meeting for now; I'll review and organize my notes later.
+        OUTPUT:
+        Here's the improved transcription:
+        
+        "Today's meeting was productive, I believe. We discussed the main deliverables for the next quarter, as well as other key topics. I should also send out the slides soon.
+        
+        Sarah mentioned that the project budget may be tighter than initially thought, so I will follow up with her to confirm this information. During the brainstorming session, Mike shared an interesting idea about automating reporting tasks – we should explore this further.
+        
+        Additionally, while team morale appears to be good overall, I think it would be beneficial to schedule another check-in in the near future to ensure everyone remains aligned. That's my summary of the meeting for now; I'll review and organize my notes later."
 
-    ## INPUT:
+        ## INPUT:
 
-    INPUT:"""
+        INPUT:"""
         logger.info(prompt)
         return prompt
 
@@ -125,7 +129,7 @@ class LocalFormatter(Formatter):
             prompt=f"Please improve the following transcription:\n\n{raw_transcription}",
         )
         # logger.debug(response)
-        result = response["response"]
+        result: str = response["response"]
         prompt_tokens = response["prompt_eval_count"]
         response_tokens = response["eval_count"]
         total_duration = response["total_duration"] / 10**9
@@ -134,6 +138,10 @@ class LocalFormatter(Formatter):
             f"Tokens: Prompt: {prompt_tokens}, Response: {response_tokens}, Total: {prompt_tokens + response_tokens}"
         )
         logger.info(f"Total duration: {total_duration:.2f} seconds")
+
+        if "improved transcription:" in result:
+            result = result.split("improved transcription:")[1].strip().strip('"')
+            logger.info("Removed 'improved transcription:'")
         return result
 
 

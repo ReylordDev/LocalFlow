@@ -3,7 +3,6 @@ import time
 import sqlite3
 from sqlite3 import Connection
 from typing import Union
-
 from pydantic import ValidationError
 from recorder import AudioRecorder
 from compressor import Compressor
@@ -118,12 +117,20 @@ class Controller:
             f"recorder-output/{self.recorder.id}"
         )
         print_progress("transcription", "complete")
-        print_message("transcription", {"transcription": transcription})
+        print_message(
+            "transcription",
+            {"transcription": transcription.encode("utf-8").decode("cp1252")},
+        )
+        self.formatter.set_language(self.transcriber.language)
         formatted_transcription = self.formatter.improve_transcription(transcription)
         print_progress("formatting", "complete")
         print_message(
             "formatted_transcription",
-            FormattedTranscription(formatted_transcription=formatted_transcription),
+            FormattedTranscription(
+                formatted_transcription=formatted_transcription.encode("utf-8").decode(
+                    "cp1252"
+                )
+            ),
         )
         print_progress("commit_transcription", "start")
         commit_transcription_to_db(self.db_con, transcription, formatted_transcription)

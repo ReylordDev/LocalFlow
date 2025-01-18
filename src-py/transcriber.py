@@ -72,7 +72,7 @@ class GroqTranscriber(Transcriber):
 class LocalTranscriber(Transcriber):
     # Maybe I should turn this into into a type safe class
 
-    def __init__(self, model_size="distil-large-v3", language: str | None = None):
+    def __init__(self, model_size="large-v3", language: str | None = None):
         self.model = None
         self.model_size = model_size
         self.status = "offline"
@@ -106,7 +106,11 @@ class LocalTranscriber(Transcriber):
                 f"Transcribing {file_name} using Local Whisper Model, language: {language}"
             )
             segments, info = self.model.transcribe(
-                file, beam_size=5, temperature=0, language=language, task="transcribe"
+                file,
+                beam_size=5,
+                temperature=0,
+                language=language,
+                vad_filter=True,
             )
             logger.debug(
                 f"Language: {info.language} ({info.language_probability * 100:.2f}%)"
@@ -115,4 +119,10 @@ class LocalTranscriber(Transcriber):
             for segment in segments:
                 transcription += segment.text
             logger.info(f'Transcription: "{transcription}"')
+            self.set_language(info.language)
             return transcription
+
+
+if __name__ == "__main__":
+    transcriber = LocalTranscriber()
+    transcriber.load_model()
