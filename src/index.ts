@@ -227,6 +227,8 @@ function main() {
         modelStatus = newModelStatus;
         mainWindow.webContents.send("controller:modelStatus", modelStatus);
         tray.setContextMenu(constructTrayContextMenu(pyShell));
+      } else {
+        mainWindow.webContents.send("controller:modelStatus", modelStatus);
       }
       return;
     }
