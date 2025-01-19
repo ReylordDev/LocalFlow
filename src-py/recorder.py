@@ -114,3 +114,11 @@ class AudioRecorder:
     def get_audio_level(self):
         average = sum(self.audio_levels.get()) / len(self.audio_levels)
         return average
+
+    def cleanup(self):
+        self.audio_levels.clear()
+        self.audio_data = []
+
+        for file in os.listdir(self.output_path):
+            os.remove(os.path.join(self.output_path, file))
+        os.rmdir(self.output_path)

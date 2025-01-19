@@ -17,6 +17,7 @@ class Transcriber:
         raise NotImplementedError
 
     def transcribe_files(self, input_dir):
+        # I don't remember why we are doing this for multiple files
         file_names = os.listdir(input_dir)
         file_names = [
             file_name for file_name in file_names if file_name.endswith(".flac")

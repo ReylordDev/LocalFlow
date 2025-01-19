@@ -135,6 +135,8 @@ class Controller:
         print_progress("commit_transcription", "start")
         commit_transcription_to_db(self.db_con, transcription, formatted_transcription)
         print_progress("commit_transcription", "complete")
+        if not DEV_MODE:
+            self.recorder.cleanup()
 
     # TODO: Move each command into their own functions
     def handle_command(self, command: Command):
