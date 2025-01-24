@@ -46,6 +46,14 @@ const config: ForgeConfig = {
               js: "./src/mini/preload.ts",
             },
           },
+          {
+            html: "./src/startup/index.html",
+            js: "./src/startup/renderer.ts",
+            name: "startup",
+            preload: {
+              js: "./src/startup/preload.ts",
+            },
+          },
         ],
       },
     }),

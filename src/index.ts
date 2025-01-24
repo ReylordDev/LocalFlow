@@ -30,6 +30,8 @@ declare const MAIN_WINDOW_WEBPACK_ENTRY: string;
 declare const MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY: string;
 declare const MINI_WEBPACK_ENTRY: string;
 declare const MINI_PRELOAD_WEBPACK_ENTRY: string;
+declare const STARTUP_WEBPACK_ENTRY: string;
+declare const STARTUP_PRELOAD_WEBPACK_ENTRY: string;
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require("electron-squirrel-startup")) {
@@ -144,6 +146,25 @@ const createMiniWindow = (pyShell: PythonShell) => {
   return miniWindow;
 };
 
+const createStartupWindow = () => {
+  // Create the browser window.
+  const startupWindow = new BrowserWindow({
+    width: 600,
+    height: 300,
+    frame: false,
+    webPreferences: {
+      preload: STARTUP_PRELOAD_WEBPACK_ENTRY,
+    },
+  });
+
+  // and load the index.html of the app.
+  startupWindow.loadURL(STARTUP_WEBPACK_ENTRY);
+
+  // Open the DevTools.
+  // mainWindow.webContents.openDevTools();
+  return startupWindow;
+};
+
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
@@ -175,7 +196,7 @@ app.on("activate", () => {
 // code. You can also put them in separate files and import them here.
 
 function main() {
-  const mainWindow = createMainWindow();
+  const startupWindow = createStartupWindow();
 
   const pyShell = new PythonShell(pythonPath, {
     cwd: rootDir,
@@ -184,8 +205,7 @@ function main() {
   });
   globalPyShell = pyShell;
 
-  setupTrayIcon(mainWindow, pyShell);
-
+  let mainWindow: BrowserWindow;
   miniWindow = createMiniWindow(pyShell);
 
   pyShell.on("message", (message: Message) => {
@@ -212,7 +232,6 @@ function main() {
       return;
     }
     if (message.type === "audio_level") {
-      mainWindow.webContents.send("controller:audioLevel", message.data);
       if (miniWindow) {
         miniWindow.webContents.send("controller:audioLevel", message.data);
       }
@@ -220,17 +239,32 @@ function main() {
     }
     if (message.type === "model_status") {
       const newModelStatus = message.data as ModelStatus;
-      if (
-        modelStatus.formatter_status !== newModelStatus.formatter_status ||
-        modelStatus.transcriber_status !== newModelStatus.transcriber_status
-      ) {
-        console.log("Model status changed", newModelStatus);
-        modelStatus = newModelStatus;
-        mainWindow.webContents.send("controller:modelStatus", modelStatus);
-        tray.setContextMenu(constructTrayContextMenu(pyShell));
+      console.log("Model status", newModelStatus);
+
+      if (!startupWindow.isDestroyed()) {
+        if (
+          newModelStatus.formatter_status === "online" &&
+          newModelStatus.transcriber_status === "online"
+        ) {
+          startupWindow.close();
+          mainWindow = createMainWindow();
+          setupTrayIcon(mainWindow, pyShell);
+          return;
+        }
       } else {
-        mainWindow.webContents.send("controller:modelStatus", modelStatus);
+        if (
+          modelStatus.formatter_status !== newModelStatus.formatter_status ||
+          modelStatus.transcriber_status !== newModelStatus.transcriber_status
+        ) {
+          console.log("Model status changed", newModelStatus);
+          modelStatus = newModelStatus;
+          mainWindow.webContents.send("controller:modelStatus", modelStatus);
+          tray.setContextMenu(constructTrayContextMenu(pyShell));
+        } else {
+          mainWindow.webContents.send("controller:modelStatus", modelStatus);
+        }
       }
+
       return;
     }
     if (message.type === "transcriptions") {
