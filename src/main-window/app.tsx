@@ -3,7 +3,7 @@ import MainWindow from "./MainWindow";
 
 const App = () => {
   return (
-    <div className="font-sans bg-background">
+    <div className="font-sans  bg-background">
       <MainWindow />
     </div>
   );

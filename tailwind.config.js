@@ -4,7 +4,7 @@ const defaultTheme = require("tailwindcss/defaultTheme");
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: ["./src/**/*.{html,ts,tsx}"],
-  darkMode: "selector",
+  darkMode: ["selector", "class"],
   theme: {
     extend: {
       colors: {
@@ -29,7 +29,6 @@ module.exports = {
           foreground: "hsl(var(--card-foreground))",
         },
         text: {
-          DEFAULT: "var(--text)",
           50: "var(--text-50)",
           100: "var(--text-100)",
           200: "var(--text-200)",
@@ -41,9 +40,9 @@ module.exports = {
           800: "var(--text-800)",
           900: "var(--text-900)",
           950: "var(--text-950)",
+          DEFAULT: "var(--text)",
         },
         background: {
-          DEFAULT: "var(--background)",
           50: "var(--background-50)",
           100: "var(--background-100)",
           200: "var(--background-200)",
@@ -55,9 +54,9 @@ module.exports = {
           800: "var(--background-800)",
           900: "var(--background-900)",
           950: "var(--background-950)",
+          DEFAULT: "var(--background)",
         },
         primary: {
-          DEFAULT: "var(--primary)",
           50: "var(--primary-50)",
           100: "var(--primary-100)",
           200: "var(--primary-200)",
@@ -69,9 +68,9 @@ module.exports = {
           800: "var(--primary-800)",
           900: "var(--primary-900)",
           950: "var(--primary-950)",
+          DEFAULT: "var(--primary)",
         },
         secondary: {
-          DEFAULT: "var(--secondary)",
           50: "var(--secondary-50)",
           100: "var(--secondary-100)",
           200: "var(--secondary-200)",
@@ -83,9 +82,9 @@ module.exports = {
           800: "var(--secondary-800)",
           900: "var(--secondary-900)",
           950: "var(--secondary-950)",
+          DEFAULT: "var(--secondary)",
         },
         accent: {
-          DEFAULT: "var(--accent)",
           50: "var(--accent-50)",
           100: "var(--accent-100)",
           200: "var(--accent-200)",
@@ -97,11 +96,22 @@ module.exports = {
           800: "var(--accent-800)",
           900: "var(--accent-900)",
           950: "var(--accent-950)",
+          DEFAULT: "var(--accent)",
+        },
+        sidebar: {
+          DEFAULT: "hsl(var(--sidebar-background))",
+          foreground: "hsl(var(--sidebar-foreground))",
+          primary: "hsl(var(--sidebar-primary))",
+          "primary-foreground": "hsl(var(--sidebar-primary-foreground))",
+          accent: "hsl(var(--sidebar-accent))",
+          "accent-foreground": "hsl(var(--sidebar-accent-foreground))",
+          border: "hsl(var(--sidebar-border))",
+          ring: "hsl(var(--sidebar-ring))",
         },
       },
       borderRadius: {
-        lg: `var(--radius)`,
-        md: `calc(var(--radius) - 2px)`,
+        lg: "`var(--radius)`",
+        md: "`calc(var(--radius) - 2px)`",
         sm: "calc(var(--radius) - 4px)",
       },
       fontFamily: {
@@ -109,16 +119,28 @@ module.exports = {
       },
       keyframes: {
         "accordion-down": {
-          from: { height: "0" },
-          to: { height: "var(--radix-accordion-content-height)" },
+          from: {
+            height: "0",
+          },
+          to: {
+            height: "var(--radix-accordion-content-height)",
+          },
         },
         "accordion-up": {
-          from: { height: "var(--radix-accordion-content-height)" },
-          to: { height: "0" },
+          from: {
+            height: "var(--radix-accordion-content-height)",
+          },
+          to: {
+            height: "0",
+          },
         },
         scale: {
-          "0%, 100%": { height: "60%" },
-          "50%": { height: "20%" },
+          "0%, 100%": {
+            height: "60%",
+          },
+          "50%": {
+            height: "20%",
+          },
         },
       },
       animation: {

@@ -61,3 +61,5 @@ export interface HistoryItem {
 export interface Transcriptions {
   transcriptions: HistoryItem[];
 }
+
+export type Page = "Settings" | "History" | "Credits";
