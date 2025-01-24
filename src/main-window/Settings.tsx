@@ -1,10 +1,31 @@
 import { useEffect, useState } from "react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../components/ui/select";
+import { Button } from "../components/ui/button";
+import { cn } from "../lib/utils";
+
+const languages = [
+  { code: "auto", name: "Auto" },
+  { code: "en", name: "English" },
+  { code: "de", name: "German" },
+  { code: "fr", name: "French" },
+  { code: "it", name: "Italian" },
+  { code: "es", name: "Spanish" },
+  { code: "pt", name: "Portuguese" },
+  { code: "hi", name: "Hindi" },
+  { code: "th", name: "Thai" },
+];
 
 const Settings = () => {
   console.log("Settings");
 
   const [startShortcut, setStartShortcut] = useState("");
-  const [language, setLanguage] = useState("");
+  const [language, setLanguage] = useState("Auto");
 
   useEffect(() => {
     window.startShortcut.get().then((shortcut: string) => {
@@ -19,12 +40,18 @@ const Settings = () => {
     });
   }, []);
 
+  console.log("Start Shortcut", startShortcut);
+  console.log("Language", language);
+
   return (
-    <div className="bg-green-300 h-full w-full">
-      <h1 className="font-bold text-3xl">Settings</h1>
-      <div className="flex flex-col gap-4 bg-blue-300 p-4">
-        <div className="flex justify-between gap-8">
-          <p>Activation Shortcut</p>
+    <div className="gap-12 flex-col flex h-full w-full">
+      <h1 className="font-bold text-5xl">Settings</h1>
+      <div className="flex flex-col gap-8">
+        <div className="flex justify-between items-center">
+          <div className="flex flex-col gap-2">
+            <h2 className="text-xl font-semibold">Activation Shortcut</h2>
+            <p>Change the global keybind to toggle the recording</p>
+          </div>
           <ShortcutRecorder
             currentShortcut={startShortcut}
             onNewShortcut={(shortcut) => {
@@ -35,29 +62,49 @@ const Settings = () => {
             }}
           />
         </div>
-      </div>
-      <div className="flex justify-between gap-8">
-        <p>Language</p>
-        <select
-          className="px-4 py-2 bg-gray-200 rounded"
-          onChange={(e) => {
-            console.log("Selected Language", e.target.value);
-            const selectedLanguage = e.target.value;
-            window.language.set(selectedLanguage);
-            setLanguage(selectedLanguage);
-          }}
-          value={language}
+        <div
+          className="flex justify-between items-center
+        "
         >
-          <option value="auto">Auto</option>
-          <option value="en">English</option>
-          <option value="de">German</option>
-          <option value="fr">French</option>
-          <option value="it">Italian</option>
-          <option value="es">Spanish</option>
-          <option value="pt">Portuguese</option>
-          <option value="hi">Hindi</option>
-          <option value="th">Thai</option>
-        </select>
+          <div className="flex flex-col gap-2">
+            <h2 className="text-xl font-semibold">Input Device</h2>
+            <p>Choose your microphone</p>
+          </div>
+          <Select>
+            <SelectTrigger className="w-[180px] rounded text-lg">
+              <SelectValue placeholder="Input Device" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="light">Light</SelectItem>
+              <SelectItem value="dark">Dark</SelectItem>
+              <SelectItem value="system">System</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="flex justify-between items-center">
+          <div className="flex flex-col gap-2">
+            <h2 className="text-xl font-semibold">Language</h2>
+            <p>Select your default speaking language</p>
+          </div>
+          <Select
+            value={language || "auto"}
+            onValueChange={(lang) => {
+              setLanguage(lang);
+              window.language.set(lang);
+            }}
+          >
+            <SelectTrigger className="w-[180px] rounded text-lg">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {languages.map((lang) => (
+                <SelectItem key={lang.code} value={lang.code}>
+                  {lang.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
     </div>
   );
@@ -107,7 +154,8 @@ function ShortcutRecorder({
   }, [recording, onNewShortcut]);
 
   return (
-    <button
+    <Button
+      variant="outline"
       onClick={() => {
         if (recording) {
           abortShortcutRecording();
@@ -117,12 +165,15 @@ function ShortcutRecorder({
           console.log("Recording Shortcut Setting");
         }
       }}
-      className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+      className={cn(
+        "text-lg w-[180px] font-medium rounded",
+        recording && "border-orange-500 border-2"
+      )}
     >
       {recording
         ? "Press shortcut..."
         : currentShortcut || "Click to set shortcut"}
-    </button>
+    </Button>
   );
 }
 function isValidShortcut(shortcut: string): boolean {
