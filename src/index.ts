@@ -9,6 +9,7 @@ import {
   Menu,
   nativeImage,
   Notification,
+  shell,
 } from "electron";
 import log from "electron-log/main";
 import path from "path";
@@ -356,6 +357,11 @@ function ipcHandling(pyShell: PythonShell) {
     } as Command);
     return language;
   });
+
+  // URL
+  ipcMain.handle("url:open", (_, url: string) => {
+    shell.openExternal(url);
+  });
 }
 
 declare global {
@@ -393,6 +399,9 @@ declare global {
     language: {
       get: () => Promise<string>;
       set: (language: string) => Promise<string>;
+    };
+    url: {
+      open: (url: string) => void;
     };
   }
 }

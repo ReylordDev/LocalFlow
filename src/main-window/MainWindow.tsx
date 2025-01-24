@@ -6,7 +6,7 @@ import { AppSidebar } from "../components/app-sidebar";
 import { Page } from "../lib/models";
 const MainWindow = () => {
   console.log("MainWindow");
-  const [page, setPage] = useState<Page>("History");
+  const [page, setPage] = useState<Page>("Settings");
 
   function renderPage(page: Page) {
     switch (page) {

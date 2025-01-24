@@ -87,3 +87,9 @@ contextBridge.exposeInMainWorld("language", {
     ipcRenderer.invoke("language:set", language);
   },
 });
+
+contextBridge.exposeInMainWorld("url", {
+  open: (url: string) => {
+    ipcRenderer.send("url:open", url);
+  },
+});
