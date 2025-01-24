@@ -83,8 +83,8 @@ const settings = JSON.parse(fs.readFileSync(settingsPath).toString());
 const createMainWindow = () => {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    height: 600,
-    width: 800,
+    height: 1024,
+    width: 1440,
     webPreferences: {
       preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
     },
@@ -95,7 +95,7 @@ const createMainWindow = () => {
   mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
 
   // Open the DevTools.
-  mainWindow.webContents.openDevTools();
+  // mainWindow.webContents.openDevTools();
 
   mainWindow.on("closed", () => {
     mainWindow.destroy();
