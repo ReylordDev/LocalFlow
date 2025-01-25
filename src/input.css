@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+.drag {
+  app-region: drag;
+}
+
 :root {
   --text: #050315;
   --background: #fbfbfe;

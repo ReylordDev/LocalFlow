@@ -129,6 +129,7 @@ const createMiniWindow = (pyShell: PythonShell) => {
     transparent: true,
     alwaysOnTop: true,
     hiddenInMissionControl: true,
+    resizable: false,
     webPreferences: {
       preload: MINI_PRELOAD_WEBPACK_ENTRY,
     },

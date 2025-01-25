@@ -60,7 +60,7 @@ const SpeechVocalization = () => {
   return (
     <div
       className={cn(
-        "flex gap-2 h-10 bg-zinc-800 rounded-full p-1 px-4 justify-center",
+        "flex gap-2 h-10 bg-zinc-800 rounded-full p-1 px-4 justify-center drag",
         timer > 0 ? (timer > 600 ? "w-40" : "w-36") : "w-32"
       )}
     >
