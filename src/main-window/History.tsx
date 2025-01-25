@@ -60,27 +60,41 @@ const History = () => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {history.map((item) => (
-            <TableRow key={item.id} className="select-none">
-              <TableCell>{formatDate(item.created_at)}</TableCell>
-              <TableCell>
-                {item.raw_transcription.length > characterLimit
-                  ? item.raw_transcription.substring(0, characterLimit) + "..."
-                  : item.raw_transcription}
-              </TableCell>
-              <TableCell>
-                {item.formatted_transcription.length > characterLimit
-                  ? item.formatted_transcription.substring(0, characterLimit) +
-                    "..."
-                  : item.formatted_transcription}
-              </TableCell>
-              <TableCell>
-                <button className="text-red-500">
-                  <Trash2 />
-                </button>
-              </TableCell>
-            </TableRow>
-          ))}
+          {history
+            .filter((item) => {
+              return (
+                item.raw_transcription
+                  .toLowerCase()
+                  .includes(searchTerm.toLowerCase()) ||
+                item.formatted_transcription
+                  .toLowerCase()
+                  .includes(searchTerm.toLowerCase())
+              );
+            })
+            .map((item) => (
+              <TableRow key={item.id} className="select-none">
+                <TableCell>{formatDate(item.created_at)}</TableCell>
+                <TableCell>
+                  {item.raw_transcription.length > characterLimit
+                    ? item.raw_transcription.substring(0, characterLimit) +
+                      "..."
+                    : item.raw_transcription}
+                </TableCell>
+                <TableCell>
+                  {item.formatted_transcription.length > characterLimit
+                    ? item.formatted_transcription.substring(
+                        0,
+                        characterLimit
+                      ) + "..."
+                    : item.formatted_transcription}
+                </TableCell>
+                <TableCell>
+                  <button className="text-red-500">
+                    <Trash2 />
+                  </button>
+                </TableCell>
+              </TableRow>
+            ))}
         </TableBody>
       </Table>
     </div>
