@@ -1,0 +1,20 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_50_69)">
+<circle cx="512" cy="512" r="512" fill="white"/>
+<line x1="156" y1="319" x2="156" y2="599" stroke="black" stroke-width="20" stroke-linecap="round"/>
+<line x1="255" y1="483" x2="255" y2="662" stroke="black" stroke-width="20" stroke-linecap="round"/>
+<line x1="354" y1="341" x2="354" y2="606" stroke="black" stroke-width="20" stroke-linecap="round"/>
+<line x1="453" y1="276" x2="453" y2="599" stroke="black" stroke-width="20" stroke-linecap="round"/>
+<line x1="552" y1="203" x2="552" y2="606" stroke="black" stroke-width="20" stroke-linecap="round"/>
+<line x1="651" y1="469" x2="651" y2="691" stroke="black" stroke-width="20" stroke-linecap="round"/>
+<line x1="750" y1="420" x2="750" y2="703" stroke="black" stroke-width="20" stroke-linecap="round"/>
+<line x1="849" y1="379" x2="849" y2="662" stroke="black" stroke-width="20" stroke-linecap="round"/>
+<path d="M96 591.688L206.953 672.13C259.408 710.16 331.494 705.513 378.632 661.063V661.063C428.738 613.812 506.398 611.909 558.758 656.65L601.47 693.146C672.338 753.701 775.902 756.441 849.872 699.718L961 614.5" stroke="black" stroke-width="20" stroke-linecap="round"/>
+<path d="M96 663.688L206.953 744.13C259.408 782.16 331.494 777.513 378.632 733.063V733.063C428.738 685.812 506.398 683.909 558.758 728.65L601.47 765.146C672.338 825.701 775.902 828.441 849.872 771.718L961 686.5" stroke="black" stroke-width="20" stroke-linecap="round"/>
+</g>
+<defs>
+<clipPath id="clip0_50_69">
+<rect width="1024" height="1024" fill="white"/>
+</clipPath>
+</defs>
+</svg>

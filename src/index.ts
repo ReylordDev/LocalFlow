@@ -448,7 +448,9 @@ function setupTrayIcon(mainWindow: BrowserWindow, pyShell: PythonShell) {
     // Untested
     image = "icon_16.png";
   }
-  const icon = nativeImage.createFromPath(path.join(rootDir, "assets", image));
+  const icon = nativeImage.createFromPath(
+    path.join(rootDir, "assets/icons", image)
+  );
   tray = new Tray(icon);
 
   tray.on("click", () => {
