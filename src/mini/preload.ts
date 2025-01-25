@@ -50,3 +50,12 @@ contextBridge.exposeInMainWorld("clipboard", {
     ipcRenderer.invoke("clipboard:readText");
   },
 });
+
+contextBridge.exposeInMainWorld("mini", {
+  onRecordingStart: (callback: () => void) => {
+    ipcRenderer.on("mini:recordingStart", callback);
+  },
+  onRecordingStop: (callback: () => void) => {
+    ipcRenderer.on("mini:recordingStop", callback);
+  },
+});

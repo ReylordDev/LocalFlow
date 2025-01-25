@@ -112,17 +112,17 @@ const createMiniWindow = (pyShell: PythonShell) => {
   const { width: screenWidth, height: screenHeight } =
     screen.getPrimaryDisplay().workAreaSize;
   const height = 40;
-  const width = 128;
+  const width = 160;
 
-  const centerX = screenWidth / 2;
+  const centerX = screenWidth / 2 - width / 2;
   const centerY = screenHeight - height - 60;
 
   const miniWindow = new BrowserWindow({
     frame: false,
     width: width,
     height: height,
-    // width: 400,
-    // height: 400,
+    // width: 1024,
+    // height: 1024,
     x: centerX,
     y: centerY,
     useContentSize: true,
@@ -241,6 +241,7 @@ function main() {
       const newModelStatus = message.data as ModelStatus;
       console.log("Model status", newModelStatus);
 
+      // TODO: move this back into progress message
       if (!startupWindow.isDestroyed()) {
         if (
           newModelStatus.formatter_status === "online" &&
@@ -437,6 +438,10 @@ declare global {
     url: {
       open: (url: string) => void;
     };
+    mini: {
+      onRecordingStart: (callback: () => void) => void;
+      onRecordingStop: (callback: () => void) => void;
+    };
   }
 }
 
@@ -506,7 +511,9 @@ function toggleRecording(pyShell: PythonShell) {
     pyShell.send({ action: "reset" } as Command);
     pyShell.send({ action: "start" } as Command);
     activeRecording = true;
+    miniWindow.webContents.send("mini:recordingStart");
   } else {
+    miniWindow.webContents.send("mini:recordingStop");
     miniWindow.hide();
     pyShell.send({ action: "stop" } as Command);
     activeRecording = false;
