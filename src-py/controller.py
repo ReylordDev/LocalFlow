@@ -237,6 +237,17 @@ class Controller:
                 print_message("language", {"language": command.data["language"]})
             else:
                 print_message("error", {"error": "Language not provided"})
+        elif command.action == "get_devices":
+            logger.info("Getting devices")
+            print_message("devices", {"devices": self.recorder.get_devices()})
+        elif command.action == "set_device":
+            if command.data and "index" in command.data:
+                device = self.recorder.set_device(command.data["index"])
+                print_message("device", {"device": device})
+            else:
+                print_message("error", {"error": "Device index not provided"})
+        elif command.action == "debug":
+            print_message("debug", {"debug": "true"})
         else:
             print_message("error", {"error": "Invalid command"})
 

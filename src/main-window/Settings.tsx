@@ -8,6 +8,7 @@ import {
 } from "../components/ui/select";
 import { Button } from "../components/ui/button";
 import { cn } from "../lib/utils";
+import { Devices, InputDevice } from "../lib/models";
 
 const languages = [
   { code: "auto", name: "Auto" },
@@ -26,6 +27,8 @@ const Settings = () => {
 
   const [startShortcut, setStartShortcut] = useState("");
   const [language, setLanguage] = useState("Auto");
+  const [inputDevice, setInputDevice] = useState<InputDevice | null>(null);
+  const [devices, setDevices] = useState<InputDevice[]>([]);
 
   useEffect(() => {
     window.startShortcut.get().then((shortcut: string) => {
@@ -40,8 +43,22 @@ const Settings = () => {
     });
   }, []);
 
+  window.device.onReceiveDevices((devices: Devices) => {
+    console.log("Received Devices", devices);
+    setDevices(devices.devices);
+    if (!inputDevice) {
+      setInputDevice(devices.devices[0]);
+    }
+  });
+
+  useEffect(() => {
+    window.device.getAll();
+  }, []);
+
   console.log("Start Shortcut", startShortcut);
   console.log("Language", language);
+  console.log("Input Device", inputDevice);
+  console.log("Devices", devices);
 
   return (
     <div className="gap-12 flex-col flex h-full w-full">
@@ -70,14 +87,29 @@ const Settings = () => {
             <h2 className="text-xl font-semibold">Input Device</h2>
             <p>Choose your microphone</p>
           </div>
-          <Select>
-            <SelectTrigger className="w-[180px] rounded text-lg">
+          <Select
+            value={inputDevice?.name || ""}
+            onValueChange={(deviceName: string) => {
+              const device = devices.find((d) => d.name === deviceName);
+              if (device) {
+                setInputDevice(device);
+                window.device.set(device);
+              }
+            }}
+          >
+            <SelectTrigger className="w-[180px] rounded text-lg text-left">
               <SelectValue placeholder="Input Device" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="light">Light</SelectItem>
-              <SelectItem value="dark">Dark</SelectItem>
-              <SelectItem value="system">System</SelectItem>
+              {devices.map((device) => (
+                <SelectItem
+                  key={device.index}
+                  value={device.name}
+                  className={cn(device === inputDevice && "bg-gray-200")}
+                >
+                  {device.name}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>

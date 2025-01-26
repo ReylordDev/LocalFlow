@@ -2,6 +2,7 @@
 // https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
 
 import {
+  Devices,
   FormattedTranscripton,
   ModelStatus,
   Transcriptions,
@@ -91,5 +92,19 @@ contextBridge.exposeInMainWorld("language", {
 contextBridge.exposeInMainWorld("url", {
   open: (url: string) => {
     ipcRenderer.send("url:open", url);
+  },
+});
+
+contextBridge.exposeInMainWorld("device", {
+  getAll: () => {
+    return ipcRenderer.send("device:getAll");
+  },
+  onReceiveDevices: (callback: (devices: Devices) => void) => {
+    ipcRenderer.on("device:devices", (_, devices) => {
+      callback(devices);
+    });
+  },
+  set: (deviceId: string) => {
+    ipcRenderer.send("device:set", deviceId);
   },
 });

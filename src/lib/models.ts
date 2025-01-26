@@ -12,8 +12,11 @@ export interface Message {
     | "status"
     | "audio_level"
     | "model_status"
-    | "transcriptions";
-  data: object | ProgressMessage | FormattedTranscripton;
+    | "transcriptions"
+    | "devices"
+    | "device"
+    | "error";
+  data: object | ProgressMessage | FormattedTranscripton | Devices;
 }
 
 export interface Command {
@@ -32,7 +35,10 @@ export interface Command {
     | "formatter_load"
     | "formatter_unload"
     | "get_transcriptions"
-    | "set_language";
+    | "set_language"
+    | "get_devices"
+    | "set_device"
+    | "debug";
   data?: object;
 }
 
@@ -63,3 +69,13 @@ export interface Transcriptions {
 }
 
 export type Page = "Settings" | "History" | "Credits";
+
+export interface InputDevice {
+  index: number;
+  name: string;
+  default_samplerate: number;
+}
+
+export interface Devices {
+  devices: InputDevice[];
+}
