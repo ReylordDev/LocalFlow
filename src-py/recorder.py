@@ -117,7 +117,7 @@ class AudioRecorder:
 
         audio_data = np.concatenate(self.audio_data, axis=0)
         file_path = f"{self.output_path}/{self.file_id}.wav"
-        wavfile.write(file_path, self.sample_rate, audio_data)
+        wavfile.write(file_path, int(self.sample_rate), audio_data)
         logger.info(f"Audio saved to {file_path}.")
         self.file_id += 1
         self.audio_data = []

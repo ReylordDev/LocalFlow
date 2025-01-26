@@ -76,7 +76,7 @@ def commit_transcription_to_db(
 
 def get_transcriptions_from_db(db: Connection):
     c = db.cursor()
-    c.execute("SELECT * FROM transcriptions")
+    c.execute("SELECT * FROM transcriptions ORDER BY created_at DESC")
     transcriptions = c.fetchall()
     logger.info(f"Length of transcriptions: {len(transcriptions)}")
     return [
