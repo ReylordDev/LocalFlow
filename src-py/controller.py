@@ -16,6 +16,7 @@ from models import (
     Message,
     ModelNotLoadedException,
     ProgressMessage,
+    Result,
 )
 from loguru import logger
 
@@ -246,6 +247,12 @@ class Controller:
                 print_message("device", {"device": device})
             else:
                 print_message("error", {"error": "Device index not provided"})
+        elif command.action == "set_active_window":
+            if command.data:
+                result = Result(command.data)  # type: ignore
+                logger.info(result)
+                self.formatter.set_active_window(result)
+                print_message("active_window", {"active_window": result})
         elif command.action == "debug":
             print_message("debug", {"debug": "true"})
         else:

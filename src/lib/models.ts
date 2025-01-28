@@ -38,6 +38,7 @@ export interface Command {
     | "set_language"
     | "get_devices"
     | "set_device"
+    | "set_active_window"
     | "debug";
   data?: object;
 }

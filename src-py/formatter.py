@@ -3,6 +3,8 @@ import time
 from dotenv import load_dotenv
 from httpx import request
 from loguru import logger
+from models import ApplicationContext, Result, WindowsResult, LinuxResult, MacOSResult
+
 
 import ollama
 from groq import Groq
@@ -22,7 +24,7 @@ LANGUAGES = {
 class Formatter:
     def __init__(self, language: str | None = None):
         self.language = language
-        pass
+        self.active_window = None
 
     def improve_transcription(self, raw_transcription: str):
         raise NotImplementedError
@@ -33,10 +35,39 @@ class Formatter:
     def set_language(self, language: str | None):
         self.language = language
 
-    def generate_system_prompt(self):
-        identity_purpose = """# IDENTITY and PURPOSE
+    def get_active_window(self) -> Result | None:
+        return self.active_window
 
-        You are a transcription expert. Your task is to refine the input transcription by removing or fixing all speech disfluencies. That includes filler words, false starts, repetitions, pauses and colloquial interjections.
+    def set_active_window(self, active_window: Result | None):
+        self.active_window = active_window
+
+    def get_application_context(self):
+        active_window = self.get_active_window()
+        if not active_window:
+            logger.info("No active window found")
+            return None
+
+        active_window = active_window.root
+        if (
+            isinstance(active_window, WindowsResult)
+            or isinstance(active_window, MacOSResult)
+            or isinstance(active_window, LinuxResult)
+        ):
+            return ApplicationContext(
+                name=active_window.owner.name,
+                title=active_window.title,
+            )
+
+        logger.info("Active window is bad")
+        logger.info(active_window)
+        return None
+
+    def generate_system_prompt(self):
+        app_context = self.get_application_context()
+
+        identity_purpose = f"""# IDENTITY and PURPOSE
+
+        You are a transcription expert. Your task is to refine the input transcription by removing or fixing all speech disfluencies. That includes filler words, false starts, repetitions, pauses and colloquial interjections. {f"The text will be used in the application {app_context.name}. The current window title is {app_context.title}." if app_context else ""}
         """
 
         steps = """# Steps
@@ -46,11 +77,23 @@ class Formatter:
         - Maintain the original meaning and intent of the user's text, ensuring that the improvements are made within the context of the input language's grammatical norms.
         """
 
+        formatting_rules = {
+            "Notion": "- Format the text for Notion using markdown (headings, lists, bullet points). Split the text into paragraphs using double line breaks.",
+        }
+        context_rules = ""
+        if app_context:
+            context_rules = formatting_rules.get(app_context.name, "")
+            if app_context.name not in formatting_rules:
+                logger.info(
+                    f"No formatting rules found for application {app_context.name}"
+                )
+
         output_instructions = f"""# OUTPUT INSTRUCTIONS
 
         - Refined text that has no speech disfluencies.
         - Include NO additional commentary or explanation in the response.
         - Ensure that the output is in {LANGUAGES[self.language] if self.language else "English"}.
+        {context_rules}
         """
 
         example = """# EXAMPLE
@@ -72,6 +115,7 @@ class Formatter:
         """
 
         prompt = f"{identity_purpose}\n\n{steps}\n\n{output_instructions}\n\n# INPUT:"
+        logger.info(prompt)
         return prompt
 
 

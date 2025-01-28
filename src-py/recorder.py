@@ -81,8 +81,8 @@ class AudioRecorder:
                 self.audio_data.append(indata.copy())
             self.current_audio_level = float(np.linalg.norm(indata) * 10)
             self.audio_levels.push(self.current_audio_level)
-            if self.current_audio_level > 10:
-                logger.debug(f"Audio level: {self.current_audio_level:.1f}")
+            # if self.current_audio_level > 10:
+            #     logger.debug(f"Audio level: {self.current_audio_level:.1f}")
 
         self.stream = sd.InputStream(
             callback=audio_callback,
