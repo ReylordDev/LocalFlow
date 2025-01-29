@@ -10,8 +10,15 @@ import {
   TableHeader,
   TableRow,
 } from "../components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "../components/ui/dialog";
 
 import { formatDate } from "../lib/utils";
+import { Button } from "../components/ui/button";
 
 const characterLimit = 100;
 
@@ -19,6 +26,11 @@ const History = () => {
   console.log("History");
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedItem, setSelectedItem] = useState<HistoryItem | null>(null);
+
+  const handleRowClick = (item: HistoryItem) => {
+    setSelectedItem(item);
+  };
 
   window.controller.onReceiveTranscriptions(
     (transcriptions: Transcriptions) => {
@@ -78,7 +90,11 @@ const History = () => {
               );
             })
             .map((item) => (
-              <TableRow key={item.id} className="select-none">
+              <TableRow
+                key={item.id}
+                className="select-none cursor-pointer hover:bg-gray-50"
+                onClick={() => handleRowClick(item)}
+              >
                 <TableCell>{formatDate(item.created_at)}</TableCell>
                 <TableCell>
                   {item.raw_transcription.length > characterLimit
@@ -106,6 +122,46 @@ const History = () => {
             ))}
         </TableBody>
       </Table>
+      {/* Detail Modal */}
+      <Dialog
+        open={!!selectedItem}
+        onOpenChange={(open) => !open && setSelectedItem(null)}
+      >
+        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Transcription Details</DialogTitle>
+          </DialogHeader>
+
+          {selectedItem && (
+            <div className="space-y-4">
+              <div>
+                <h3 className="font-semibold mb-2">Date</h3>
+                <p>{formatDate(selectedItem.created_at)}</p>
+              </div>
+
+              <div>
+                <h3 className="font-semibold mb-2">Raw Transcription</h3>
+                <p className="bg-gray-50 p-4 rounded-md whitespace-pre-wrap">
+                  {selectedItem.raw_transcription}
+                </p>
+              </div>
+
+              <div>
+                <h3 className="font-semibold mb-2">Formatted Transcription</h3>
+                <p className="whitespace-pre-wrap bg-gray-50 p-4 rounded-md">
+                  {selectedItem.formatted_transcription}
+                </p>
+              </div>
+
+              <div className="flex justify-end">
+                <Button variant="outline" onClick={() => setSelectedItem(null)}>
+                  Close
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
