@@ -75,7 +75,7 @@ def commit_transcription_to_db(
     db.commit()
 
 
-def get_transcriptions_from_db(db: Connection):
+def get_all_transcriptions_from_db(db: Connection):
     c = db.cursor()
     c.execute("SELECT * FROM transcriptions ORDER BY created_at DESC")
     transcriptions = c.fetchall()
@@ -89,6 +89,11 @@ def get_transcriptions_from_db(db: Connection):
         )
         for row in transcriptions
     ]
+
+
+def delete_transcription_from_db(db: Connection, transcription_id: int):
+    db.cursor().execute("DELETE FROM transcriptions WHERE id = ?", (transcription_id,))
+    db.commit()
 
 
 class Controller:
@@ -228,9 +233,18 @@ class Controller:
             print_progress("formatter_unload", "complete")
         elif command.action == "get_transcriptions":
             print_progress("get_transcriptions", "start")
-            transcriptions = get_transcriptions_from_db(self.db_con)
+            transcriptions = get_all_transcriptions_from_db(self.db_con)
             print_message("transcriptions", {"transcriptions": transcriptions})
             print_progress("get_transcriptions", "complete")
+        elif command.action == "delete_transcription":
+            if command.data and "id" in command.data:
+                transcription_id = command.data["id"]
+                delete_transcription_from_db(self.db_con, transcription_id)
+                # Send updated list
+                transcriptions = get_all_transcriptions_from_db(self.db_con)
+                print_message("transcriptions", {"transcriptions": transcriptions})
+            else:
+                print_message("error", {"error": "ID not provided"})
         elif command.action == "set_language":
             if command.data and "language" in command.data:
                 self.transcriber.set_language(command.data["language"])

@@ -350,6 +350,14 @@ function ipcHandling(pyShell: PythonShell) {
     } as Command);
   });
 
+  ipcMain.on("controller:deleteTranscription", async (_, id: number) => {
+    console.log("Deleting transcription");
+    pyShell.send({
+      action: "delete_transcription",
+      data: { id: id },
+    } as Command);
+  });
+
   ipcMain.on("controller:quit", async () => {
     console.log("Quitting controller");
     pyShell.send({ action: "quit" } as Command);
@@ -439,6 +447,7 @@ declare global {
       onReceiveTranscriptions: (
         callback: (transcriptions: Transcriptions) => void
       ) => void;
+      deleteTranscription: (id: number) => void;
       quit: () => void;
     };
     clipboard: {

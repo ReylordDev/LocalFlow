@@ -35,6 +35,7 @@ export interface Command {
     | "formatter_load"
     | "formatter_unload"
     | "get_transcriptions"
+    | "delete_transcription"
     | "set_language"
     | "get_devices"
     | "set_device"

@@ -66,6 +66,9 @@ contextBridge.exposeInMainWorld("controller", {
       callback(transcription);
     });
   },
+  deleteTranscription: (id: number) => {
+    ipcRenderer.send("controller:deleteTranscription", id);
+  },
 });
 
 contextBridge.exposeInMainWorld("startShortcut", {

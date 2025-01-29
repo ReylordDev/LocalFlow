@@ -33,6 +33,12 @@ const History = () => {
     window.controller.getTranscriptions();
   }, []);
 
+  const handleDelete = (id: number) => {
+    if (confirm("Are you sure you want to delete this transcription?")) {
+      window.controller.deleteTranscription(id);
+    }
+  };
+
   console.log("History", history);
   console.log("Search Term", searchTerm);
 
@@ -89,7 +95,10 @@ const History = () => {
                     : item.formatted_transcription}
                 </TableCell>
                 <TableCell>
-                  <button className="text-red-500">
+                  <button
+                    className="text-red-500 hover:text-red-700"
+                    onClick={() => handleDelete(item.id)}
+                  >
                     <Trash2 />
                   </button>
                 </TableCell>

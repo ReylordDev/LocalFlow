@@ -1,8 +1,8 @@
 {
-  "name": "whisper-flow",
-  "productName": "whisper-flow",
+  "name": "localllow",
+  "productName": "LocalFlow",
   "version": "0.0.1",
-  "description": "My Electron application description",
+  "description": "LocalFlow is a desktop application for intelligent speech to text transcription.",
   "main": ".webpack/main",
   "scripts": {
     "start": "electron-forge start",
