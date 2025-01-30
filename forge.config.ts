@@ -12,10 +12,14 @@ import { ElectronegativityPlugin } from "@electron-forge/plugin-electronegativit
 import { mainConfig } from "./webpack.main.config";
 import { rendererConfig } from "./webpack.renderer.config";
 
+import { execSync } from "child_process";
+import path from "path";
+import fs from "fs-extra";
+
 const config: ForgeConfig = {
   packagerConfig: {
     asar: true,
-    extraResource: ["./src-py"],
+    extraResource: ["./src-py", "./assets"],
     icon: "./assets/icons/icon",
   },
   rebuildConfig: {},
@@ -82,6 +86,35 @@ const config: ForgeConfig = {
       isSarif: true,
     }),
   ],
+  hooks: {
+    postPackage: async (config, packageResult) => {
+      console.log("Post package hook called");
+      console.log(packageResult.outputPaths);
+      const pythonDir = path.join(
+        packageResult.outputPaths[0],
+        "resources",
+        "python"
+      );
+      const requirementsPath = path.join(
+        packageResult.outputPaths[0],
+        "resources",
+        "src-py",
+        "requirements.txt"
+      );
+      console.log("Python directory:", pythonDir);
+      console.log("Requirements path:", requirementsPath);
+
+      fs.ensureDirSync(pythonDir);
+
+      // Create a virtual environment
+      execSync(`python -m venv ${pythonDir}`);
+
+      // Install Python requirements in the virtual environment
+      execSync(
+        `${path.join(pythonDir, "Scripts", "pip")} install -r ${requirementsPath}`
+      );
+    },
+  },
 };
 
 export default config;

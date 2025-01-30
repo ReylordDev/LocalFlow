@@ -20,15 +20,31 @@ from models import (
     ProgressMessage,
 )
 from loguru import logger
+import os
 
 
 DEV_MODE = False
 
 
 def initialize_logger():
+    user_data_path = os.environ.get("USER_DATA_PATH", "logs")
+    log_level = os.environ.get("LOG_LEVEL", "DEBUG")
     logger.remove()
-    logger.add("logs/main.log", rotation="500 MB", level="DEBUG")
-    logger.info("Logger initialized.")
+    logger.add(
+        sys.stderr,
+        level=log_level,
+        format="<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",
+    )
+    logger.add(
+        os.path.join(user_data_path, "logs", "python.log"),
+        rotation="500 MB",
+        level=log_level,
+        encoding="utf-8",
+    )
+    logger.info(
+        "Logger initialized in {} mode",
+        "PRODUCTION" if os.environ.get("USER_DATA_PATH") else "DEVELOPMENT",
+    )
 
 
 def print_message(
