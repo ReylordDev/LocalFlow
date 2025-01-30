@@ -8,7 +8,9 @@ from recorder import AudioRecorder
 from compressor import Compressor
 from transcriber import LocalTranscriber, GroqTranscriber  # noqa: F401
 from formatter import LocalFormatter, GroqFormatter  # noqa: F401
+from window_detector import WindowDetector
 from models import (
+    ActiveWindowContext,
     AudioLevel,
     Command,
     FormattedTranscription,
@@ -16,7 +18,6 @@ from models import (
     Message,
     ModelNotLoadedException,
     ProgressMessage,
-    Result,
 )
 from loguru import logger
 
@@ -103,6 +104,7 @@ class Controller:
         # Create the transcriber and formatter objects (models not loaded yet)
         self.transcriber = LocalTranscriber()
         self.formatter = LocalFormatter()
+        self.window_detector = WindowDetector()
 
         self.db_con = initialize_db()
 
@@ -148,6 +150,9 @@ class Controller:
     # TODO: Move each command into their own functions
     def handle_command(self, command: Command):
         if command.action == "start":
+            window_info = self.window_detector.get_active_window()
+            if window_info:
+                self.formatter.set_active_window(ActiveWindowContext(**window_info))
             self.recorder.start()
             print_progress("recording", "start")
         elif command.action == "stop":
@@ -210,27 +215,6 @@ class Controller:
             self.transcriber.load_model()
             self.formatter.load_model()
             print_progress("model_load", "complete")
-        elif command.action == "model_unload":
-            print_progress("model_unload", "start")
-            self.transcriber.unload_model()
-            self.formatter.unload_model()
-            print_progress("model_unload", "complete")
-        elif command.action == "transcriber_load":
-            print_progress("transcriber_load", "start")
-            self.transcriber.load_model()
-            print_progress("transcriber_load", "complete")
-        elif command.action == "transcriber_unload":
-            print_progress("transcriber_unload", "start")
-            self.transcriber.unload_model()
-            print_progress("transcriber_unload", "complete")
-        elif command.action == "formatter_load":
-            print_progress("formatter_load", "start")
-            self.formatter.load_model()
-            print_progress("formatter_load", "complete")
-        elif command.action == "formatter_unload":
-            print_progress("formatter_unload", "start")
-            self.formatter.unload_model()
-            print_progress("formatter_unload", "complete")
         elif command.action == "get_transcriptions":
             print_progress("get_transcriptions", "start")
             transcriptions = get_all_transcriptions_from_db(self.db_con)
@@ -261,12 +245,6 @@ class Controller:
                 print_message("device", {"device": device})
             else:
                 print_message("error", {"error": "Device index not provided"})
-        elif command.action == "set_active_window":
-            if command.data:
-                result = Result(command.data)  # type: ignore
-                logger.info(result)
-                self.formatter.set_active_window(result)
-                print_message("active_window", {"active_window": result})
         elif command.action == "debug":
             print_message("debug", {"debug": "true"})
         else:

@@ -1,9 +1,13 @@
 import os
 import time
+from typing import Optional
 from dotenv import load_dotenv
 from httpx import request
 from loguru import logger
-from models import ApplicationContext, Result, WindowsResult, LinuxResult, MacOSResult
+from models import (
+    ActiveWindowContext,
+    ApplicationContext,
+)
 
 
 import ollama
@@ -24,7 +28,7 @@ LANGUAGES = {
 class Formatter:
     def __init__(self, language: str | None = None):
         self.language = language
-        self.active_window = None
+        self.active_window: Optional[ActiveWindowContext] = None
 
     def improve_transcription(self, raw_transcription: str):
         raise NotImplementedError
@@ -35,32 +39,23 @@ class Formatter:
     def set_language(self, language: str | None):
         self.language = language
 
-    def get_active_window(self) -> Result | None:
+    def get_active_window(self):
         return self.active_window
 
-    def set_active_window(self, active_window: Result | None):
-        self.active_window = active_window
+    def set_active_window(self, window: ActiveWindowContext):
+        self.active_window = window
 
     def get_application_context(self):
         active_window = self.get_active_window()
+        logger.info(active_window)
         if not active_window:
             logger.info("No active window found")
             return None
 
-        active_window = active_window.root
-        if (
-            isinstance(active_window, WindowsResult)
-            or isinstance(active_window, MacOSResult)
-            or isinstance(active_window, LinuxResult)
-        ):
-            return ApplicationContext(
-                name=active_window.owner.name,
-                title=active_window.title,
-            )
-
-        logger.info("Active window is bad")
-        logger.info(active_window)
-        return None
+        return ApplicationContext(
+            name=active_window.app_name.strip(".exe"),
+            title=active_window.title,
+        )
 
     def generate_system_prompt(self):
         app_context = self.get_application_context()
