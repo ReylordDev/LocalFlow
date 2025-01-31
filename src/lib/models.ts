@@ -7,7 +7,7 @@ export interface ProgressMessage {
 export interface Message {
   type:
     | "progress"
-    | "transcrption"
+    | "transcription"
     | "formatted_transcription"
     | "status"
     | "audio_level"
@@ -16,7 +16,14 @@ export interface Message {
     | "devices"
     | "device"
     | "error";
-  data: object | ProgressMessage | FormattedTranscripton | Devices;
+  data:
+    | object
+    | ProgressMessage
+    | FormattedTranscripton
+    | Devices
+    | AudioLevel
+    | ModelStatus
+    | HistoryItem;
 }
 
 export interface Command {

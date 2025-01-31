@@ -8,7 +8,7 @@ import {
 } from "../components/ui/select";
 import { Button } from "../components/ui/button";
 import { cn } from "../lib/utils";
-import { Devices, InputDevice } from "../lib/models";
+import { InputDevice } from "../lib/models";
 
 const languages = [
   { code: "auto", name: "Auto" },
@@ -31,28 +31,23 @@ const Settings = () => {
   const [devices, setDevices] = useState<InputDevice[]>([]);
 
   useEffect(() => {
-    window.startShortcut.get().then((shortcut: string) => {
-      setStartShortcut(shortcut);
+    window.settings.getAll().then((settings) => {
+      console.log("Received Settings", settings);
+      setStartShortcut(settings.startShortcut);
+      setLanguage(settings.language);
     });
   }, []);
 
-  useEffect(() => {
-    window.language.get().then((lang: string) => {
-      console.log("Language", lang);
-      setLanguage(lang);
-    });
-  }, []);
-
-  window.device.onReceiveDevices((devices: Devices) => {
+  window.device.onReceiveDevices((devices: InputDevice[]) => {
     console.log("Received Devices", devices);
-    setDevices(devices.devices);
+    setDevices(devices);
     if (!inputDevice) {
-      setInputDevice(devices.devices[0]);
+      setInputDevice(devices[0]);
     }
   });
 
   useEffect(() => {
-    window.device.getAll();
+    window.device.requestAll();
   }, []);
 
   console.log("Start Shortcut", startShortcut);
@@ -72,9 +67,8 @@ const Settings = () => {
           <ShortcutRecorder
             currentShortcut={startShortcut}
             onNewShortcut={(shortcut) => {
-              window.startShortcut.set(shortcut).then(() => {
+              window.settings.setShortcut(shortcut).then(() => {
                 setStartShortcut(shortcut);
-                window.startShortcut.set(shortcut);
               });
             }}
           />
@@ -122,7 +116,7 @@ const Settings = () => {
             value={language || "auto"}
             onValueChange={(lang) => {
               setLanguage(lang);
-              window.language.set(lang);
+              window.settings.setLanguage(lang);
             }}
           >
             <SelectTrigger className="w-[180px] rounded text-lg">
@@ -193,7 +187,7 @@ function ShortcutRecorder({
           abortShortcutRecording();
         } else {
           setRecording(true);
-          window.startShortcut.disable(); // Disable the current shortcut while recording a new one
+          window.settings.disableShortcut(); // Disable the current shortcut while recording a new one
           console.log("Recording Shortcut Setting");
         }
       }}

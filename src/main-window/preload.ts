@@ -2,10 +2,10 @@
 // https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
 
 import {
-  Devices,
   FormattedTranscripton,
+  HistoryItem,
+  InputDevice,
   ModelStatus,
-  Transcriptions,
 } from "../lib/models";
 import { contextBridge, ipcRenderer } from "electron";
 
@@ -13,39 +13,14 @@ import { contextBridge, ipcRenderer } from "electron";
 // the ipcRenderer without exposing the entire object
 
 contextBridge.exposeInMainWorld("controller", {
-  isInitialized: async () => {
-    return ipcRenderer.invoke("controller:isInitialized");
-  },
-  onSetInitialized: (callback: (initialized: boolean) => void) => {
-    ipcRenderer.on("controller:setInitialized", (_, initialized) => {
-      callback(initialized);
-    });
-  },
-  start: () => {
-    ipcRenderer.send("controller:start");
-  },
-  stop: () => {
-    ipcRenderer.send("controller:stop");
-  },
-  loadModels: () => {
-    ipcRenderer.send("controller:loadModels");
-  },
-  unloadModels: () => {
-    ipcRenderer.send("controller:unloadModels");
-  },
-  requestAudioLevel: async () => {
-    return ipcRenderer.send("controller:requestAudioLevel");
-  },
-  onReceiveAudioLevel: (callback: (audioLevel: number) => void) => {
-    ipcRenderer.on("controller:audioLevel", (_, audioLevel) => {
-      callback(audioLevel);
-    });
+  toggleRecording: () => {
+    ipcRenderer.send("controller:toggle-recording");
   },
   requestModelStatus: async () => {
     return ipcRenderer.send("controller:requestModelStatus");
   },
   onReceiveModelStatus: (callback: (status: ModelStatus) => void) => {
-    ipcRenderer.on("controller:modelStatus", (_, status) => {
+    ipcRenderer.on("model-status", (_, status) => {
       callback(status);
     });
   },
@@ -53,9 +28,9 @@ contextBridge.exposeInMainWorld("controller", {
     return ipcRenderer.send("controller:getTranscriptions");
   },
   onReceiveTranscriptions: (
-    callback: (transcriptions: Transcriptions) => void
+    callback: (transcriptions: HistoryItem[]) => void
   ) => {
-    ipcRenderer.on("controller:transcriptions", (_, transcriptions) => {
+    ipcRenderer.on("transcriptions", (_, transcriptions) => {
       callback(transcriptions);
     });
   },
@@ -71,24 +46,18 @@ contextBridge.exposeInMainWorld("controller", {
   },
 });
 
-contextBridge.exposeInMainWorld("startShortcut", {
-  get: async () => {
-    return ipcRenderer.invoke("start-shortcut:get");
+contextBridge.exposeInMainWorld("settings", {
+  getAll: async () => {
+    return ipcRenderer.invoke("settings:get-all");
   },
-  set: async (shortcut: string) => {
-    return ipcRenderer.invoke("start-shortcut:set", shortcut);
+  setShortcut: async (shortcut: string) => {
+    return ipcRenderer.invoke("settings:set-shortcut", shortcut);
   },
-  disable: () => {
-    return ipcRenderer.send("start-shortcut:disable");
+  disableShortcut: async () => {
+    return ipcRenderer.send("settings:disable-shortcut");
   },
-});
-
-contextBridge.exposeInMainWorld("language", {
-  get: async () => {
-    return ipcRenderer.invoke("language:get");
-  },
-  set: (language: string) => {
-    ipcRenderer.invoke("language:set", language);
+  setLanguage: async (language: string) => {
+    return ipcRenderer.invoke("settings:set-language", language);
   },
 });
 
@@ -99,15 +68,17 @@ contextBridge.exposeInMainWorld("url", {
 });
 
 contextBridge.exposeInMainWorld("device", {
-  getAll: () => {
-    return ipcRenderer.send("device:getAll");
+  requestAll: () => {
+    return ipcRenderer.send("device:requestAll");
   },
-  onReceiveDevices: (callback: (devices: Devices) => void) => {
+
+  onReceiveDevices: (callback: (devices: InputDevice[]) => void) => {
     ipcRenderer.on("device:devices", (_, devices) => {
       callback(devices);
     });
   },
-  set: (deviceId: string) => {
-    ipcRenderer.send("device:set", deviceId);
+
+  set: (device: InputDevice) => {
+    return ipcRenderer.send("device:set", device);
   },
 });

@@ -249,7 +249,6 @@ class Controller:
             if command.data and "language" in command.data:
                 self.transcriber.set_language(command.data["language"])
                 self.formatter.set_language(command.data["language"])
-                print_message("language", {"language": command.data["language"]})
             else:
                 print_message("error", {"error": "Language not provided"})
         elif command.action == "get_devices":

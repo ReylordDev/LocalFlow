@@ -2,15 +2,6 @@ import { createRoot } from "react-dom/client";
 import SpeechVocalization from "../components/SpeechVocalization";
 
 const App = () => {
-  window.controller.onReceiveTranscription((transcription) => {
-    console.log("Transcription", transcription);
-    window.clipboard.writeText(transcription.formatted_transcription); // Copy to clipboard
-    // The notification should not be here.
-    new Notification("Transcription", {
-      body: transcription.formatted_transcription,
-    });
-  });
-
   return (
     <div className="bg-transparent">
       <SpeechVocalization />

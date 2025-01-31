@@ -1,61 +1,24 @@
 // See the Electron documentation for details on how to use preload scripts:
 // https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
 
-import { FormattedTranscripton, AudioLevel } from "../lib/models";
 import { contextBridge, ipcRenderer } from "electron";
 
 // Expose protected methods that allow the renderer process to use
 // the ipcRenderer without exposing the entire object
 
-contextBridge.exposeInMainWorld("controller", {
-  isInitialized: async () => {
-    return ipcRenderer.invoke("controller:isInitialized");
-  },
-  onSetInitialized: (callback: (initialized: boolean) => void) => {
-    ipcRenderer.on("controller:setInitialized", (_, initialized) => {
-      callback(initialized);
-    });
-  },
-  start: () => {
-    ipcRenderer.send("controller:start");
-  },
-  stop: () => {
-    ipcRenderer.send("controller:stop");
-  },
-  reset: () => {
-    ipcRenderer.send("controller:reset");
-  },
-  requestAudioLevel: async () => {
-    return ipcRenderer.send("controller:requestAudioLevel");
-  },
-  onReceiveAudioLevel: (callback: (audioLevel: number) => void) => {
-    ipcRenderer.on("controller:audioLevel", (_, audioLevel: AudioLevel) => {
-      callback(audioLevel.audio_level);
-    });
-  },
-  onReceiveTranscription: (
-    callback: (transcription: FormattedTranscripton) => void
-  ) => {
-    ipcRenderer.on("controller:transcription", (_, transcription) => {
-      callback(transcription);
-    });
-  },
-});
-
-contextBridge.exposeInMainWorld("clipboard", {
-  writeText: (text: string) => {
-    ipcRenderer.invoke("clipboard:writeText", text);
-  },
-  readText: () => {
-    ipcRenderer.invoke("clipboard:readText");
-  },
-});
-
 contextBridge.exposeInMainWorld("mini", {
   onRecordingStart: (callback: () => void) => {
-    ipcRenderer.on("mini:recordingStart", callback);
+    ipcRenderer.on("mini:recording-start", callback);
   },
   onRecordingStop: (callback: () => void) => {
-    ipcRenderer.on("mini:recordingStop", callback);
+    ipcRenderer.on("mini:recording-stop", callback);
+  },
+  requestAudioLevel: async () => {
+    return ipcRenderer.send("mini:requestAudioLevel");
+  },
+  onReceiveAudioLevel: (callback: (audio_level: number) => void) => {
+    ipcRenderer.on("mini:audio-level", (_, audio_level: number) => {
+      callback(audio_level);
+    });
   },
 });

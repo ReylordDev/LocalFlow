@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Transcriptions, HistoryItem } from "../lib/models";
+import { HistoryItem } from "../lib/models";
 import { Search, Trash2 } from "lucide-react";
 import { Input } from "../components/ui/input";
 import {
@@ -32,12 +32,10 @@ const History = () => {
     setSelectedItem(item);
   };
 
-  window.controller.onReceiveTranscriptions(
-    (transcriptions: Transcriptions) => {
-      console.log("Received transcriptions", transcriptions);
-      setHistory(transcriptions.transcriptions);
-    }
-  );
+  window.controller.onReceiveTranscriptions((transcriptions) => {
+    console.log("Received transcriptions", transcriptions);
+    setHistory(transcriptions);
+  });
 
   useEffect(() => {
     console.log("History useEffect");

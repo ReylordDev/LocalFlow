@@ -11,7 +11,12 @@ const Credits = () => {
         <div className="flex gap-2">
           <p>
             For more information, visit the project's{" "}
-            <span className="underline underline-offset-2 cursor-pointer">
+            <span
+              className="underline underline-offset-2 cursor-pointer"
+              onClick={() => {
+                window.url.open("https://github.com/ReylordDev/LocalFlow");
+              }}
+            >
               GitHub repository
             </span>
           </p>
@@ -19,7 +24,12 @@ const Credits = () => {
         </div>
         <p className="w-full flex gap-2">
           Inspired by
-          <span className="font-bold underline underline-offset-2 cursor-pointer">
+          <span
+            className="font-bold underline underline-offset-2 cursor-pointer"
+            onClick={() => {
+              window.url.open("https://wisprflow.ai");
+            }}
+          >
             {" "}
             Flow
           </span>

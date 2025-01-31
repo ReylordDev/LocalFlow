@@ -18,7 +18,7 @@ const SpeechVocalization = () => {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      window.controller.requestAudioLevel();
+      window.mini.requestAudioLevel();
       console.log("Requesting audio level");
     }, 500);
 
@@ -39,7 +39,7 @@ const SpeechVocalization = () => {
     return () => clearInterval(timerInterval);
   }, [recording]);
 
-  window.controller.onReceiveAudioLevel((audioLevel) => {
+  window.mini.onReceiveAudioLevel((audioLevel) => {
     console.log("Audio level", audioLevel);
     setAudioLevel(audioLevel);
   });
