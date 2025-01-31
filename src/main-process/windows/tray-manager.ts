@@ -1,6 +1,6 @@
 import { Tray, Menu, NativeImage, nativeImage, app } from "electron";
 import { PythonService } from "../services/python-service";
-import { WindowManager } from "../windows/window-manager";
+import { WindowManager } from "./window-manager";
 import { AppConfig } from "../utils/config";
 import { SettingsService } from "../services/settings-service";
 import path from "path";

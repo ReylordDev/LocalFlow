@@ -2,7 +2,7 @@ import { app, clipboard, Notification } from "electron";
 import { PythonService } from "./main-process/services/python-service";
 import { SettingsService } from "./main-process/services/settings-service";
 import { WindowManager } from "./main-process/windows/window-manager";
-import { TrayManager } from "./main-process/tray/tray-manager";
+import { TrayManager } from "./main-process/windows/tray-manager";
 import { registerIpcHandlers } from "./main-process/ipc";
 import { AppConfig } from "./main-process/utils/config";
 import { HistoryItem, InputDevice, ModelStatus } from "./lib/models";
