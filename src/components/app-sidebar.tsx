@@ -1,5 +1,3 @@
-import * as React from "react";
-
 import { History, Settings, UserRound } from "lucide-react";
 import { Page } from "../lib/models";
 
