@@ -7,7 +7,7 @@ from loguru import logger
 def initialize_logger():
     user_data_path = os.environ.get("USER_DATA_PATH", "logs")
     log_level = os.environ.get("LOG_LEVEL", "DEBUG")
-    dev_mode = bool(os.environ.get("DEVELOPMENT", False))
+    prod_mode = os.environ.get("PRODUCTION", "false")
     logger.remove()
     logger.add(
         sys.stderr,
@@ -21,5 +21,5 @@ def initialize_logger():
         encoding="utf-8",
     )
     logger.info(
-        f"\nLogger initialized in {'DEVELOPMENT' if dev_mode else 'PRODUCTION'} mode",
+        f"\nLogger initialized in {'PRODUCTION' if prod_mode == 'true' else 'DEVELOPMENT'} mode",
     )

@@ -72,7 +72,7 @@ class Formatter:
         """
 
         formatting_rules = {
-            "Notion": "- Format the text for Notion using markdown (headings, lists, bullet points). Split the text into paragraphs using double line breaks.",
+            "Notion": "- Format the text for Notion using github markdown (headings, lists, bullet points, checkboxes). Split the text into paragraphs using double line breaks.",
         }
         context_rules = ""
         if app_context:
@@ -89,24 +89,7 @@ class Formatter:
         - Ensure that the output is in {LANGUAGES[self.language] if self.language else "English"}.
         {context_rules}
         """
-
-        example = """# EXAMPLE
-
-        INPUT:Okay, so, um... today’s meeting was pretty productive, I think. Uh, we talked about the main deliverables for the next quarter. Oh, and—right—I have to remember to send out the slides. Uh, let me make a note of that.
-
-        Also, Sarah mentioned that the budget for the project might be tighter than we thought, so I should probably follow up with her to confirm. Hm... oh, and during the brainstorming session, uh, Mike brought up this really interesting idea about automating some of the reporting tasks. I think we should explore that more.
-
-        What else? Oh yeah—team morale seems good overall, but I do think we need to schedule another check-in soon, just to, y'know, keep everyone aligned. Okay, uh, that’s about it for now, I guess. I’ll review this later and organize my notes better
-
-        OUTPUT:
-        Here's the improved transcription:
-        
-        "Today's meeting was productive. We discussed the main deliverables for the next quarter. I should also send out the slides soon.
-        
-        Sarah mentioned that the project budget may be tighter than than we thought, so I should probably follow up with her to confirm. During the brainstorming session, Mike shared an interesting idea about automating reporting tasks – we should explore this further.
-        
-        Additionally, while team morale seems good overall, I think we should schedule another check-in soon to keep everyone aligned. That's my summary of the meeting for now; I'll review and organize my notes later."
-        """
+        # Todo: add examples
 
         prompt = f"{identity_purpose}\n\n{steps}\n\n{output_instructions}\n\n# INPUT:"
         logger.info(prompt)
@@ -167,7 +150,7 @@ class LocalFormatter(Formatter):
     def improve_transcription(self, raw_transcription: str):
         response = ollama.generate(
             model=self.MODEL,
-            keep_alive="1m",
+            keep_alive="15m",
             system=self.generate_system_prompt(),
             prompt=f"Please improve the following transcription:\n\n{raw_transcription}",
         )

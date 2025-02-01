@@ -60,7 +60,7 @@ export class PythonService extends EventEmitter {
       mode: "json",
       env: {
         ...process.env,
-        DEVELOPMENT: String(this.config.isDev),
+        PRODUCTION: String(!this.config.isDev),
         USER_DATA_PATH: this.config.dataDir,
         LOG_LEVEL: this.config.isDev ? "DEBUG" : "INFO",
       },

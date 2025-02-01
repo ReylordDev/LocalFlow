@@ -1,12 +1,7 @@
 from typing import Literal
-from groq import Groq
 from loguru import logger
 from faster_whisper import WhisperModel
-from dotenv import load_dotenv
 from models import ModelNotLoadedException
-import os
-
-os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 
 class Transcriber:
@@ -24,30 +19,6 @@ class Transcriber:
         self.language = language
 
 
-# I want to work on the local one first, it's okay if the groq one doesn't work for now
-class GroqTranscriber(Transcriber):
-    def __init__(self):
-        load_dotenv()
-
-        GROQ_API_KEY = os.getenv("GROQ_API_KEY")
-        assert GROQ_API_KEY, "GROQ_API_KEY not found in .env"
-
-        self.client = Groq(api_key=GROQ_API_KEY)
-        super().__init__()
-
-    def transcribe_audio(self, file_name: str):
-        with open(file_name, "rb") as file:
-            logger.info(f"Transcribing {file_name} using Groq API")
-            transcription = self.client.audio.transcriptions.create(
-                file=(file_name, file.read()),
-                model="whisper-large-v3",
-                response_format="json",  # Optional
-                temperature=0.0,
-            )
-            logger.info(f'Transcription: "{transcription.text}"')
-            return transcription.text
-
-
 class LocalTranscriber(Transcriber):
     # Maybe I should turn this into into a type safe class
 
@@ -63,15 +34,6 @@ class LocalTranscriber(Transcriber):
         self.model = WhisperModel(model_size_or_path=self.model_size)
         self.status = "online"
         logger.info("Whisper Model loaded into memory")
-        # How can I check if the model is loaded?
-
-    def unload_model(self):
-        # Unsure if this actually works. Let's investigate
-        if self.model:
-            del self.model
-            self.model = None
-            self.status = "offline"
-            logger.info("Whisper Model unloaded from memory")
 
     def get_status(self):
         # logger.info(f"Whisper Model status: {self.status}")
