@@ -1,6 +1,6 @@
 import os
 import time
-from typing import Optional
+from typing import Literal, Optional
 from dotenv import load_dotenv
 from httpx import request
 from loguru import logger
@@ -120,7 +120,7 @@ class LocalFormatter(Formatter):
             logger.error("Ollama is not running. Starting Ollama...")
             os.system("ollama serve")
         self.MODEL = "llama3.2"
-        self.status = "offline"
+        self.status: Literal["offline", "online"] = "offline"
         logger.info(f"Using model {self.MODEL}")
         super().__init__()
 

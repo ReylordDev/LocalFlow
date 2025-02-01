@@ -7,7 +7,7 @@ from threading import Thread
 from typing import Optional
 from loguru import logger
 import os
-from typing import TypedDict
+from models import Device
 
 
 class Stack:
@@ -39,17 +39,12 @@ class Stack:
 class AudioRecorder:
     MAX_DURATION = 250
 
-    class InputDevice(TypedDict):
-        name: str
-        index: int
-        default_samplerate: float
-
     def __init__(self):
         self.recording = False
         self.audio_data = []
         self.devices = sd.query_devices()
-        self.device = self.InputDevice(self.devices[sd.default.device[0]])  # type: ignore
-        self.sample_rate = self.device["default_samplerate"]
+        self.device = Device(**self.devices[sd.default.device[0]])  # type: ignore
+        self.sample_rate = self.device.default_samplerate
         self.record_thread: Optional[Thread] = None
         self.stream: Optional[sd.InputStream] = None
         self.current_audio_level: float = 0
@@ -88,7 +83,7 @@ class AudioRecorder:
             callback=audio_callback,
             channels=1,
             samplerate=self.sample_rate,
-            device=self.device["index"],
+            device=self.device.index,
         )
         with self.stream:
             end_time = time.time() + duration_seconds
@@ -137,7 +132,8 @@ class AudioRecorder:
     def get_devices(self):
         devices = sd.query_devices()
         input_devices = [
-            self.InputDevice(device)  # type: ignore
+            # TODO: Possible error source
+            Device(**device)  # type: ignore
             for device in devices
             if device["max_input_channels"] > 0  # type: ignore
         ]
@@ -151,13 +147,13 @@ class AudioRecorder:
 
     def set_device(self, index):
         devices = self.get_devices()
-        self.device = self.InputDevice(devices[index])
-        self.sample_rate = self.device["default_samplerate"]
-        logger.info(f"Using device: {self.device['name']}")
+        self.device = devices[index]
+        self.sample_rate = self.device.default_samplerate
+        logger.info(f"Using device: {self.device.name}")
         return self.device
 
 
 if __name__ == "__main__":
     recorder = AudioRecorder()
     device = recorder.get_device()
-    logger.info(f"Using device: {device['name']}")
+    logger.info(f"Using device: {device.name}")

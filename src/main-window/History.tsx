@@ -32,7 +32,7 @@ const History = () => {
     setSelectedItem(item);
   };
 
-  window.controller.onReceiveTranscriptions((transcriptions) => {
+  window.controller.onReceiveHistory((transcriptions) => {
     console.log("Received transcriptions", transcriptions);
     setHistory(transcriptions);
   });
@@ -40,7 +40,7 @@ const History = () => {
   useEffect(() => {
     console.log("History useEffect");
 
-    window.controller.getTranscriptions();
+    window.controller.getHistory();
   }, []);
 
   const handleDelete = (id: number) => {

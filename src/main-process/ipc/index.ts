@@ -8,7 +8,7 @@ import { registerSettingsHandlers } from "./settings";
 import {
   ModelStatus,
   FormattedTranscripton,
-  InputDevice,
+  Device,
   HistoryItem,
 } from "../../lib/models";
 
@@ -38,9 +38,9 @@ export function registerIpcHandlers(
     });
   });
 
-  ipcMain.on("controller:getTranscriptions", () => {
+  ipcMain.on("controller:getHistory", () => {
     pythonService.sendCommand({
-      action: "get_transcriptions",
+      action: "get_history",
     });
   });
 
@@ -61,8 +61,8 @@ declare global {
       onReceiveTranscription: (
         callback: (transcription: FormattedTranscripton) => void
       ) => void;
-      getTranscriptions: () => void;
-      onReceiveTranscriptions: (
+      getHistory: () => void;
+      onReceiveHistory: (
         callback: (transcriptions: HistoryItem[]) => void
       ) => void;
       deleteTranscription: (id: number) => void;
@@ -84,8 +84,8 @@ declare global {
     };
     device: {
       requestAll: () => void;
-      onReceiveDevices: (callback: (devices: InputDevice[]) => void) => void;
-      set: (device: InputDevice) => void;
+      onReceiveDevices: (callback: (devices: Device[]) => void) => void;
+      set: (device: Device) => void;
     };
   }
 }

@@ -9,7 +9,7 @@ import {
   Message,
   ModelStatus,
   ProgressMessage,
-  Transcriptions,
+  History,
 } from "../../lib/models";
 import path from "path";
 import { AppSettings, SettingsService } from "./settings-service";
@@ -57,6 +57,7 @@ export class PythonService extends EventEmitter {
       mode: "json",
       env: {
         ...process.env,
+        DEVELOPMENT: String(this.config.isDev),
         USER_DATA_PATH: this.config.dataDir,
         LOG_LEVEL: this.config.isDev ? "DEBUG" : "INFO",
       },
@@ -82,17 +83,20 @@ export class PythonService extends EventEmitter {
       case "model_status":
         this.handleModelStatus(message);
         break;
-      case "transcriptions":
-        this.emit(
-          "transcriptions",
-          (message.data as Transcriptions).transcriptions
-        );
+      case "history":
+        this.emit("history", (message.data as History).transcriptions);
         break;
       case "devices":
         this.emit("devices", (message.data as Devices).devices);
         break;
-      case "transcription":
-        consoleLog("Transcription:", message.data);
+      case "raw_transcription":
+        consoleLog("Raw Transcription:", message.data);
+        break;
+      case "error":
+        consoleLog("Error:", message.data);
+        break;
+      case "exception":
+        consoleLog("Exception:", message.data);
         break;
       default:
         consoleLog("Unknown message type:", message.type);

@@ -5,7 +5,7 @@ import { WindowManager } from "./main-process/windows/window-manager";
 import { TrayManager } from "./main-process/windows/tray-manager";
 import { registerIpcHandlers } from "./main-process/ipc";
 import { AppConfig } from "./main-process/utils/config";
-import { HistoryItem, InputDevice, ModelStatus } from "./lib/models";
+import { HistoryItem, Device, ModelStatus } from "./lib/models";
 
 // Handle setup events
 if (require("electron-squirrel-startup")) app.quit();
@@ -72,11 +72,11 @@ app.whenReady().then(async () => {
     trayManager.updateContextMenu();
   });
 
-  pythonService.on("transcriptions", (transcriptions: HistoryItem[]) => {
-    windowManager.sendMainWindowMessage("transcriptions", transcriptions);
+  pythonService.on("history", (transcriptions: HistoryItem[]) => {
+    windowManager.sendMainWindowMessage("history", transcriptions);
   });
 
-  pythonService.on("devices", (devices: InputDevice[]) => {
+  pythonService.on("devices", (devices: Device[]) => {
     windowManager.sendMainWindowMessage("device:devices", devices);
   });
 

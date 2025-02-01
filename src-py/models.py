@@ -3,14 +3,42 @@ from typing import Literal, Optional, Union
 from pydantic import BaseModel
 
 
+StatusType = Literal["start", "complete", "error"]
+ActionType = Literal[
+    "start",
+    "stop",
+    "reset",
+    "audio_level",
+    "quit",
+    "model_status",
+    "model_load",
+    "get_history",
+    "delete_transcription",
+    "set_language",
+    "get_devices",
+    "set_device",
+]
+StepType = Union[
+    ActionType,
+    Literal[
+        "init",
+        "recording",
+        "compression",
+        "transcription",
+        "formatting",
+        "committing_to_history",
+    ],
+]
+
+
 class Command(BaseModel):
-    action: str
+    action: ActionType
     data: Optional[dict] = None
 
 
 class ProgressMessage(BaseModel):
-    step: str
-    status: str
+    step: StepType
+    status: StatusType
     timestamp: float
 
 
@@ -19,19 +47,21 @@ class ExceptionMessage(BaseModel):
     timestamp: float
 
 
+class RawTranscription(BaseModel):
+    transcription: str
+
+
 class FormattedTranscription(BaseModel):
     formatted_transcription: str
 
 
+class ModelStatus(BaseModel):
+    transcriber_status: Literal["offline", "online"]
+    formatter_status: Literal["offline", "online"]
+
+
 class AudioLevel(BaseModel):
     audio_level: float
-
-
-class Message(BaseModel):
-    type: str
-    data: Union[
-        dict, ProgressMessage, FormattedTranscription, AudioLevel, ExceptionMessage
-    ]
 
 
 class HistoryItem(BaseModel):
@@ -39,6 +69,53 @@ class HistoryItem(BaseModel):
     raw_transcription: str
     formatted_transcription: str
     created_at: str
+
+
+class History(BaseModel):
+    transcriptions: list[HistoryItem]
+
+
+class Error(BaseModel):
+    error: str
+
+
+class Device(BaseModel):
+    name: str
+    index: int
+    default_samplerate: float
+
+
+class Devices(BaseModel):
+    devices: list[Device]
+
+
+MessageType = Literal[
+    "audio_level",
+    "progress",
+    "raw_transcription",
+    "formatted_transcription",
+    "exception",
+    "model_status",
+    "history",
+    "error",
+    "devices",
+]
+MessageDataType = Union[
+    ProgressMessage,
+    RawTranscription,
+    FormattedTranscription,
+    AudioLevel,
+    ExceptionMessage,
+    ModelStatus,
+    History,
+    Devices,
+    Error,
+]
+
+
+class Message(BaseModel):
+    type: MessageType
+    data: MessageDataType
 
 
 class ModelNotLoadedException(Exception):

@@ -4,7 +4,7 @@
 import {
   FormattedTranscripton,
   HistoryItem,
-  InputDevice,
+  Device,
   ModelStatus,
 } from "../lib/models";
 import { contextBridge, ipcRenderer } from "electron";
@@ -24,13 +24,11 @@ contextBridge.exposeInMainWorld("controller", {
       callback(status);
     });
   },
-  getTranscriptions: async () => {
-    return ipcRenderer.send("controller:getTranscriptions");
+  getHistory: async () => {
+    return ipcRenderer.send("controller:getHistory");
   },
-  onReceiveTranscriptions: (
-    callback: (transcriptions: HistoryItem[]) => void
-  ) => {
-    ipcRenderer.on("transcriptions", (_, transcriptions) => {
+  onReceiveHistory: (callback: (transcriptions: HistoryItem[]) => void) => {
+    ipcRenderer.on("history", (_, transcriptions) => {
       callback(transcriptions);
     });
   },
@@ -72,13 +70,13 @@ contextBridge.exposeInMainWorld("device", {
     return ipcRenderer.send("device:requestAll");
   },
 
-  onReceiveDevices: (callback: (devices: InputDevice[]) => void) => {
+  onReceiveDevices: (callback: (devices: Device[]) => void) => {
     ipcRenderer.on("device:devices", (_, devices) => {
       callback(devices);
     });
   },
 
-  set: (device: InputDevice) => {
+  set: (device: Device) => {
     return ipcRenderer.send("device:set", device);
   },
 });

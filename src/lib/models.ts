@@ -1,56 +1,65 @@
+// Python Models
+// These have to match the models in models.py
+
+type Action =
+  | "start"
+  | "stop"
+  | "reset"
+  | "audio_level"
+  | "quit"
+  | "model_status"
+  | "model_load"
+  | "get_history"
+  | "delete_transcription"
+  | "set_language"
+  | "get_devices"
+  | "set_device";
+
 export interface ProgressMessage {
-  step: string;
+  step:
+    | Action
+    | "init"
+    | "recording"
+    | "compression"
+    | "transcription"
+    | "formatting"
+    | "committing_to_history";
   status: "start" | "complete" | "error";
   timestamp: number;
 }
 
-export interface Message {
-  type:
-    | "progress"
-    | "transcription"
-    | "formatted_transcription"
-    | "status"
-    | "audio_level"
-    | "model_status"
-    | "transcriptions"
-    | "devices"
-    | "device"
-    | "error";
-  data:
-    | object
-    | ProgressMessage
-    | FormattedTranscripton
-    | Devices
-    | AudioLevel
-    | ModelStatus
-    | HistoryItem;
-}
-
 export interface Command {
-  action:
-    | "start"
-    | "stop"
-    | "reset"
-    | "audio_level"
-    | "status"
-    | "quit"
-    | "model_status"
-    | "model_load"
-    | "model_unload"
-    | "transcriber_load"
-    | "transcriber_unload"
-    | "formatter_load"
-    | "formatter_unload"
-    | "get_transcriptions"
-    | "delete_transcription"
-    | "set_language"
-    | "get_devices"
-    | "set_device"
-    | "debug";
+  action: Action;
   data?: object;
 }
 
+export interface Message {
+  type:
+    | "audio_level"
+    | "progress"
+    | "raw_transcription"
+    | "formatted_transcription"
+    | "exception"
+    | "model_status"
+    | "history"
+    | "error"
+    | "devices";
+  data:
+    | ProgressMessage
+    | RawTranscription
+    | FormattedTranscripton
+    | AudioLevel
+    | ExceptionMessage
+    | ModelStatus
+    | History
+    | Devices
+    | Error;
+}
+
 // TODO: Fix snake case
+export interface RawTranscription {
+  raw_transcription: string;
+}
 
 export interface FormattedTranscripton {
   formatted_transcription: string;
@@ -60,9 +69,14 @@ export interface AudioLevel {
   audio_level: number;
 }
 
+export interface ExceptionMessage {
+  exception: string;
+  timestamp: number;
+}
+
 export interface ModelStatus {
-  transcriber_status: "offline" | "loading" | "online";
-  formatter_status: "offline" | "loading" | "online";
+  transcriber_status: "offline" | "online";
+  formatter_status: "offline" | "online";
 }
 
 export interface HistoryItem {
@@ -72,18 +86,19 @@ export interface HistoryItem {
   created_at: string;
 }
 
-export interface Transcriptions {
+export interface History {
   transcriptions: HistoryItem[];
 }
 
-export type Page = "Settings" | "History" | "Credits";
-
-export interface InputDevice {
+export interface Device {
   index: number;
   name: string;
   default_samplerate: number;
 }
 
 export interface Devices {
-  devices: InputDevice[];
+  devices: Device[];
 }
+
+// Frontend-only models
+export type Page = "Settings" | "History" | "Credits";

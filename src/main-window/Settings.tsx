@@ -8,7 +8,7 @@ import {
 } from "../components/ui/select";
 import { Button } from "../components/ui/button";
 import { cn } from "../lib/utils";
-import { InputDevice } from "../lib/models";
+import { Device } from "../lib/models";
 
 const languages = [
   { code: "auto", name: "Auto" },
@@ -27,8 +27,8 @@ const Settings = () => {
 
   const [startShortcut, setStartShortcut] = useState("");
   const [language, setLanguage] = useState("Auto");
-  const [inputDevice, setInputDevice] = useState<InputDevice | null>(null);
-  const [devices, setDevices] = useState<InputDevice[]>([]);
+  const [inputDevice, setInputDevice] = useState<Device | null>(null);
+  const [devices, setDevices] = useState<Device[]>([]);
 
   useEffect(() => {
     window.settings.getAll().then((settings) => {
@@ -38,7 +38,7 @@ const Settings = () => {
     });
   }, []);
 
-  window.device.onReceiveDevices((devices: InputDevice[]) => {
+  window.device.onReceiveDevices((devices: Device[]) => {
     console.log("Received Devices", devices);
     setDevices(devices);
     if (!inputDevice) {

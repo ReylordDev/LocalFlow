@@ -1,3 +1,4 @@
+from typing import Literal
 from groq import Groq
 from loguru import logger
 from faster_whisper import WhisperModel
@@ -76,7 +77,7 @@ class LocalTranscriber(Transcriber):
     def __init__(self, model_size="large-v3", language: str | None = None):
         self.model = None
         self.model_size = model_size
-        self.status = "offline"
+        self.status: Literal["offline", "online"] = "offline"
         self.language = language
         logger.info(f"Using Whisper Model: {model_size}")
         super().__init__()
