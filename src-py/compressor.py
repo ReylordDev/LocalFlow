@@ -4,24 +4,27 @@ from loguru import logger
 
 
 class Compressor:
-    def __init__(self, input_dir):
-        self.input_dir = input_dir
+    PATH = f"{os.environ.get('USER_DATA_PATH')}/temp"
+
+    def __init__(self):
+        pass
 
     def compress(self):
-        for file_name in os.listdir(self.input_dir):
-            logger.debug(f"Processing {file_name}")
-            if not file_name.endswith(".wav"):
-                continue
+        file_name = f"{self.PATH}/recording.wav"
+        logger.debug(f"Processing {file_name}")
 
-            output_name = os.path.join(
-                self.input_dir, file_name.replace(".wav", ".flac")
-            )
+        output_name = file_name.replace(".wav", ".flac")
 
-            ffmpeg = (
-                FFmpeg()
-                .input(os.path.join(self.input_dir, file_name))
-                .output(output_name, ar=16000, ac=1, map="0:a")
-                .option("v", "error")
-            )
-            ffmpeg.execute()
-            logger.info(f"Compressed {file_name} to {output_name}")
+        ffmpeg = (
+            FFmpeg()
+            .input(file_name)
+            .output(output_name, ar=16000, ac=1, map="0:a")
+            .option("v", "error")
+        )
+        ffmpeg.execute()
+        logger.info(f"Compressed {file_name} to {output_name}")
+
+    def cleanup(self):
+        os.remove(f"{self.PATH}/recording.wav")
+        os.remove(f"{self.PATH}/recording.flac")
+        logger.debug("Removed recording files")

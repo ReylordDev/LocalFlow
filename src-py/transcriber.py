@@ -17,29 +17,6 @@ class Transcriber:
     def transcribe_audio(self, file_name: str, language: str | None = None):
         raise NotImplementedError
 
-    def transcribe_files(self, input_dir):
-        # I don't remember why we are doing this for multiple files
-        file_names = os.listdir(input_dir)
-        file_names = [
-            file_name for file_name in file_names if file_name.endswith(".flac")
-        ]
-        file_names.sort(key=lambda x: int(x.split(".")[0]))
-        complete_transcription: list[str] = []
-        for file_name in file_names:
-            transcription = self.transcribe_audio(
-                os.path.join(input_dir, file_name), language=self.language
-            )
-            complete_transcription.append(transcription)
-        transcription = " ".join(complete_transcription)
-        # Testing encoding
-        with open(os.path.join(input_dir, "transcription.txt"), "w") as file:
-            file.write(transcription)
-            file.write("\n" + transcription.encode("utf-8").hex())
-            file.write("\n" + transcription.encode("utf-8").decode("utf-8"))
-            file.write("\n" + transcription.encode("cp1252").hex())
-            file.write("\n" + transcription.encode("cp1252").decode("cp1252"))
-        return transcription
-
     def get_language(self):
         return self.language
 
@@ -100,20 +77,23 @@ class LocalTranscriber(Transcriber):
         # logger.info(f"Whisper Model status: {self.status}")
         return self.status
 
-    def transcribe_audio(self, file_name: str, language: str | None = None):
-        if language == "auto":
-            language = None
+    def transcribe_audio(
+        self,
+        file_name: str,
+    ):
+        if self.language == "auto":
+            self.language = None
         if not self.model:
             raise ModelNotLoadedException()
         with open(file_name, "rb") as file:
             logger.info(
-                f"Transcribing {file_name} using Local Whisper Model, language: {language}"
+                f"Transcribing {file_name} using Local Whisper Model, language: {self.language}"
             )
             segments, info = self.model.transcribe(
                 file,
                 beam_size=5,
                 temperature=0,
-                language=language,
+                language=self.language,
                 vad_filter=True,
             )
             logger.debug(

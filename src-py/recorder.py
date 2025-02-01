@@ -38,21 +38,18 @@ class Stack:
 
 class AudioRecorder:
     MAX_DURATION = 250
+    PATH = f"{os.environ.get('USER_DATA_PATH')}/temp"
 
     def __init__(self):
         self.recording = False
         self.audio_data = []
         self.devices = sd.query_devices()
         self.device = Device(**self.devices[sd.default.device[0]])  # type: ignore
-        self.sample_rate = self.device.default_samplerate
         self.record_thread: Optional[Thread] = None
         self.stream: Optional[sd.InputStream] = None
         self.current_audio_level: float = 0
         self.audio_levels = Stack(max_length=20)
-        self.id = int(time.time())
-        self.output_path = f"recorder-output/{self.id}"
-        os.makedirs(self.output_path, exist_ok=True)
-        self.file_id = 0
+        os.makedirs(self.PATH, exist_ok=True)
 
     def start(self):
         if self.recording:
@@ -82,7 +79,7 @@ class AudioRecorder:
         self.stream = sd.InputStream(
             callback=audio_callback,
             channels=1,
-            samplerate=self.sample_rate,
+            samplerate=self.device.default_samplerate,
             device=self.device.index,
         )
         with self.stream:
@@ -111,10 +108,9 @@ class AudioRecorder:
             return
 
         audio_data = np.concatenate(self.audio_data, axis=0)
-        file_path = f"{self.output_path}/{self.file_id}.wav"
-        wavfile.write(file_path, int(self.sample_rate), audio_data)
+        file_path = f"{self.PATH}/recording.wav"
+        wavfile.write(file_path, int(self.device.default_samplerate), audio_data)
         logger.info(f"Audio saved to {file_path}.")
-        self.file_id += 1
         self.audio_data = []
 
     def get_audio_level(self):
@@ -124,10 +120,7 @@ class AudioRecorder:
     def cleanup(self):
         self.audio_levels.clear()
         self.audio_data = []
-
-        for file in os.listdir(self.output_path):
-            os.remove(os.path.join(self.output_path, file))
-        os.rmdir(self.output_path)
+        os.remove(f"{self.PATH}/recording.wav")
 
     def get_devices(self):
         devices = sd.query_devices()
@@ -148,7 +141,6 @@ class AudioRecorder:
     def set_device(self, index):
         devices = self.get_devices()
         self.device = devices[index]
-        self.sample_rate = self.device.default_samplerate
         logger.info(f"Using device: {self.device.name}")
         return self.device
 

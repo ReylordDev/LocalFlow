@@ -1,4 +1,3 @@
-import os
 import sys
 from pydantic import ValidationError
 from recorder import AudioRecorder
@@ -16,7 +15,6 @@ from models import (
     FormattedTranscription,
     History,
     ModelNotLoadedException,
-    ActionType,
     ModelStatus,
     RawTranscription,
 )
@@ -51,12 +49,12 @@ class Controller:
             self.recorder.stop()
         print_progress("recording", "complete")
         print_progress("compression", "start")
-        self.compressor = Compressor(f"recorder-output/{self.recorder.id}")
+        self.compressor = Compressor()
         self.compressor.compress()
         print_progress("compression", "complete")
         print_progress("transcription", "start")
-        transcription = self.transcriber.transcribe_files(
-            f"recorder-output/{self.recorder.id}"
+        transcription = self.transcriber.transcribe_audio(
+            f"{self.compressor.PATH}/recording.flac"
         )
         print_progress("transcription", "complete")
         print_message(
@@ -79,8 +77,7 @@ class Controller:
         print_progress("committing_to_history", "start")
         commit_transcription_to_db(self.db_con, transcription, formatted_transcription)
         print_progress("committing_to_history", "complete")
-        if bool(os.environ.get("DEVELOPMENT", False)):
-            self.recorder.cleanup()
+        self.compressor.cleanup()
 
     # TODO: Move each command into their own functions
     def handle_command(self, command: Command):
@@ -170,22 +167,15 @@ def main():
     while True:
         message = input()
         try:
-            if bool(os.environ.get("DEVELOPMENT", False)):
-                data = Command.model_validate_json(message)
-            else:
-                if message in ActionType.__args__:
-                    action: ActionType = message  # type: ignore
-                    data = Command(action=action)
-                else:
-                    logger.error(f"Invalid command: {message}")
-                    print_message("error", Error(error=f"Invalid command: {message}"))
-
+            data = Command.model_validate_json(message)
             controller.handle_command(data)
         except ValidationError as e:
-            print(e)
+            logger.error(f"Invalid data: {e}")
+            print_message("error", Error(error=f"Invalid data: {e}"))
             sys.stdout.flush()
         except ModelNotLoadedException as e:
-            print(e)
+            logger.error(f"Model not loaded: {e}")
+            print_message("error", Error(error=f"Model not loaded: {e}"))
             sys.stdout.flush()
 
 

@@ -182,43 +182,9 @@ class LocalFormatter(Formatter):
         if "improved transcription:" in result:
             result = result.split("improved transcription:")[1].strip().strip('"')
             logger.info("Removed 'improved transcription:'")
-        return result
-
-
-class GroqFormatter(Formatter):
-    MODEL = "llama-3.1-8b-instant"
-
-    def __init__(self):
-        load_dotenv()
-
-        GROQ_API_KEY = os.getenv("GROQ_API_KEY")
-        assert GROQ_API_KEY, "GROQ_API_KEY not found in .env"
-
-        self.client = Groq(api_key=GROQ_API_KEY)
-        super().__init__()
-
-    def improve_transcription(self, raw_transcription: str):
-        response = self.client.chat.completions.create(
-            model=self.MODEL,
-            messages=[
-                {"role": "system", "content": self.generate_system_prompt()},
-                {
-                    "role": "user",
-                    "content": f"Please improve the following transcription:\n\n{raw_transcription}",
-                },
-            ],
-        )
-        result = response.choices[0].message.content
-        logger.info(result)
-        if response.usage:
-            prompt_tokens = response.usage.prompt_tokens
-            response_tokens = response.usage.completion_tokens
-            total_tokens = response.usage.total_tokens
-            logger.info(
-                f"Tokens: Prompt: {prompt_tokens}, Response: {response_tokens}, Total: {total_tokens}"
-            )
-            total_duration = response.usage.total_time
-            logger.info(f"Total duration: {total_duration:.2f} seconds")
+        if "refined transcription:" in result:
+            result = result.split("refined transcription:")[1].strip().strip('"')
+            logger.info("Removed 'refined transcription:'")
         return result
 
 
