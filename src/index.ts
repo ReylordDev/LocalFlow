@@ -4,7 +4,7 @@ import { SettingsService } from "./main-process/services/settings-service";
 import { WindowManager } from "./main-process/windows/window-manager";
 import { TrayManager } from "./main-process/windows/tray-manager";
 import { registerIpcHandlers } from "./main-process/ipc";
-import { AppConfig } from "./main-process/utils/config";
+import { AppConfig, consoleLog } from "./main-process/utils/config";
 import {
   HistoryItem,
   Device,
@@ -46,10 +46,12 @@ app.whenReady().then(async () => {
   });
 
   pythonService.on(PYTHON_SERVICE_EVENTS.ERROR, (error: string) => {
+    consoleLog(error);
     new Notification({
-      title: "Error",
+      title: "Critical Error",
       body: error,
     }).show();
+    app.quit();
   });
 
   pythonService.on(PYTHON_SERVICE_EVENTS.RECORDING_START, () => {

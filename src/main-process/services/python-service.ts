@@ -12,6 +12,7 @@ import {
   History,
   AppSettings,
   PYTHON_SERVICE_EVENTS,
+  Error,
 } from "../../lib/models";
 import path from "path";
 import { SettingsService } from "./settings-service";
@@ -105,6 +106,10 @@ export class PythonService extends EventEmitter {
         break;
       case "error":
         consoleLog("Error:", message.data);
+        this.emit(
+          PYTHON_SERVICE_EVENTS.ERROR,
+          (message.data as unknown as Error).error
+        );
         break;
       case "exception":
         consoleLog("Exception:", message.data);

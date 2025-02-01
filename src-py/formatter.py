@@ -1,17 +1,16 @@
 import os
 import time
 from typing import Literal, Optional
-from dotenv import load_dotenv
 from httpx import request
 from loguru import logger
 from models import (
     ActiveWindowContext,
     ApplicationContext,
+    OllamaOfflineException,
 )
 
 
 import ollama
-from groq import Groq
 
 LANGUAGES = {
     "en": "English",
@@ -117,20 +116,24 @@ class Formatter:
 class LocalFormatter(Formatter):
     def __init__(self):
         if not self.is_ollama_running():
-            logger.error("Ollama is not running. Starting Ollama...")
-            os.system("ollama serve")
+            logger.error("Ollama is not running.")
+            raise OllamaOfflineException()
         self.MODEL = "llama3.2"
         self.status: Literal["offline", "online"] = "offline"
         logger.info(f"Using model {self.MODEL}")
         super().__init__()
 
     def is_ollama_running(self):
-        response = request(method="GET", url="http://localhost:11434")
-        if response.status_code == 200:
-            logger.info("Ollama is running")
-            return True
-        else:
-            logger.error("Ollama is not running")
+        try:
+            response = request(method="GET", url="http://localhost:11434")
+            if response.status_code == 200:
+                logger.info("Ollama is running")
+                return True
+            else:
+                logger.error("Ollama is not running")
+                return False
+        except Exception as e:
+            logger.error(f"Error checking Ollama status: {e}")
             return False
 
     def load_model(self, keep_alive_minutes="15"):

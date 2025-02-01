@@ -16,6 +16,7 @@ from models import (
     History,
     ModelNotLoadedException,
     ModelStatus,
+    OllamaOfflineException,
     RawTranscription,
 )
 from utils.ipc import print_message, print_progress
@@ -163,7 +164,12 @@ class Controller:
 @logger.catch
 def main():
     initialize_logger()
-    controller = Controller()
+    try:
+        controller = Controller()
+    except OllamaOfflineException as e:
+        logger.error(f"Ollama offline: {e}")
+        print_message("error", Error(error=f"Ollama offline: {e}"))
+        sys.exit(1)
     while True:
         message = input()
         try:

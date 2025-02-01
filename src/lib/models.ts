@@ -74,6 +74,10 @@ export interface ExceptionMessage {
   timestamp: number;
 }
 
+export interface Error {
+  error: string;
+}
+
 export interface ModelStatus {
   transcriber_status: "offline" | "online";
   formatter_status: "offline" | "online";

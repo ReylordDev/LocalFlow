@@ -124,6 +124,12 @@ class ModelNotLoadedException(Exception):
         super().__init__(self.message.model_dump_json())
 
 
+class OllamaOfflineException(Exception):
+    def __init__(self, message="Ollama is not running"):
+        self.message = ExceptionMessage(exception=message, timestamp=time.time())
+        super().__init__(self.message.model_dump_json())
+
+
 class ApplicationContext(BaseModel):
     name: str
     title: str
