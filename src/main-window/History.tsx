@@ -111,7 +111,10 @@ const History = () => {
                 <TableCell>
                   <button
                     className="text-red-500 hover:text-red-700"
-                    onClick={() => handleDelete(item.id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDelete(item.id);
+                    }}
                   >
                     <Trash2 />
                   </button>
