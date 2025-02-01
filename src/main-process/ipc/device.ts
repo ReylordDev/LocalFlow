@@ -1,15 +1,15 @@
-import { Device } from "../../lib/models";
+import { CHANNELS, Device } from "../../lib/models";
 import { PythonService } from "../services/python-service";
 import { ipcMain } from "electron";
 
 export function registerDeviceHandlers(pythonService: PythonService) {
-  ipcMain.on("device:requestAll", async () => {
+  ipcMain.on(CHANNELS.DEVICE.DEVICES_REQUEST, async () => {
     pythonService.sendCommand({
       action: "get_devices",
     });
   });
 
-  ipcMain.on("device:set", async (_, device: Device) => {
+  ipcMain.on(CHANNELS.DEVICE.SET, async (_, device: Device) => {
     pythonService.sendCommand({
       action: "set_device",
       data: device,

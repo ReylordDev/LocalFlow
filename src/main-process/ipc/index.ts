@@ -1,16 +1,11 @@
 import { ipcMain } from "electron";
 import { PythonService } from "../services/python-service";
-import { AppSettings, SettingsService } from "../services/settings-service";
+import { SettingsService } from "../services/settings-service";
 import { AppConfig } from "../utils/config";
 import { registerURLHandlers } from "./url";
 import { registerDeviceHandlers } from "./device";
 import { registerSettingsHandlers } from "./settings";
-import {
-  ModelStatus,
-  FormattedTranscripton,
-  Device,
-  HistoryItem,
-} from "../../lib/models";
+import { CHANNELS } from "../../lib/models";
 
 export function registerIpcHandlers(
   settingsService: SettingsService,
@@ -22,70 +17,32 @@ export function registerIpcHandlers(
   registerDeviceHandlers(pythonService);
 
   // Main recording controls
-  ipcMain.on("controller:toggle-recording", () => {
+  ipcMain.on(CHANNELS.CONTROLLER.TOGGLE_RECORDING, () => {
     pythonService.toggleRecording();
   });
 
-  ipcMain.on("controller:requestAudioLevel", () => {
-    pythonService.sendCommand({
-      action: "audio_level",
-    });
-  });
-
-  ipcMain.on("controller:requestModelStatus", () => {
+  ipcMain.on(CHANNELS.CONTROLLER.MODEL_STATUS_REQUEST, () => {
     pythonService.sendCommand({
       action: "model_status",
     });
   });
 
-  ipcMain.on("controller:getHistory", () => {
+  ipcMain.on(CHANNELS.CONTROLLER.HISTORY_REQUEST, () => {
     pythonService.sendCommand({
       action: "get_history",
     });
   });
 
-  ipcMain.on("controller:deleteTranscription", (_, id: number) => {
+  ipcMain.on(CHANNELS.CONTROLLER.DELETE_TRANSCRIPTION, (_, id: number) => {
     pythonService.sendCommand({
       action: "delete_transcription",
       data: { id },
     });
   });
-}
 
-declare global {
-  interface Window {
-    controller: {
-      toggleRecording: () => void;
-      requestModelStatus: () => void;
-      onReceiveModelStatus: (callback: (status: ModelStatus) => void) => void;
-      onReceiveTranscription: (
-        callback: (transcription: FormattedTranscripton) => void
-      ) => void;
-      getHistory: () => void;
-      onReceiveHistory: (
-        callback: (transcriptions: HistoryItem[]) => void
-      ) => void;
-      deleteTranscription: (id: number) => void;
-    };
-    settings: {
-      getAll: () => Promise<AppSettings>;
-      setShortcut: (shortcut: string) => Promise<string>;
-      disableShortcut: () => void;
-      setLanguage: (language: string) => Promise<string>;
-    };
-    url: {
-      open: (url: string) => void;
-    };
-    mini: {
-      onRecordingStart: (callback: () => void) => void;
-      onRecordingStop: (callback: () => void) => void;
-      requestAudioLevel: () => void;
-      onReceiveAudioLevel: (callback: (audioLevel: number) => void) => void;
-    };
-    device: {
-      requestAll: () => void;
-      onReceiveDevices: (callback: (devices: Device[]) => void) => void;
-      set: (device: Device) => void;
-    };
-  }
+  ipcMain.on(CHANNELS.MINI.AUDIO_LEVEL_REQUEST, () => {
+    pythonService.sendCommand({
+      action: "audio_level",
+    });
+  });
 }

@@ -1,12 +1,7 @@
 // See the Electron documentation for details on how to use preload scripts:
 // https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
 
-import {
-  FormattedTranscripton,
-  HistoryItem,
-  Device,
-  ModelStatus,
-} from "../lib/models";
+import { HistoryItem, Device, ModelStatus, CHANNELS } from "../lib/models";
 import { contextBridge, ipcRenderer } from "electron";
 
 // Expose protected methods that allow the renderer process to use
@@ -14,69 +9,65 @@ import { contextBridge, ipcRenderer } from "electron";
 
 contextBridge.exposeInMainWorld("controller", {
   toggleRecording: () => {
-    ipcRenderer.send("controller:toggle-recording");
+    ipcRenderer.send(CHANNELS.CONTROLLER.TOGGLE_RECORDING);
   },
   requestModelStatus: async () => {
-    return ipcRenderer.send("controller:requestModelStatus");
+    return ipcRenderer.send(CHANNELS.CONTROLLER.MODEL_STATUS_REQUEST);
   },
   onReceiveModelStatus: (callback: (status: ModelStatus) => void) => {
-    ipcRenderer.on("model-status", (_, status) => {
+    ipcRenderer.on(CHANNELS.CONTROLLER.MODEL_STATUS_RESPONSE, (_, status) => {
       callback(status);
     });
   },
   getHistory: async () => {
-    return ipcRenderer.send("controller:getHistory");
+    return ipcRenderer.send(CHANNELS.CONTROLLER.HISTORY_REQUEST);
   },
   onReceiveHistory: (callback: (transcriptions: HistoryItem[]) => void) => {
-    ipcRenderer.on("history", (_, transcriptions) => {
-      callback(transcriptions);
-    });
-  },
-  onReceiveTranscription: (
-    callback: (transcription: FormattedTranscripton) => void
-  ) => {
-    ipcRenderer.on("controller:transcription", (_, transcription) => {
-      callback(transcription);
-    });
+    ipcRenderer.on(
+      CHANNELS.CONTROLLER.HISTORY_RESPONSE,
+      (_, transcriptions) => {
+        callback(transcriptions);
+      }
+    );
   },
   deleteTranscription: (id: number) => {
-    ipcRenderer.send("controller:deleteTranscription", id);
+    ipcRenderer.send(CHANNELS.CONTROLLER.DELETE_TRANSCRIPTION, id);
   },
 });
 
 contextBridge.exposeInMainWorld("settings", {
   getAll: async () => {
-    return ipcRenderer.invoke("settings:get-all");
+    return ipcRenderer.invoke(CHANNELS.SETTINGS.GET);
   },
   setShortcut: async (shortcut: string) => {
-    return ipcRenderer.invoke("settings:set-shortcut", shortcut);
+    return ipcRenderer.invoke(CHANNELS.SETTINGS.SET_SHORTCUT, shortcut);
   },
   disableShortcut: async () => {
-    return ipcRenderer.send("settings:disable-shortcut");
+    return ipcRenderer.send(CHANNELS.SETTINGS.DISABLE_SHORTCUT);
   },
   setLanguage: async (language: string) => {
-    return ipcRenderer.invoke("settings:set-language", language);
+    return ipcRenderer.invoke(CHANNELS.SETTINGS.SET_LANGUAGE, language);
   },
 });
 
 contextBridge.exposeInMainWorld("url", {
   open: (url: string) => {
-    ipcRenderer.send("url:open", url);
+    ipcRenderer.send(CHANNELS.URL.OPEN, url);
   },
 });
 
 contextBridge.exposeInMainWorld("device", {
   requestAll: () => {
-    return ipcRenderer.send("device:requestAll");
+    return ipcRenderer.send(CHANNELS.DEVICE.DEVICES_REQUEST);
   },
 
   onReceiveDevices: (callback: (devices: Device[]) => void) => {
-    ipcRenderer.on("device:devices", (_, devices) => {
+    ipcRenderer.on(CHANNELS.DEVICE.DEVICES_RESPONSE, (_, devices) => {
       callback(devices);
     });
   },
 
   set: (device: Device) => {
-    return ipcRenderer.send("device:set", device);
+    return ipcRenderer.send(CHANNELS.DEVICE.SET, device);
   },
 });

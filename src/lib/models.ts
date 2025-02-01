@@ -102,3 +102,91 @@ export interface Devices {
 
 // Frontend-only models
 export type Page = "Settings" | "History" | "Credits";
+
+export interface AppSettings {
+  startShortcut: string;
+  language: string;
+}
+
+declare global {
+  interface Window {
+    controller: {
+      toggleRecording: () => void;
+      requestModelStatus: () => void;
+      onReceiveModelStatus: (callback: (status: ModelStatus) => void) => void;
+      getHistory: () => void;
+      onReceiveHistory: (
+        callback: (transcriptions: HistoryItem[]) => void
+      ) => void;
+      deleteTranscription: (id: number) => void;
+    };
+    settings: {
+      getAll: () => Promise<AppSettings>;
+      setShortcut: (shortcut: string) => Promise<string>;
+      disableShortcut: () => void;
+      setLanguage: (language: string) => Promise<string>;
+    };
+    url: {
+      open: (url: string) => void;
+    };
+    mini: {
+      onRecordingStart: (callback: () => void) => void;
+      onRecordingStop: (callback: () => void) => void;
+      requestAudioLevel: () => void;
+      onReceiveAudioLevel: (callback: (audioLevel: number) => void) => void;
+    };
+    device: {
+      requestAll: () => void;
+      onReceiveDevices: (callback: (devices: Device[]) => void) => void;
+      set: (device: Device) => void;
+    };
+  }
+}
+
+export const CHANNELS = {
+  CONTROLLER: {
+    TOGGLE_RECORDING: "controller:toggle-recording",
+    MODEL_STATUS_REQUEST: "controller:requestModelStatus",
+    MODEL_STATUS_RESPONSE: "controller:model-status",
+    HISTORY_REQUEST: "controller:getHistory",
+    HISTORY_RESPONSE: "controller:history",
+    DELETE_TRANSCRIPTION: "controller:deleteTranscription",
+  },
+  SETTINGS: {
+    GET: "settings:get-all",
+    SET_SHORTCUT: "settings:set-shortcut",
+    DISABLE_SHORTCUT: "settings:disable-shortcut",
+    SET_LANGUAGE: "settings:set-language",
+  },
+  URL: {
+    OPEN: "url:open",
+  },
+  MINI: {
+    RECORDING_START: "mini:recording-start",
+    RECORDING_STOP: "mini:recording-stop",
+    AUDIO_LEVEL_REQUEST: "mini:requestAudioLevel",
+    AUDIO_LEVEL_RESPONSE: "mini:audio-level",
+  },
+  DEVICE: {
+    DEVICES_REQUEST: "device:requestAll",
+    DEVICES_RESPONSE: "device:receiveDevices",
+    SET: "device:set",
+  },
+};
+
+export const PYTHON_SERVICE_EVENTS = {
+  MODELS_READY: "models-ready",
+  ERROR: "error",
+  RECORDING_START: "recording-start",
+  RECORDING_STOP: "recording-stop",
+  TRANSCRIPTION: "transcription",
+  AUDIO_LEVEL: "audio-level",
+  MODEL_STATUS: "model-status",
+  HISTORY: "history",
+  DEVICES: "devices",
+};
+
+export const SETTINGS_SERVICE_EVENTS = {
+  SETTINGS_CHANGED: "settings-changed",
+  SHORTCUT_PRESSED: "start-shortcut-pressed",
+};

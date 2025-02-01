@@ -3,18 +3,12 @@ import path from "path";
 import { EventEmitter } from "events";
 import { AppConfig } from "../utils/config";
 import { globalShortcut } from "electron";
-
-export interface AppSettings {
-  startShortcut: string;
-  language: string;
-}
+import { AppSettings, SETTINGS_SERVICE_EVENTS } from "../../lib/models";
 
 export const DEFAULT_SETTINGS: AppSettings = {
   startShortcut: "Ctrl+Shift+O",
   language: "",
 };
-
-const SHORTCUT_EVENT = "start-shortcut-pressed";
 
 export class SettingsService extends EventEmitter {
   private settings: AppSettings;
@@ -41,7 +35,7 @@ export class SettingsService extends EventEmitter {
 
   private persistSettings() {
     fs.writeFileSync(this.settingsPath, JSON.stringify(this.settings));
-    this.emit("settings-changed", this.settings);
+    this.emit(SETTINGS_SERVICE_EVENTS.SETTINGS_CHANGED, this.settings);
   }
 
   get currentSettings(): AppSettings {
@@ -51,7 +45,7 @@ export class SettingsService extends EventEmitter {
   setStartShortcut(shortcut: string) {
     globalShortcut.unregister(this.settings.startShortcut);
     globalShortcut.register(shortcut, () => {
-      this.emit(SHORTCUT_EVENT);
+      this.emit(SETTINGS_SERVICE_EVENTS.SHORTCUT_PRESSED);
     });
     this.settings.startShortcut = shortcut;
     this.persistSettings();
@@ -63,7 +57,7 @@ export class SettingsService extends EventEmitter {
 
   registerShortcuts() {
     globalShortcut.register(this.settings.startShortcut, () => {
-      this.emit(SHORTCUT_EVENT);
+      this.emit(SETTINGS_SERVICE_EVENTS.SHORTCUT_PRESSED);
     });
   }
 

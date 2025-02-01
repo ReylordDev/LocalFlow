@@ -101,6 +101,8 @@ class LocalTranscriber(Transcriber):
         return self.status
 
     def transcribe_audio(self, file_name: str, language: str | None = None):
+        if language == "auto":
+            language = None
         if not self.model:
             raise ModelNotLoadedException()
         with open(file_name, "rb") as file:

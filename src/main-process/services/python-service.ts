@@ -10,9 +10,11 @@ import {
   ModelStatus,
   ProgressMessage,
   History,
+  AppSettings,
+  PYTHON_SERVICE_EVENTS,
 } from "../../lib/models";
 import path from "path";
-import { AppSettings, SettingsService } from "./settings-service";
+import { SettingsService } from "./settings-service";
 
 export class PythonService extends EventEmitter {
   private shell: PythonShell;
@@ -73,21 +75,30 @@ export class PythonService extends EventEmitter {
         break;
       case "formatted_transcription":
         this.emit(
-          "transcription",
+          PYTHON_SERVICE_EVENTS.TRANSCRIPTION,
           (message.data as FormattedTranscripton).formatted_transcription
         );
         break;
       case "audio_level":
-        this.emit("audio_level", (message.data as AudioLevel).audio_level);
+        this.emit(
+          PYTHON_SERVICE_EVENTS.AUDIO_LEVEL,
+          (message.data as AudioLevel).audio_level
+        );
         break;
       case "model_status":
         this.handleModelStatus(message);
         break;
       case "history":
-        this.emit("history", (message.data as History).transcriptions);
+        this.emit(
+          PYTHON_SERVICE_EVENTS.HISTORY,
+          (message.data as History).transcriptions
+        );
         break;
       case "devices":
-        this.emit("devices", (message.data as Devices).devices);
+        this.emit(
+          PYTHON_SERVICE_EVENTS.DEVICES,
+          (message.data as Devices).devices
+        );
         break;
       case "raw_transcription":
         consoleLog("Raw Transcription:", message.data);
@@ -105,7 +116,7 @@ export class PythonService extends EventEmitter {
 
   private handleProgress(progress: ProgressMessage) {
     if (progress.step === "init" && progress.status === "complete") {
-      this.emit("models-ready");
+      this.emit(PYTHON_SERVICE_EVENTS.MODELS_READY);
     }
     consoleLog(`Progress: ${progress.step} - ${progress.status}`);
   }
@@ -117,7 +128,7 @@ export class PythonService extends EventEmitter {
       this.status.transcriber_status !== newStatus.transcriber_status
     ) {
       this.status = newStatus;
-      this.emit("model-status", this.status);
+      this.emit(PYTHON_SERVICE_EVENTS.MODEL_STATUS, this.status);
     }
   }
 
@@ -126,16 +137,16 @@ export class PythonService extends EventEmitter {
       this.status.transcriber_status !== "online" ||
       this.status.formatter_status !== "online"
     ) {
-      this.emit("error", "Models are not ready");
+      this.emit(PYTHON_SERVICE_EVENTS.ERROR, "Models are not ready");
       return;
     }
     if (!this.activeRecording) {
       this.sendCommand({ action: "reset" } as Command);
       this.sendCommand({ action: "start" } as Command);
-      this.emit("recording-start");
+      this.emit(PYTHON_SERVICE_EVENTS.RECORDING_START);
       this.activeRecording = true;
     } else {
-      this.emit("recording-stop");
+      this.emit(PYTHON_SERVICE_EVENTS.RECORDING_STOP);
       this.sendCommand({ action: "stop" } as Command);
       this.activeRecording = false;
     }

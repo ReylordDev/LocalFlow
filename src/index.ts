@@ -5,7 +5,14 @@ import { WindowManager } from "./main-process/windows/window-manager";
 import { TrayManager } from "./main-process/windows/tray-manager";
 import { registerIpcHandlers } from "./main-process/ipc";
 import { AppConfig } from "./main-process/utils/config";
-import { HistoryItem, Device, ModelStatus } from "./lib/models";
+import {
+  HistoryItem,
+  Device,
+  ModelStatus,
+  CHANNELS,
+  PYTHON_SERVICE_EVENTS,
+  SETTINGS_SERVICE_EVENTS,
+} from "./lib/models";
 
 // Handle setup events
 if (require("electron-squirrel-startup")) app.quit();
@@ -28,56 +35,77 @@ app.whenReady().then(async () => {
   windowManager.createMiniWindow();
   settingsService.registerShortcuts();
 
-  settingsService.on("start-shortcut-pressed", () => {
+  settingsService.on(SETTINGS_SERVICE_EVENTS.SHORTCUT_PRESSED, () => {
     pythonService.toggleRecording();
   });
 
-  pythonService.on("models-ready", () => {
+  pythonService.on(PYTHON_SERVICE_EVENTS.MODELS_READY, () => {
     windowManager.hideStartupWindow();
     windowManager.createMainWindow();
     trayManager.initialize();
   });
 
-  pythonService.on("error", (error: string) => {
+  pythonService.on(PYTHON_SERVICE_EVENTS.ERROR, (error: string) => {
     new Notification({
       title: "Error",
       body: error,
     }).show();
   });
 
-  pythonService.on("recording-start", () => {
+  pythonService.on(PYTHON_SERVICE_EVENTS.RECORDING_START, () => {
     windowManager.showMiniWindow();
-    windowManager.sendMiniWindowMessage("mini:recording-start");
+    windowManager.sendMiniWindowMessage(CHANNELS.MINI.RECORDING_START);
   });
 
-  pythonService.on("recording-stop", () => {
+  pythonService.on(PYTHON_SERVICE_EVENTS.RECORDING_STOP, () => {
     windowManager.hideMiniWindow();
-    windowManager.sendMiniWindowMessage("mini:recording-stop");
+    windowManager.sendMiniWindowMessage(CHANNELS.MINI.RECORDING_STOP);
   });
 
-  pythonService.on("transcription", (transcription: string) => {
-    clipboard.writeText(transcription);
-    new Notification({
-      title: "Transcription copied to clipboard",
-      body: transcription,
-    }).show();
+  pythonService.on(
+    PYTHON_SERVICE_EVENTS.TRANSCRIPTION,
+    (transcription: string) => {
+      clipboard.writeText(transcription);
+      new Notification({
+        title: "Transcription copied to clipboard",
+        body: transcription,
+      }).show();
+    }
+  );
+
+  pythonService.on(PYTHON_SERVICE_EVENTS.AUDIO_LEVEL, (level: number) => {
+    windowManager.sendMiniWindowMessage(
+      CHANNELS.MINI.AUDIO_LEVEL_RESPONSE,
+      level
+    );
   });
 
-  pythonService.on("audio-level", (level: number) => {
-    windowManager.sendMiniWindowMessage("mini:audio-level", level);
-  });
+  pythonService.on(
+    PYTHON_SERVICE_EVENTS.MODEL_STATUS,
+    (status: ModelStatus) => {
+      windowManager.sendMainWindowMessage(
+        CHANNELS.CONTROLLER.MODEL_STATUS_RESPONSE,
+        status
+      );
+      trayManager.updateContextMenu();
+    }
+  );
 
-  pythonService.on("model-status", (status: ModelStatus) => {
-    windowManager.sendMainWindowMessage("model-status", status);
-    trayManager.updateContextMenu();
-  });
+  pythonService.on(
+    PYTHON_SERVICE_EVENTS.HISTORY,
+    (transcriptions: HistoryItem[]) => {
+      windowManager.sendMainWindowMessage(
+        CHANNELS.CONTROLLER.HISTORY_RESPONSE,
+        transcriptions
+      );
+    }
+  );
 
-  pythonService.on("history", (transcriptions: HistoryItem[]) => {
-    windowManager.sendMainWindowMessage("history", transcriptions);
-  });
-
-  pythonService.on("devices", (devices: Device[]) => {
-    windowManager.sendMainWindowMessage("device:devices", devices);
+  pythonService.on(PYTHON_SERVICE_EVENTS.DEVICES, (devices: Device[]) => {
+    windowManager.sendMainWindowMessage(
+      CHANNELS.DEVICE.DEVICES_RESPONSE,
+      devices
+    );
   });
 
   registerIpcHandlers(settingsService, config, pythonService);
