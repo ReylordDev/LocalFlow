@@ -82,6 +82,7 @@ class Controller:
 
     # TODO: Move each command into their own functions
     def handle_command(self, command: Command):
+        logger.info(f"Received command: {command}")
         if command.action == "start":
             window_info = self.window_detector.get_active_window()
             if window_info:
@@ -170,7 +171,7 @@ def main():
         print_message("error", Error(error=f"Ollama offline: {e}"))
         sys.exit(1)
     while True:
-        message = input()
+        message = sys.stdin.readline()
         try:
             data = Command.model_validate_json(message)
             controller.handle_command(data)

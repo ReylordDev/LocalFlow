@@ -8,6 +8,7 @@ from typing import Optional
 from loguru import logger
 import os
 from models import Device
+from utils.utils import get_user_data_path
 
 
 class Stack:
@@ -38,7 +39,7 @@ class Stack:
 
 class AudioRecorder:
     MAX_DURATION = 250
-    PATH = f"{os.environ.get('USER_DATA_PATH')}/temp"
+    PATH = f"{get_user_data_path()}/temp"
 
     def __init__(self):
         self.recording = False

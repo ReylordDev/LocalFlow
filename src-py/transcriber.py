@@ -31,7 +31,7 @@ class LocalTranscriber(Transcriber):
         super().__init__()
 
     def load_model(self):
-        self.model = WhisperModel(model_size_or_path=self.model_size)
+        self.model = WhisperModel(model_size_or_path=self.model_size, device="cpu")
         self.status = "online"
         logger.info("Whisper Model loaded into memory")
 

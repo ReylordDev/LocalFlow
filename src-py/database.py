@@ -1,15 +1,12 @@
-import os
 import sqlite3
 from models import HistoryItem
-
+from utils.utils import get_user_data_path
 from loguru import logger
 
 
 def initialize_db():
     # Intialize the database that contains a history of the transcriptions
-    conn = sqlite3.connect(
-        f"{os.environ.get('USER_DATA_PATH', 'data')}/transcriptions.db"
-    )
+    conn = sqlite3.connect(f"{get_user_data_path()}/transcriptions.db")
     c = conn.cursor()
 
     c.execute(

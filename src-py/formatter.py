@@ -89,9 +89,25 @@ class Formatter:
         - Ensure that the output is in {LANGUAGES[self.language] if self.language else "English"}.
         {context_rules}
         """
-        # Todo: add examples
 
-        prompt = f"{identity_purpose}\n\n{steps}\n\n{output_instructions}\n\n# INPUT:"
+        example_1 = """INPUT:
+I watched the Ted Lasso scene yesterday, the darts scene, in the original English synchronization. And I like the English synchronization much more. However, one important thing with that scene is the lesson or the quote that Ted Lasso mentions, which is, be curious, not judgmental. And I think that's actually very wise. And I would like to incorporate it more in my own life. You know, be curious, not judgmental.
+
+OUTPUT:
+I watched the Ted Lasso darts scene yesterday in the original English synchronization and I like it much more. However, one important thing in that scene is the quote that Ted Lasso mentions, which is, "Be curious, not judgmental." I think that's actually very wise and I would like to incorporate it more into my own life.
+"""
+
+        example_2 = """INPUT:
+ Today, I think the major progress I can make is number one. I can print out the form for my graduation. I can sign it. And second, I can continue working on the local flow project. Actually, no, scratch that. I won't work on that today. However, what I can do is I can try it out as much as possible, actually get some usage statistics in. And third, I can actually get started on the response embedding clustering project.
+
+OUTPUT:
+Today I think I can make major progress in the following:
+1. I can print out graduation form and sign it.
+2. I can try out the local flow project as much as possible and get some usage statistics in.
+3. I can get started on the response embedding clustering project.
+"""
+
+        prompt = f"{identity_purpose}\n\n{steps}\n\n{output_instructions}\n\n{example_1}\n{example_2}# INPUT:"
         logger.info(prompt)
         return prompt
 
@@ -165,12 +181,12 @@ class LocalFormatter(Formatter):
         )
         logger.info(f"Total duration: {total_duration:.2f} seconds")
 
-        if "improved transcription:" in result:
-            result = result.split("improved transcription:")[1].strip().strip('"')
-            logger.info("Removed 'improved transcription:'")
-        if "refined transcription:" in result:
-            result = result.split("refined transcription:")[1].strip().strip('"')
-            logger.info("Removed 'refined transcription:'")
+        # if "improved transcription:" in result:
+        #     result = result.split("improved transcription:")[1].strip().strip('"')
+        #     logger.info("Removed 'improved transcription:'")
+        # if "refined transcription:" in result:
+        #     result = result.split("refined transcription:")[1].strip().strip('"')
+        #     logger.info("Removed 'refined transcription:'")
         return result
 
 
@@ -189,10 +205,6 @@ if __name__ == "__main__":
     test_transcription_2 = """ Let's give a little bit of a review of the day, I think that would be a good idea. What were the important parts of the day? I think the number one highlight has to be the coding. I made great progress, achieved great things on the local flow project and I'm very happy about that. Then, secondary, we need to talk about the stream that I watched. The stream, it was a great stream. I was positively surprised to even see it in the first place and the vibes were immaculate. It made me much more positive about their future compared to before. I had a bit of a gloomy perspective on it, but no more. And then finally, I think we should talk about the food part. I ate a lot today. Lots of protein, lots of carbs, but in general, a lot, even though it was a rest day. But remember, I am supposed to eat a lot on rest days as well, as part of the diet. As part of the measures to grow muscle."""
     result_2 = formatter.improve_transcription(test_transcription_2)
 
-    test_transcription_3 = """ Alright, so today I started the day quite early at 8am, and, oh actually I slept in a little bit. I woke up a quarter to nine, I think. Regardless, the timing does not really matter. I spent a lot of time coding, especially before breakfast, but also a little bit after breakfast. And I implemented a bunch of features for the local flow project. I'm very happy with the progress and the results. Then later I noticed that there was an AC stream with Mr. Arthur quite late yesterday. It was during the night for me and for Mr. Arthur. Honestly, I watched the entire stream, and I want to say it's kind of... shifted my view on things, you know. I was a bit down. I thought, you know, things were looking gloomy, perhaps I could say. But this stream was great. You know, it was soft farming. It was nice. It felt natural. So, you know what? We're still back."""
-
-    result_3 = formatter.improve_transcription(test_transcription_3)
-
     print(test_transcription)
     print()
     print(result)
@@ -203,6 +215,3 @@ if __name__ == "__main__":
     print(result_2)
     print()
     print()
-    print(test_transcription_3)
-    print()
-    print(result_3)

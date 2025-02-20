@@ -1,10 +1,11 @@
 from ffmpeg import FFmpeg
 import os
 from loguru import logger
+from utils.utils import get_user_data_path
 
 
 class Compressor:
-    PATH = f"{os.environ.get('USER_DATA_PATH')}/temp"
+    PATH = f"{get_user_data_path()}/temp"
 
     def __init__(self):
         pass

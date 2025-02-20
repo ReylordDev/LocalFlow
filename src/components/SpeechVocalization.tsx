@@ -39,20 +39,32 @@ const SpeechVocalization = () => {
     return () => clearInterval(timerInterval);
   }, [recording]);
 
-  window.mini.onReceiveAudioLevel((audioLevel) => {
-    console.log("Audio level", audioLevel);
-    setAudioLevel(audioLevel);
-  });
+  useEffect(() => {
+    const unsubscribe = window.mini.onReceiveAudioLevel((audioLevel) => {
+      console.log("Audio level", audioLevel);
+      setAudioLevel(audioLevel);
+    });
 
-  window.mini.onRecordingStart(() => {
-    console.log("Recording started");
-    setRecording(true);
-  });
+    return () => unsubscribe();
+  }, []);
 
-  window.mini.onRecordingStop(() => {
-    console.log("Recording stopped");
-    setRecording(false);
-  });
+  useEffect(() => {
+    const unsubscribe = window.mini.onRecordingStart(() => {
+      console.log("Recording started");
+      setRecording(true);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    const unsubscribe = window.mini.onRecordingStop(() => {
+      console.log("Recording stopped");
+      setRecording(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   console.log("Audio level", audioLevel);
   console.log("Timer", timer);

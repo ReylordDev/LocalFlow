@@ -117,11 +117,13 @@ declare global {
     controller: {
       toggleRecording: () => void;
       requestModelStatus: () => void;
-      onReceiveModelStatus: (callback: (status: ModelStatus) => void) => void;
+      onReceiveModelStatus: (
+        callback: (status: ModelStatus) => void
+      ) => () => void;
       getHistory: () => void;
       onReceiveHistory: (
         callback: (transcriptions: HistoryItem[]) => void
-      ) => void;
+      ) => () => void;
       deleteTranscription: (id: number) => void;
     };
     settings: {
@@ -134,14 +136,16 @@ declare global {
       open: (url: string) => void;
     };
     mini: {
-      onRecordingStart: (callback: () => void) => void;
-      onRecordingStop: (callback: () => void) => void;
+      onRecordingStart: (callback: () => void) => () => void;
+      onRecordingStop: (callback: () => void) => () => void;
       requestAudioLevel: () => void;
-      onReceiveAudioLevel: (callback: (audioLevel: number) => void) => void;
+      onReceiveAudioLevel: (
+        callback: (audioLevel: number) => void
+      ) => () => void;
     };
     device: {
       requestAll: () => void;
-      onReceiveDevices: (callback: (devices: Device[]) => void) => void;
+      onReceiveDevices: (callback: (devices: Device[]) => void) => () => void;
       set: (device: Device) => void;
     };
   }
