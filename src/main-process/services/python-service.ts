@@ -123,6 +123,12 @@ export class PythonService extends EventEmitter {
     if (progress.step === "init" && progress.status === "complete") {
       this.emit(PYTHON_SERVICE_EVENTS.MODELS_READY);
     }
+    if (progress.step === "transcription" && progress.status === "start") {
+      this.emit(PYTHON_SERVICE_EVENTS.TRANSCRIPTION_START);
+    } else if (progress.step === "formatting" && progress.status === "start") {
+      this.emit(PYTHON_SERVICE_EVENTS.FORMATTING_START);
+    }
+
     consoleLog(`Progress: ${progress.step} - ${progress.status}`);
   }
 

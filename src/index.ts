@@ -60,13 +60,14 @@ app.whenReady().then(async () => {
   });
 
   pythonService.on(PYTHON_SERVICE_EVENTS.RECORDING_STOP, () => {
-    windowManager.hideMiniWindow();
     windowManager.sendMiniWindowMessage(CHANNELS.MINI.RECORDING_STOP);
   });
 
   pythonService.on(
     PYTHON_SERVICE_EVENTS.TRANSCRIPTION,
     (transcription: string) => {
+      windowManager.sendMiniWindowMessage(CHANNELS.MINI.FORMATTING_FINISH);
+      windowManager.hideMiniWindow();
       clipboard.writeText(transcription);
       new Notification({
         title: "Transcription copied to clipboard",
@@ -108,6 +109,14 @@ app.whenReady().then(async () => {
       CHANNELS.DEVICE.DEVICES_RESPONSE,
       devices
     );
+  });
+
+  pythonService.on(PYTHON_SERVICE_EVENTS.TRANSCRIPTION_START, () => {
+    windowManager.sendMiniWindowMessage(CHANNELS.MINI.TRANSCRIPTION_START);
+  });
+
+  pythonService.on(PYTHON_SERVICE_EVENTS.FORMATTING_START, () => {
+    windowManager.sendMiniWindowMessage(CHANNELS.MINI.FORMATTING_START);
   });
 
   registerIpcHandlers(settingsService, config, pythonService);

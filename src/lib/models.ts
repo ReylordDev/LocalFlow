@@ -142,6 +142,9 @@ declare global {
       onReceiveAudioLevel: (
         callback: (audioLevel: number) => void
       ) => () => void;
+      onTranscriptionStart: (callback: () => void) => () => void;
+      onFormattingStart: (callback: () => void) => () => void;
+      onFormattingFinish: (callback: () => void) => () => void;
     };
     device: {
       requestAll: () => void;
@@ -174,6 +177,9 @@ export const CHANNELS = {
     RECORDING_STOP: "mini:recording-stop",
     AUDIO_LEVEL_REQUEST: "mini:requestAudioLevel",
     AUDIO_LEVEL_RESPONSE: "mini:audio-level",
+    TRANSCRIPTION_START: "mini:transcription-start",
+    FORMATTING_START: "mini:formatting-start",
+    FORMATTING_FINISH: "mini:formatting-finish",
   },
   DEVICE: {
     DEVICES_REQUEST: "device:requestAll",
@@ -187,6 +193,8 @@ export const PYTHON_SERVICE_EVENTS = {
   ERROR: "error",
   RECORDING_START: "recording-start",
   RECORDING_STOP: "recording-stop",
+  TRANSCRIPTION_START: "transcription-start",
+  FORMATTING_START: "formatting-start",
   TRANSCRIPTION: "transcription",
   AUDIO_LEVEL: "audio-level",
   MODEL_STATUS: "model-status",

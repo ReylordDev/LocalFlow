@@ -433,3 +433,7 @@ Usage:
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 }
+
+.animate-spin-slow {
+  animation: spin 2.5s linear infinite;
+}

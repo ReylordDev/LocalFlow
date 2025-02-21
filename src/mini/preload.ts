@@ -38,4 +38,31 @@ contextBridge.exposeInMainWorld("mini", {
       ipcRenderer.off(CHANNELS.MINI.AUDIO_LEVEL_RESPONSE, listener);
     };
   },
+  onTranscriptionStart: (callback) => {
+    const listener = () => {
+      callback();
+    };
+    ipcRenderer.on(CHANNELS.MINI.TRANSCRIPTION_START, listener);
+    return () => {
+      ipcRenderer.off(CHANNELS.MINI.TRANSCRIPTION_START, listener);
+    };
+  },
+  onFormattingStart: (callback) => {
+    const listener = () => {
+      callback();
+    };
+    ipcRenderer.on(CHANNELS.MINI.FORMATTING_START, listener);
+    return () => {
+      ipcRenderer.off(CHANNELS.MINI.FORMATTING_START, listener);
+    };
+  },
+  onFormattingFinish: (callback) => {
+    const listener = () => {
+      callback();
+    };
+    ipcRenderer.on(CHANNELS.MINI.FORMATTING_FINISH, listener);
+    return () => {
+      ipcRenderer.off(CHANNELS.MINI.FORMATTING_FINISH, listener);
+    };
+  },
 } satisfies Window["mini"]);
