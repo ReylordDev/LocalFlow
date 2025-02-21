@@ -39,10 +39,6 @@ class Controller:
         self.window_detector = WindowDetector()
         self.db_con = initialize_db()
 
-        # Load the models for the transcriber and formatter
-        self.transcriber.load_model()
-        self.formatter.load_model()
-
         print_progress("init", "complete")
 
     def handle_stop(self):
@@ -54,9 +50,12 @@ class Controller:
         self.compressor.compress()
         print_progress("compression", "complete")
         print_progress("transcription", "start")
+
+        self.transcriber.load_model()
         transcription = self.transcriber.transcribe_audio(
             f"{self.compressor.PATH}/recording.flac"
         )
+        self.transcriber.unload_model()
         print_progress("transcription", "complete")
         print_message(
             "raw_transcription",
@@ -64,8 +63,11 @@ class Controller:
                 transcription=transcription.encode("utf-8").decode("cp1252")
             ),
         )
+        print_progress("formatting", "start")
+        self.formatter.load_model()
         self.formatter.set_language(self.transcriber.language)
         formatted_transcription = self.formatter.improve_transcription(transcription)
+        self.formatter.unload_model()
         print_progress("formatting", "complete")
         print_message(
             "formatted_transcription",

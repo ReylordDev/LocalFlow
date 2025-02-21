@@ -138,13 +138,14 @@ export class PythonService extends EventEmitter {
   }
 
   toggleRecording() {
-    if (
-      this.status.transcriber_status !== "online" ||
-      this.status.formatter_status !== "online"
-    ) {
-      this.emit(PYTHON_SERVICE_EVENTS.ERROR, "Models are not ready");
-      return;
-    }
+    // TODO: might be removable now.
+    // if (
+    //   this.status.transcriber_status !== "online" ||
+    //   this.status.formatter_status !== "online"
+    // ) {
+    //   this.emit(PYTHON_SERVICE_EVENTS.ERROR, "Models are not ready");
+    //   return;
+    // }
     if (!this.activeRecording) {
       this.sendCommand({ action: "reset" } as Command);
       this.sendCommand({ action: "start" } as Command);
