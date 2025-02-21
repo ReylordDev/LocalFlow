@@ -90,24 +90,44 @@ class Formatter:
         {context_rules}
         """
 
-        example_1 = """INPUT:
-I watched the Ted Lasso scene yesterday, the darts scene, in the original English synchronization. And I like the English synchronization much more. However, one important thing with that scene is the lesson or the quote that Ted Lasso mentions, which is, be curious, not judgmental. And I think that's actually very wise. And I would like to incorporate it more in my own life. You know, be curious, not judgmental.
+        example_1 = """RAW TRANSCRIPTION:
+ What do I wish I could achieve today? I would like to do my weekly review of my tasks and just try to get my organization straight. What I don't want to do is work on Psycluster. That's not helpful. While it's fun and I enjoy it and it feels good, I need to postpone it. I did also have an idea of working on the local flow project. I could implement a groq a groq formatter and transcriber, which would be kind of cool. It would probably be a little bit more work and once again that is a side project. It can be part of the main process, but I need to be clear and conscious about that. 
+ 
+FORMATTED TRANSCRIPTION:
+Here is the improved transcription:
 
-OUTPUT:
-I watched the Ted Lasso darts scene yesterday in the original English synchronization and I like it much more. However, one important thing in that scene is the quote that Ted Lasso mentions, which is, "Be curious, not judgmental." I think that's actually very wise and I would like to incorporate it more into my own life.
-"""
+What do I wish I could achieve today? I'd like to conduct my weekly review of tasks and get my organization in order. I don't want to work on Psycluster right now; it's not a priority for me. While I enjoy it, I find it distracting. On a related note, I had an idea for the local flow project – implementing a groq formatter and transcriber would be a great addition.
 
-        example_2 = """INPUT:
- Today, I think the major progress I can make is number one. I can print out the form for my graduation. I can sign it. And second, I can continue working on the local flow project. Actually, no, scratch that. I won't work on that today. However, what I can do is I can try it out as much as possible, actually get some usage statistics in. And third, I can actually get started on the response embedding clustering project.
+Changes:
+    - (fill out changes)"""
 
-OUTPUT:
-Today I think I can make major progress in the following:
-1. I can print out graduation form and sign it.
-2. I can try out the local flow project as much as possible and get some usage statistics in.
-3. I can get started on the response embedding clustering project.
-"""
+        example_2 = """RAW TRANSCRIPTION:
+Okay, it's time to finally take a break at journal. I have been working relentlessly on the response clustering project these last couple of days. And I have made tremendous progress and I'm incredibly proud of it. However, I cannot ignore the fact that I have been neglecting everything else in my life. The truth is that I really enjoy this kind of work because it allows me to basically dominate my mind space in such a way that I don't think about anything else. And that is productive and it works and I get things done, but it's not healthy when you start neglecting other things. The truth is I've been pushing various tasks and I'm not exactly... progressing in my life's journey with the exception of this one project. But my ambition is high and I want to treasure that. I just wish I could find a more balanced schedule that properly respects my time and health while still fueling my ambition.
 
-        prompt = f"{identity_purpose}\n\n{steps}\n\n{output_instructions}\n\n{example_1}\n{example_2}# INPUT:"
+FORMATTED TRANSCRIPTION:
+Here is the improved transcription:
+
+Okay, it's finally time for me to take a break and journal. Over the past couple of days, I've been working intensely on the response clustering project, making tremendous progress and feeling incredibly proud of myself. However, I can't deny that I've been neglecting everything else in my life. The truth is, I really enjoy this kind of work because it allows me to focus my mind and minimize distractions, which leads to productivity and getting things done. But I know that's not healthy when it starts to take over my life. In reality, I've been pushing tasks aside and while I'm making progress on this project, I haven't made much headway in other areas of my life. Still, my ambition remains high, and I want to maintain that drive. What I wish is that I could find a more balanced schedule that respects both my time and health while still fueling my passion for this work.
+
+Changes:
+    - (fill out changes)"""
+
+        example_3 = """RAW TRANSCRIPTION:
+Today I woke up relatively early, at 8.45 I believe. I showered right away, before breakfast. Then had breakfast, then put on my gym clothes and just as I was about to leave, it started to rain and then snow actually, because it's quite cold. And so I changed my pants into my rain pants and then eventually I made my way outside. Something I want to note is that my headphones are broken. Like not completely broken, but the left one has quite some static noise. It definitely has like a, it feels like an old radio, if you know what I mean. It has that kind of noise where it sounds like static. That's also why I listen to some old 50s music during the gym. Unfortunately I also ended the gym session a bit early, like I didn't do the face pulls, because the machine was busy. Incidentally it was also my old teacher, so I definitely did not want to ask about working in or something. I'm trying to avoid that guy at all costs. But yeah, anyway, overall it was a good gym session. I'm proud of it. Took a long time in the bathroom, had to postpone shaving until after lunch. And from there on, I mean, I was just so tired. So low energy, I just didn't do anything. Which continued until I eventually took a nap at 6pm. 6pm. 6pm. Around 6pm I think. The nap actually really helped. I felt much better afterwards, which is right now.
+
+FORMATTED TRANSCRIPTION:
+Here is the improved transcription:
+
+Today, I woke up relatively early, around 8:45. I showered immediately, followed by breakfast, and then got dressed in my gym clothes. As I was about to leave, it started raining, and soon snowing due to the cold weather. I changed into my rain pants and headed outside. 
+
+One thing I'd like to mention is that my left headphone has a significant amount of static noise, similar to an old radio. That's why I listen to 1950s music during gym sessions. Unfortunately, I had to cut my workout short due to the busy gym equipment. It was also my old teacher, so I deliberately avoided interacting with him. Trying to steer clear of him has been a priority for me. Despite this, overall, it was a good gym session, and I'm proud of it. 
+
+I spent extra time in the bathroom, delaying shaving until after lunch, and subsequently felt extremely tired. My energy levels were low, so I didn't do anything else. This continued until I took a nap around 6 pm. The nap actually helped me feel much better afterwards, which is now.
+
+Changes:
+    - (fill out changes)"""
+
+        prompt = f"{identity_purpose}\n\n{steps}\n\n{output_instructions}\n\n{example_1}\n{example_2}\n{example_3}\n\n# INPUT:"
         logger.info(prompt)
         return prompt
 
@@ -164,6 +184,9 @@ class LocalFormatter(Formatter):
             return self.status
 
     def improve_transcription(self, raw_transcription: str):
+        if raw_transcription == "":
+            logger.info("No transcription provided")
+            return ""
         response = ollama.generate(
             model=self.MODEL,
             keep_alive="15m",
@@ -181,37 +204,36 @@ class LocalFormatter(Formatter):
         )
         logger.info(f"Total duration: {total_duration:.2f} seconds")
 
-        # if "improved transcription:" in result:
-        #     result = result.split("improved transcription:")[1].strip().strip('"')
-        #     logger.info("Removed 'improved transcription:'")
-        # if "refined transcription:" in result:
-        #     result = result.split("refined transcription:")[1].strip().strip('"')
-        #     logger.info("Removed 'refined transcription:'")
+        if "improved transcription:" in result:
+            result = result.split("improved transcription:")[1].strip().strip('"')
+            logger.info("Removed 'improved transcription:'")
+        if "Changes:" in result:
+            result = result.split("Changes:")[0].strip()
+            logger.info("Removed 'Changes:'")
         return result
 
 
 if __name__ == "__main__":
     formatter = LocalFormatter()
     formatter.load_model()
-    test_transcription = """Alright, so, uh... I was thinking about the vacation plans for next month. I mean, we still haven’t decided on the destination, but I’m kinda leaning toward Italy. Like, I keep hearing about how amazing the food is, and—oh!—those little towns with cobblestone streets? They sound so charming.
 
-    But then again, there’s Spain. Uh, Barcelona, in particular. I’ve always wanted to see the Sagrada Familia in person. Hmm... decisions, decisions. Oh, and I guess we should also think about the budget. Flights are, like, super expensive right now, and we’ll probably want to stay somewhere decent, y'know?
+    raw_transcription_1 = " What do I wish I could achieve today? I would like to do my weekly review of my tasks and just try to get my organization straight. What I don't want to do is work on Psycluster. That's not helpful. While it's fun and I enjoy it and it feels good, I need to postpone it. I did also have an idea of working on the local flow project. I could implement a groq a groq formatter and transcriber, which would be kind of cool. It would probably be a little bit more work and once again that is a side project. It can be part of the main process, but I need to be clear and conscious about that. "
 
-    Oh! Another thing—activities. Should we focus on, like, sightseeing, or do we want more of a relaxing vibe? Maybe a mix of both? Gosh, there’s so much to figure out. Anyway, I’ll need to look up some options later and maybe ask a few friends who’ve been to those places for their recommendations.
+    formatted_transcription_1 = formatter.improve_transcription(raw_transcription_1)
 
-    Okay, uh, that’s it for now. I’ll check back after I’ve done some research."""
-    result = formatter.improve_transcription(test_transcription)
+    logger.info(f"Raw transcription: {raw_transcription_1}")
+    logger.info(f"Formatted transcription: {formatted_transcription_1}")
 
-    test_transcription_2 = """ Let's give a little bit of a review of the day, I think that would be a good idea. What were the important parts of the day? I think the number one highlight has to be the coding. I made great progress, achieved great things on the local flow project and I'm very happy about that. Then, secondary, we need to talk about the stream that I watched. The stream, it was a great stream. I was positively surprised to even see it in the first place and the vibes were immaculate. It made me much more positive about their future compared to before. I had a bit of a gloomy perspective on it, but no more. And then finally, I think we should talk about the food part. I ate a lot today. Lots of protein, lots of carbs, but in general, a lot, even though it was a rest day. But remember, I am supposed to eat a lot on rest days as well, as part of the diet. As part of the measures to grow muscle."""
-    result_2 = formatter.improve_transcription(test_transcription_2)
+    raw_transcription_2 = " Okay, it's time to finally take a break at journal. I have been working relentlessly on the response clustering project these last couple of days. And I have made tremendous progress and I'm incredibly proud of it. However, I cannot ignore the fact that I have been neglecting everything else in my life. The truth is that I really enjoy this kind of work because it allows me to basically dominate my mind space in such a way that I don't think about anything else. And that is productive and it works and I get things done, but it's not healthy when you start neglecting other things. The truth is I've been pushing various tasks and I'm not exactly... progressing in my life's journey with the exception of this one project. But my ambition is high and I want to treasure that. I just wish I could find a more balanced schedule that properly respects my time and health while still fueling my ambition."
 
-    print(test_transcription)
-    print()
-    print(result)
-    print()
-    print()
-    print(test_transcription_2)
-    print()
-    print(result_2)
-    print()
-    print()
+    formatted_transcription_2 = formatter.improve_transcription(raw_transcription_2)
+
+    logger.info(f"Raw transcription: {raw_transcription_2}")
+    logger.info(f"Formatted transcription: {formatted_transcription_2}")
+
+    raw_transcription_3 = " Okay, so I've just realized that I don't have any transcriptions left, and I need one to be able to test out this new feature that I've built. Additionally, I think it would make sense to make it as long as possible, just to make sure that the full text display is correctly working. So, I mean, let's just give some context, I suppose, right? Again, I've been using DeepSeq to help me add some features, and it's worked really well to add the transcription deletion feature, which, as you can tell, I've tested out quite a bit because I have no transcriptions left. Anyway, I'm using it now to add the dialog feature. So, when you click on the transcription in the history tab, you can actually see the full transcription, and it should also show some additional... information such as the date. From what it looks like, it's been implementing quite nicely with my code base, so I'm excited to see how this one turned out."
+
+    formatted_transcription_3 = formatter.improve_transcription(raw_transcription_3)
+
+    logger.info(f"Raw transcription: {raw_transcription_3}")
+    logger.info(f"Formatted transcription: {formatted_transcription_3}")
