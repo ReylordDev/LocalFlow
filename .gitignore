@@ -106,3 +106,5 @@ settings.json
 example_data
 
 temp
+*.flac
+*.wav

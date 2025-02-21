@@ -31,9 +31,14 @@ class LocalTranscriber(Transcriber):
         super().__init__()
 
     def load_model(self):
-        self.model = WhisperModel(model_size_or_path=self.model_size, device="cpu")
+        self.model = WhisperModel(model_size_or_path=self.model_size, device="cuda")
         self.status = "online"
         logger.info("Whisper Model loaded into memory")
+
+    def unload_model(self):
+        self.model = None
+        self.status = "offline"
+        logger.info("Whisper Model unloaded from memory")
 
     def get_status(self):
         # logger.info(f"Whisper Model status: {self.status}")
