@@ -22,7 +22,11 @@ class Transcriber:
 class LocalTranscriber(Transcriber):
     # Maybe I should turn this into into a type safe class
 
-    def __init__(self, model_size="large-v3", language: str | None = None):
+    def __init__(
+        self,
+        model_size="deepdml/faster-whisper-large-v3-turbo-ct2",
+        language: str | None = None,
+    ):
         self.model = None
         self.model_size = model_size
         self.status: Literal["offline", "online"] = "offline"
