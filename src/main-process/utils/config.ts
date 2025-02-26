@@ -23,7 +23,7 @@ export class AppConfig {
 
   get pythonPath() {
     if (this.isPackaged) {
-      const basePath = path.join(process.resourcesPath, "python");
+      const basePath = path.join(process.resourcesPath, ".venv");
       switch (process.platform) {
         case "win32":
           return path.join(basePath, "Scripts", "python.exe");

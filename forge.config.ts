@@ -19,7 +19,7 @@ import fs from "fs-extra";
 const config: ForgeConfig = {
   packagerConfig: {
     asar: true,
-    extraResource: ["./src-py", "./assets"],
+    extraResource: ["./src-py", "./assets", "pyproject.toml"],
     icon: "./assets/icons/icon",
   },
   rebuildConfig: {},
@@ -90,29 +90,15 @@ const config: ForgeConfig = {
     postPackage: async (config, packageResult) => {
       console.log("Post package hook called");
       console.log(packageResult.outputPaths);
-      const pythonDir = path.join(
+      const resourcesPath = path.join(
         packageResult.outputPaths[0],
-        "resources",
-        "python"
+        "resources"
       );
-      const requirementsPath = path.join(
-        packageResult.outputPaths[0],
-        "resources",
-        "src-py",
-        "requirements.txt"
-      );
-      console.log("Python directory:", pythonDir);
-      console.log("Requirements path:", requirementsPath);
+      console.log("Resources path:", resourcesPath);
 
-      fs.ensureDirSync(pythonDir);
-
-      // Create a virtual environment
-      execSync(`python -m venv ${pythonDir}`);
-
-      // Install Python requirements in the virtual environment
-      execSync(
-        `${path.join(pythonDir, "Scripts", "pip")} install -r ${requirementsPath}`
-      );
+      execSync("uv sync", {
+        cwd: resourcesPath,
+      });
     },
   },
 };
