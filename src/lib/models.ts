@@ -23,7 +23,9 @@ export interface ProgressMessage {
     | "compression"
     | "transcription"
     | "formatting"
-    | "committing_to_history";
+    | "committing_to_history"
+    | "loading_transcriber"
+    | "loading_formatter";
   status: "start" | "complete" | "error";
   timestamp: number;
 }
@@ -112,6 +114,45 @@ export interface AppSettings {
   language: string;
 }
 
+export type MiniStatus =
+  | "default"
+  | "transcribing"
+  | "formatting"
+  | "loading_transcriber"
+  | "loading_formatter";
+
+export const CHANNELS = {
+  CONTROLLER: {
+    TOGGLE_RECORDING: "controller:toggle-recording",
+    MODEL_STATUS_REQUEST: "controller:requestModelStatus",
+    MODEL_STATUS_RESPONSE: "controller:model-status",
+    HISTORY_REQUEST: "controller:getHistory",
+    HISTORY_RESPONSE: "controller:history",
+    DELETE_TRANSCRIPTION: "controller:deleteTranscription",
+  },
+  SETTINGS: {
+    GET: "settings:get-all",
+    SET_SHORTCUT: "settings:set-shortcut",
+    DISABLE_SHORTCUT: "settings:disable-shortcut",
+    SET_LANGUAGE: "settings:set-language",
+  },
+  URL: {
+    OPEN: "url:open",
+  },
+  MINI: {
+    RECORDING_START: "mini:recording-start",
+    RECORDING_STOP: "mini:recording-stop",
+    AUDIO_LEVEL_REQUEST: "mini:requestAudioLevel",
+    AUDIO_LEVEL_RESPONSE: "mini:audio-level",
+    STATUS_UPDATE: "mini:status-update",
+  },
+  DEVICE: {
+    DEVICES_REQUEST: "device:requestAll",
+    DEVICES_RESPONSE: "device:receiveDevices",
+    SET: "device:set",
+  },
+};
+
 declare global {
   interface Window {
     controller: {
@@ -142,9 +183,7 @@ declare global {
       onReceiveAudioLevel: (
         callback: (audioLevel: number) => void
       ) => () => void;
-      onTranscriptionStart: (callback: () => void) => () => void;
-      onFormattingStart: (callback: () => void) => () => void;
-      onFormattingFinish: (callback: () => void) => () => void;
+      onStatusUpdate: (callback: (status: MiniStatus) => void) => () => void;
     };
     device: {
       requestAll: () => void;
@@ -154,52 +193,17 @@ declare global {
   }
 }
 
-export const CHANNELS = {
-  CONTROLLER: {
-    TOGGLE_RECORDING: "controller:toggle-recording",
-    MODEL_STATUS_REQUEST: "controller:requestModelStatus",
-    MODEL_STATUS_RESPONSE: "controller:model-status",
-    HISTORY_REQUEST: "controller:getHistory",
-    HISTORY_RESPONSE: "controller:history",
-    DELETE_TRANSCRIPTION: "controller:deleteTranscription",
-  },
-  SETTINGS: {
-    GET: "settings:get-all",
-    SET_SHORTCUT: "settings:set-shortcut",
-    DISABLE_SHORTCUT: "settings:disable-shortcut",
-    SET_LANGUAGE: "settings:set-language",
-  },
-  URL: {
-    OPEN: "url:open",
-  },
-  MINI: {
-    RECORDING_START: "mini:recording-start",
-    RECORDING_STOP: "mini:recording-stop",
-    AUDIO_LEVEL_REQUEST: "mini:requestAudioLevel",
-    AUDIO_LEVEL_RESPONSE: "mini:audio-level",
-    TRANSCRIPTION_START: "mini:transcription-start",
-    FORMATTING_START: "mini:formatting-start",
-    FORMATTING_FINISH: "mini:formatting-finish",
-  },
-  DEVICE: {
-    DEVICES_REQUEST: "device:requestAll",
-    DEVICES_RESPONSE: "device:receiveDevices",
-    SET: "device:set",
-  },
-};
-
 export const PYTHON_SERVICE_EVENTS = {
   MODELS_READY: "models-ready",
   ERROR: "error",
   RECORDING_START: "recording-start",
   RECORDING_STOP: "recording-stop",
-  TRANSCRIPTION_START: "transcription-start",
-  FORMATTING_START: "formatting-start",
   TRANSCRIPTION: "transcription",
   AUDIO_LEVEL: "audio-level",
   MODEL_STATUS: "model-status",
   HISTORY: "history",
   DEVICES: "devices",
+  STATUS_UPDATE: "status-update",
 };
 
 export const SETTINGS_SERVICE_EVENTS = {

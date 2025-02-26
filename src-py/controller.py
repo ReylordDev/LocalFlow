@@ -1,4 +1,5 @@
 import sys
+import os
 from pydantic import ValidationError
 from recorder import AudioRecorder
 from compressor import Compressor
@@ -49,9 +50,11 @@ class Controller:
         self.compressor = Compressor()
         self.compressor.compress()
         print_progress("compression", "complete")
-        print_progress("transcription", "start")
 
+        print_progress("loading_transcriber", "start")
         self.transcriber.load_model()
+        print_progress("loading_transcriber", "complete")
+        print_progress("transcription", "start")
         transcription = self.transcriber.transcribe_audio(
             f"{self.compressor.PATH}/recording.flac"
         )
@@ -63,8 +66,10 @@ class Controller:
                 transcription=transcription.encode("utf-8").decode("cp1252")
             ),
         )
-        print_progress("formatting", "start")
+        print_progress("loading_formatter", "start")
         self.formatter.load_model()
+        print_progress("loading_formatter", "complete")
+        print_progress("formatting", "start")
         self.formatter.set_language(self.transcriber.language)
         formatted_transcription = self.formatter.improve_transcription(transcription)
         self.formatter.unload_model()

@@ -5,31 +5,16 @@ import { LoaderCircle } from "lucide-react";
 
 const App = () => {
   const [status, setStatus] = useState<
-    "default" | "transcribing" | "formatting"
+    | "default"
+    | "transcribing"
+    | "formatting"
+    | "loading_transcriber"
+    | "loading_formatter"
   >("default");
 
   useEffect(() => {
-    const unsubscribe = window.mini.onTranscriptionStart(() => {
-      console.log("Transcription started");
-      setStatus("transcribing");
-    });
-
-    return () => unsubscribe();
-  }, []);
-
-  useEffect(() => {
-    const unsubscribe = window.mini.onFormattingStart(() => {
-      console.log("Formatting started");
-      setStatus("formatting");
-    });
-
-    return () => unsubscribe();
-  }, []);
-
-  useEffect(() => {
-    const unsubscribe = window.mini.onFormattingFinish(() => {
-      console.log("Formatting finished");
-      setStatus("default");
+    const unsubscribe = window.mini.onStatusUpdate((status) => {
+      setStatus(status);
     });
 
     return () => unsubscribe();
@@ -49,6 +34,20 @@ const App = () => {
           <div className="flex justify-center items-center gap-4 ">
             <LoaderCircle size={20} className="animate-spin-slow" />
             Formatting transcription...
+          </div>
+        </div>
+      ) : status === "loading_transcriber" ? (
+        <div className="flex h-10 bg-zinc-800 rounded-full p-1 px-4 justify-center drag">
+          <div className="flex justify-center items-center gap-4 ">
+            <LoaderCircle size={20} className="animate-spin-slow" />
+            Loading transcriber model...
+          </div>
+        </div>
+      ) : status === "loading_formatter" ? (
+        <div className="flex h-10 bg-zinc-800 rounded-full p-1 px-4 justify-center drag">
+          <div className="flex justify-center items-center gap-4 ">
+            <LoaderCircle size={20} className="animate-spin-slow" />
+            Loading formatter model...
           </div>
         </div>
       ) : (

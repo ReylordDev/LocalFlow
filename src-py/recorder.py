@@ -50,7 +50,13 @@ class AudioRecorder:
         self.stream: Optional[sd.InputStream] = None
         self.current_audio_level: float = 0
         self.audio_levels = Stack(max_length=20)
-        os.makedirs(self.PATH, exist_ok=True)
+        if os.path.exists(self.PATH):
+            for file in os.listdir(self.PATH):
+                file_path = os.path.join(self.PATH, file)
+                if os.path.isfile(file_path):
+                    os.unlink(file_path)
+            os.rmdir(self.PATH)
+        os.makedirs(self.PATH)
 
     def start(self):
         if self.recording:

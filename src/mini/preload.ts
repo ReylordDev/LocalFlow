@@ -2,7 +2,7 @@
 // https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
 
 import { contextBridge, ipcRenderer, IpcRendererEvent } from "electron";
-import { CHANNELS } from "../lib/models";
+import { CHANNELS, MiniStatus } from "../lib/models";
 
 // Expose protected methods that allow the renderer process to use
 // the ipcRenderer without exposing the entire object
@@ -38,31 +38,13 @@ contextBridge.exposeInMainWorld("mini", {
       ipcRenderer.off(CHANNELS.MINI.AUDIO_LEVEL_RESPONSE, listener);
     };
   },
-  onTranscriptionStart: (callback) => {
-    const listener = () => {
-      callback();
+  onStatusUpdate: (callback) => {
+    const listener = (_: IpcRendererEvent, status: MiniStatus) => {
+      callback(status);
     };
-    ipcRenderer.on(CHANNELS.MINI.TRANSCRIPTION_START, listener);
+    ipcRenderer.on(CHANNELS.MINI.STATUS_UPDATE, listener);
     return () => {
-      ipcRenderer.off(CHANNELS.MINI.TRANSCRIPTION_START, listener);
-    };
-  },
-  onFormattingStart: (callback) => {
-    const listener = () => {
-      callback();
-    };
-    ipcRenderer.on(CHANNELS.MINI.FORMATTING_START, listener);
-    return () => {
-      ipcRenderer.off(CHANNELS.MINI.FORMATTING_START, listener);
-    };
-  },
-  onFormattingFinish: (callback) => {
-    const listener = () => {
-      callback();
-    };
-    ipcRenderer.on(CHANNELS.MINI.FORMATTING_FINISH, listener);
-    return () => {
-      ipcRenderer.off(CHANNELS.MINI.FORMATTING_FINISH, listener);
+      ipcRenderer.off(CHANNELS.MINI.STATUS_UPDATE, listener);
     };
   },
 } satisfies Window["mini"]);

@@ -13,6 +13,7 @@ import {
   AppSettings,
   PYTHON_SERVICE_EVENTS,
   Error,
+  MiniStatus,
 } from "../../lib/models";
 import path from "path";
 import { SettingsService } from "./settings-service";
@@ -124,9 +125,31 @@ export class PythonService extends EventEmitter {
       this.emit(PYTHON_SERVICE_EVENTS.MODELS_READY);
     }
     if (progress.step === "transcription" && progress.status === "start") {
-      this.emit(PYTHON_SERVICE_EVENTS.TRANSCRIPTION_START);
+      this.emit(
+        PYTHON_SERVICE_EVENTS.STATUS_UPDATE,
+        "transcribing" as MiniStatus
+      );
     } else if (progress.step === "formatting" && progress.status === "start") {
-      this.emit(PYTHON_SERVICE_EVENTS.FORMATTING_START);
+      this.emit(
+        PYTHON_SERVICE_EVENTS.STATUS_UPDATE,
+        "formatting" as MiniStatus
+      );
+    } else if (
+      progress.step === "loading_transcriber" &&
+      progress.status === "start"
+    ) {
+      this.emit(
+        PYTHON_SERVICE_EVENTS.STATUS_UPDATE,
+        "loading_transcriber" as MiniStatus
+      );
+    } else if (
+      progress.step === "loading_formatter" &&
+      progress.status === "start"
+    ) {
+      this.emit(
+        PYTHON_SERVICE_EVENTS.STATUS_UPDATE,
+        "loading_formatter" as MiniStatus
+      );
     }
 
     consoleLog(`Progress: ${progress.step} - ${progress.status}`);

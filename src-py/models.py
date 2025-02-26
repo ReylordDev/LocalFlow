@@ -27,6 +27,8 @@ StepType = Union[
         "transcription",
         "formatting",
         "committing_to_history",
+        "loading_transcriber",
+        "loading_formatter",
     ],
 ]
 

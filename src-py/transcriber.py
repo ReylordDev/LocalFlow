@@ -24,7 +24,7 @@ class LocalTranscriber(Transcriber):
 
     def __init__(
         self,
-        model_size="deepdml/faster-whisper-large-v3-turbo-ct2",
+        model_size="large-v3-turbo",
         language: str | None = None,
     ):
         self.model = None
@@ -40,6 +40,7 @@ class LocalTranscriber(Transcriber):
         logger.info("Whisper Model loaded into memory")
 
     def unload_model(self):
+        del self.model
         self.model = None
         self.status = "offline"
         logger.info("Whisper Model unloaded from memory")
@@ -63,9 +64,9 @@ class LocalTranscriber(Transcriber):
             segments, info = self.model.transcribe(
                 file,
                 beam_size=5,
-                temperature=0,
                 language=self.language,
                 vad_filter=True,
+                temperature=0.0,
             )
             logger.debug(
                 f"Language: {info.language} ({info.language_probability * 100:.2f}%)"

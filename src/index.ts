@@ -12,6 +12,7 @@ import {
   CHANNELS,
   PYTHON_SERVICE_EVENTS,
   SETTINGS_SERVICE_EVENTS,
+  MiniStatus,
 } from "./lib/models";
 
 // Handle setup events
@@ -66,7 +67,6 @@ app.whenReady().then(async () => {
   pythonService.on(
     PYTHON_SERVICE_EVENTS.TRANSCRIPTION,
     (transcription: string) => {
-      windowManager.sendMiniWindowMessage(CHANNELS.MINI.FORMATTING_FINISH);
       windowManager.hideMiniWindow();
       clipboard.writeText(transcription);
       new Notification({
@@ -111,13 +111,12 @@ app.whenReady().then(async () => {
     );
   });
 
-  pythonService.on(PYTHON_SERVICE_EVENTS.TRANSCRIPTION_START, () => {
-    windowManager.sendMiniWindowMessage(CHANNELS.MINI.TRANSCRIPTION_START);
-  });
-
-  pythonService.on(PYTHON_SERVICE_EVENTS.FORMATTING_START, () => {
-    windowManager.sendMiniWindowMessage(CHANNELS.MINI.FORMATTING_START);
-  });
+  pythonService.on(
+    PYTHON_SERVICE_EVENTS.STATUS_UPDATE,
+    (status: MiniStatus) => {
+      windowManager.sendMiniWindowMessage(CHANNELS.MINI.STATUS_UPDATE, status);
+    }
+  );
 
   registerIpcHandlers(settingsService, config, pythonService);
 });
