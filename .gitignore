@@ -108,3 +108,4 @@ example_data
 temp
 *.flac
 *.wav
+.python-version

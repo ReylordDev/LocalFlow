@@ -1,0 +1,18 @@
+[project]
+name = "LocalFlow"
+version = "0.0.1"
+description = "LocalFlow is a desktop application for intelligent speech to text transcription."
+readme = "README.md"
+requires-python = ">=3.11.9"
+dependencies = [
+    "faster-whisper>=1.1.1",
+    "httpx>=0.28.1",
+    "loguru>=0.7.3",
+    "numpy>=2.2.3",
+    "ollama>=0.4.7",
+    "pydantic>=2.10.6",
+    "python-ffmpeg>=2.0.12",
+    "pywinctl>=0.4.1",
+    "scipy>=1.15.2",
+    "sounddevice>=0.5.1",
+]
