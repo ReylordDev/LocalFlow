@@ -38,7 +38,7 @@ class Stack:
 
 
 class AudioRecorder:
-    MAX_DURATION = 250
+    MAX_DURATION = 1800  # 30 minutes
     PATH = f"{get_user_data_path()}/temp"
 
     def __init__(self):
