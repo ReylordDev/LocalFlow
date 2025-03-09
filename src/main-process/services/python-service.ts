@@ -64,6 +64,7 @@ export class PythonService extends EventEmitter {
         PRODUCTION: String(!this.config.isDev),
         USER_DATA_PATH: this.config.dataDir,
         LOG_LEVEL: this.config.isDev ? "DEBUG" : "INFO",
+        PYTHONUTF8: "1",
       },
     });
 
@@ -124,23 +125,21 @@ export class PythonService extends EventEmitter {
     if (progress.step === "init" && progress.status === "complete") {
       this.emit(PYTHON_SERVICE_EVENTS.MODELS_READY);
     }
-    if (progress.step === "transcription" && progress.status === "start") {
-      this.emit(
-        PYTHON_SERVICE_EVENTS.STATUS_UPDATE,
-        "transcribing" as MiniStatus
-      );
-    } else if (progress.step === "formatting" && progress.status === "start") {
-      this.emit(
-        PYTHON_SERVICE_EVENTS.STATUS_UPDATE,
-        "formatting" as MiniStatus
-      );
-    } else if (
+    if (
       progress.step === "loading_transcriber" &&
       progress.status === "start"
     ) {
       this.emit(
         PYTHON_SERVICE_EVENTS.STATUS_UPDATE,
         "loading_transcriber" as MiniStatus
+      );
+    } else if (
+      progress.step === "transcription" &&
+      progress.status === "start"
+    ) {
+      this.emit(
+        PYTHON_SERVICE_EVENTS.STATUS_UPDATE,
+        "transcribing" as MiniStatus
       );
     } else if (
       progress.step === "loading_formatter" &&
@@ -150,6 +149,16 @@ export class PythonService extends EventEmitter {
         PYTHON_SERVICE_EVENTS.STATUS_UPDATE,
         "loading_formatter" as MiniStatus
       );
+    } else if (progress.step === "formatting" && progress.status === "start") {
+      this.emit(
+        PYTHON_SERVICE_EVENTS.STATUS_UPDATE,
+        "formatting" as MiniStatus
+      );
+    } else if (
+      progress.step === "formatting" &&
+      progress.status === "complete"
+    ) {
+      this.emit(PYTHON_SERVICE_EVENTS.STATUS_UPDATE, "default" as MiniStatus);
     }
 
     consoleLog(`Progress: ${progress.step} - ${progress.status}`);

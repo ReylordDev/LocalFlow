@@ -1,5 +1,4 @@
 import sys
-import os
 from pydantic import ValidationError
 from recorder import AudioRecorder
 from compressor import Compressor
@@ -62,9 +61,7 @@ class Controller:
         print_progress("transcription", "complete")
         print_message(
             "raw_transcription",
-            RawTranscription(
-                transcription=transcription.encode("utf-8").decode("cp1252")
-            ),
+            RawTranscription(transcription=transcription),
         )
         print_progress("loading_formatter", "start")
         self.formatter.load_model()

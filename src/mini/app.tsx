@@ -17,30 +17,26 @@ const App = () => {
       setStatus(status);
     });
 
-    return () => unsubscribe();
+    return () => {
+      setStatus("default");
+      unsubscribe();
+    };
   }, []);
 
   return (
     <div className="bg-transparent text-white flex justify-center items-center">
-      {status === "transcribing" ? (
-        <div className="flex h-10 bg-zinc-800 rounded-full p-1 px-4 justify-center drag">
-          <div className="flex justify-center items-center gap-4 ">
-            <LoaderCircle size={20} className="animate-spin-slow" />
-            Transcribing audio...
-          </div>
-        </div>
-      ) : status === "formatting" ? (
-        <div className="flex h-10 bg-zinc-800 rounded-full p-1 px-4 justify-center drag">
-          <div className="flex justify-center items-center gap-4 ">
-            <LoaderCircle size={20} className="animate-spin-slow" />
-            Formatting transcription...
-          </div>
-        </div>
-      ) : status === "loading_transcriber" ? (
+      {status === "loading_transcriber" ? (
         <div className="flex h-10 bg-zinc-800 rounded-full p-1 px-4 justify-center drag">
           <div className="flex justify-center items-center gap-4 ">
             <LoaderCircle size={20} className="animate-spin-slow" />
             Loading transcriber model...
+          </div>
+        </div>
+      ) : status === "transcribing" ? (
+        <div className="flex h-10 bg-zinc-800 rounded-full p-1 px-4 justify-center drag">
+          <div className="flex justify-center items-center gap-4 ">
+            <LoaderCircle size={20} className="animate-spin-slow" />
+            Transcribing audio...
           </div>
         </div>
       ) : status === "loading_formatter" ? (
@@ -48,6 +44,13 @@ const App = () => {
           <div className="flex justify-center items-center gap-4 ">
             <LoaderCircle size={20} className="animate-spin-slow" />
             Loading formatter model...
+          </div>
+        </div>
+      ) : status === "formatting" ? (
+        <div className="flex h-10 bg-zinc-800 rounded-full p-1 px-4 justify-center drag">
+          <div className="flex justify-center items-center gap-4 ">
+            <LoaderCircle size={20} className="animate-spin-slow" />
+            Formatting transcription...
           </div>
         </div>
       ) : (

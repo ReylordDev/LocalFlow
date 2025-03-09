@@ -1,5 +1,6 @@
 import { BrowserWindow, screen } from "electron";
 import { AppConfig } from "../utils/config";
+import { CHANNELS } from "../../lib/models";
 
 declare const MAIN_WINDOW_WEBPACK_ENTRY: string;
 declare const MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY: string;
@@ -89,6 +90,7 @@ export class WindowManager {
 
   hideMiniWindow() {
     if (this.miniWindow) {
+      this.sendMiniWindowMessage(CHANNELS.MINI.STATUS_UPDATE, "default");
       this.miniWindow.hide();
     }
   }
