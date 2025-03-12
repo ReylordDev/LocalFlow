@@ -1,6 +1,8 @@
 import time
 from typing import Literal, Optional, Union
+from uuid import uuid4
 from pydantic import BaseModel
+from sqlmodel import UUID, Field, SQLModel
 
 
 StatusType = Literal["start", "complete", "error"]
@@ -142,3 +144,76 @@ class ActiveWindowContext(BaseModel):
     process: str
     platform: Literal["windows", "darwin", "linux"]
     app_name: str
+
+
+##################
+
+# TODO: Check that this is correct
+type LanguageType = Literal["auto", "en", "de", "fr", "it", "es", "pt", "hi", "th"]
+
+language_name_map: dict[LanguageType, str] = {
+    "auto": "Auto",
+    "en": "English",
+    "de": "German",
+    "fr": "French",
+    "it": "Italian",
+    "es": "Spanish",
+    "pt": "Portuguese",
+    "hi": "Hindi",
+    "th": "Thai",
+}
+
+
+class Mode(SQLModel, table=True):
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
+    name: str
+
+    text_replacements: list["TextReplacement"] = []  # add relationship
+
+    voice_model: "VoiceModel"  # add relationship
+    voice_language: LanguageType
+    translate_to_english: bool = False
+
+    use_language_model: bool = False
+    language_model: (
+        "LanguageModel | None"  # add relationship, TODO: Check that this is correct
+    )
+    prompt: "Prompt"  # add relationship
+
+    record_system_audio: bool = False
+
+
+class VoiceModel(SQLModel, table=True):
+    name: str = Field(primary_key=True)  # Replace type with compatible models
+    language: Literal["english-only", "multilingual"]
+    speed: int
+    accuracy: int
+    size: int
+    parameters: int
+
+
+class LanguageModel(SQLModel, table=True):
+    pass
+
+
+class Prompt(SQLModel, table=True):
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
+
+    system_prompt: str
+    examples: list["Example"] = []  # add relationship
+
+    include_clipboard: bool = False
+    include_active_window: bool = False  # TODO: research
+
+
+class Example(SQLModel, table=True):
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
+    input: str
+    output: str
+
+
+class TextReplacement(SQLModel, table=True):
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
+    original_text: str
+    replacement_text: str
+    # It should be optional to link a text replacement to a mode

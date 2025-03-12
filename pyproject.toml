@@ -3,7 +3,7 @@ name = "LocalFlow"
 version = "0.0.1"
 description = "LocalFlow is a desktop application for intelligent speech to text transcription."
 readme = "README.md"
-requires-python = ">=3.11.9"
+requires-python = ">=3.12"
 dependencies = [
     "faster-whisper>=1.1.1",
     "httpx>=0.28.1",
@@ -15,4 +15,5 @@ dependencies = [
     "pywinctl>=0.4.1",
     "scipy>=1.15.2",
     "sounddevice>=0.5.1",
+    "sqlmodel>=0.0.24",
 ]

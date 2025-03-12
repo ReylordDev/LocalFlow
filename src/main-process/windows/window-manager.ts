@@ -74,7 +74,8 @@ export class WindowManager {
         preload: MINI_PRELOAD_WEBPACK_ENTRY,
       },
     });
-    miniWindow.hide();
+    // TEMP for development
+    // miniWindow.hide();
 
     // and load the index.html of the app.
     miniWindow.loadURL(MINI_WEBPACK_ENTRY);
@@ -91,7 +92,8 @@ export class WindowManager {
   hideMiniWindow() {
     if (this.miniWindow) {
       this.sendMiniWindowMessage(CHANNELS.MINI.STATUS_UPDATE, "default");
-      this.miniWindow.hide();
+      // TEMPORARY for deveopment
+      // this.miniWindow.hide();
     }
   }
 

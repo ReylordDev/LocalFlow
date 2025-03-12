@@ -6,7 +6,29 @@ import { globalShortcut } from "electron";
 import { AppSettings, SETTINGS_SERVICE_EVENTS } from "../../lib/models";
 
 export const DEFAULT_SETTINGS: AppSettings = {
-  startShortcut: "Ctrl+Shift+O",
+  keyboard: {
+    toggleRecordingShortcut: "Ctrl+Shift+O",
+    cancelRecordingShortcut: "Esc",
+    changeModeShortcut: "Ctrl+Shift+K",
+  },
+  audio: {
+    device: null,
+    useSystemDefaultDevice: true,
+    automaticallyIncreaseMicVolume: false,
+    soundEffects: false,
+    soundEffectsVolume: 0.5,
+  },
+  application: {
+    launchAtStartup: false,
+    minimizeToTray: true,
+    closeToTray: true,
+    enableRecordingWindow: true,
+    autoCloseRecordingWindow: false,
+  },
+  output: {
+    autoPasteResult: false,
+    restoreClipboard: false,
+  },
   language: "",
 };
 
@@ -43,22 +65,25 @@ export class SettingsService extends EventEmitter {
   }
 
   setStartShortcut(shortcut: string) {
-    globalShortcut.unregister(this.settings.startShortcut);
+    globalShortcut.unregister(this.settings.keyboard.toggleRecordingShortcut);
     globalShortcut.register(shortcut, () => {
       this.emit(SETTINGS_SERVICE_EVENTS.SHORTCUT_PRESSED);
     });
-    this.settings.startShortcut = shortcut;
+    this.settings.keyboard.toggleRecordingShortcut = shortcut;
     this.persistSettings();
   }
 
   disableStartShortcut() {
-    globalShortcut.unregister(this.settings.startShortcut);
+    globalShortcut.unregister(this.settings.keyboard.toggleRecordingShortcut);
   }
 
   registerShortcuts() {
-    globalShortcut.register(this.settings.startShortcut, () => {
-      this.emit(SETTINGS_SERVICE_EVENTS.SHORTCUT_PRESSED);
-    });
+    globalShortcut.register(
+      this.settings.keyboard.toggleRecordingShortcut,
+      () => {
+        this.emit(SETTINGS_SERVICE_EVENTS.SHORTCUT_PRESSED);
+      }
+    );
   }
 
   setLanguage(language: string) {

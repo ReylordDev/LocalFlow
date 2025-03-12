@@ -33,7 +33,7 @@ const Settings = () => {
   useEffect(() => {
     window.settings.getAll().then((settings) => {
       console.log("Received Settings", settings);
-      setStartShortcut(settings.startShortcut);
+      setStartShortcut(settings.toggleRecordingShortcut);
       setLanguage(settings.language);
     });
   }, []);

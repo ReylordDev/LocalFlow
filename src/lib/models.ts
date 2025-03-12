@@ -109,9 +109,39 @@ export interface Devices {
 // Frontend-only models
 export type Page = "Settings" | "History" | "Credits";
 
+interface ApplicationConfig {
+  launchAtStartup: boolean;
+  minimizeToTray: boolean;
+  closeToTray: boolean;
+  enableRecordingWindow: boolean;
+  autoCloseRecordingWindow: boolean;
+}
+
+interface KeyboardConfig {
+  toggleRecordingShortcut: Electron.Accelerator; // https://www.electronjs.org/docs/latest/api/accelerator
+  cancelRecordingShortcut: Electron.Accelerator;
+  changeModeShortcut: Electron.Accelerator;
+}
+
+interface AudioConfig {
+  device: Device | null;
+  useSystemDefaultDevice: boolean;
+  automaticallyIncreaseMicVolume: boolean;
+  soundEffects: boolean;
+  soundEffectsVolume: number;
+}
+
+interface OutputConfig {
+  autoPasteResult: boolean;
+  restoreClipboard: boolean;
+}
+
 export interface AppSettings {
-  startShortcut: string;
-  language: string;
+  application: ApplicationConfig;
+  keyboard: KeyboardConfig;
+  audio: AudioConfig;
+  output: OutputConfig;
+  language: string; // TODO: remove
 }
 
 export type MiniStatus =
