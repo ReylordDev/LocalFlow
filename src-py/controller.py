@@ -22,6 +22,7 @@ from models import (
 from utils.ipc import print_message, print_progress
 from loguru import logger
 from database import (
+    DatabaseManager,
     initialize_db,
     commit_transcription_to_db,
     get_all_transcriptions_from_db,
@@ -34,6 +35,7 @@ class Controller:
         print_progress("init", "start")
 
         self.recorder = AudioRecorder()
+        self.database_manager = DatabaseManager()
         self.transcriber = LocalTranscriber()
         self.formatter = LocalFormatter()
         self.window_detector = WindowDetector()

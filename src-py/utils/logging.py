@@ -62,4 +62,7 @@ def initialize_logger():
     logger.info(
         f"\nLogger initialized in {'PRODUCTION' if is_production_environment() else 'DEVELOPMENT'} mode"
     )
+    logger.info(f"Python default encoding: {sys.getdefaultencoding()}")
+    logger.info(f"Python utf-8 mode: {sys.flags.utf8_mode}")
+    logger.info(f"Stdout encoding: {sys.stdout.encoding}")
     logger.info(f"faster-whisper logs will be captured at {log_level} level")
