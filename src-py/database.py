@@ -1,10 +1,9 @@
 import os
-import sqlite3
 from uuid import UUID
 
 from sqlmodel import SQLModel, create_engine, Session, select
 from sqlalchemy.orm import subqueryload
-from models import HistoryItem, LanguageModel, Mode, Prompt, Result, VoiceModel
+from models import LanguageModel, Mode, Prompt, Result, VoiceModel
 from utils.utils import get_temp_path, get_user_data_path
 from loguru import logger
 
@@ -207,4 +206,4 @@ class DatabaseManager:
 if __name__ == "__main__":
     db = DatabaseManager()
     with db.create_session() as session:
-        pass  # Use the session for database operations here
+        pass

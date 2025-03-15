@@ -1,6 +1,5 @@
 import { useState } from "react";
 import Settings from "./Settings";
-import History from "./History";
 import Credits from "./Credits";
 import { AppSidebar } from "../components/app-sidebar";
 import { Page } from "../lib/models";
@@ -12,8 +11,6 @@ const MainWindow = () => {
     switch (page) {
       case "Settings":
         return <Settings />;
-      case "History":
-        return <History />;
       case "Credits":
         return <Credits />;
     }

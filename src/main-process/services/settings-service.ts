@@ -29,7 +29,6 @@ export const DEFAULT_SETTINGS: AppSettings = {
     autoPasteResult: false,
     restoreClipboard: false,
   },
-  language: "",
 };
 
 export class SettingsService extends EventEmitter {
@@ -84,11 +83,6 @@ export class SettingsService extends EventEmitter {
         this.emit(SETTINGS_SERVICE_EVENTS.SHORTCUT_PRESSED);
       }
     );
-  }
-
-  setLanguage(language: string) {
-    this.settings.language = language === "auto" ? "" : language;
-    this.persistSettings();
   }
 
   cleanup() {

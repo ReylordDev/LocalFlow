@@ -1,6 +1,5 @@
 import sys
 import time
-from uuid import UUID
 from pydantic import ValidationError
 from recorder import AudioRecorder
 from compressor import Compressor
@@ -10,18 +9,17 @@ from utils.logging import initialize_logger
 from utils.utils import get_temp_path
 from window_detector import WindowDetector
 from models import (
-    AudioLevel,
+    AudioLevelMessage,
     Command,
     ControllerStatusType,
-    Devices,
-    Error,
+    DevicesMessage,
+    ErrorMessage,
     LanguageModelTranscriptionMessage,
     Mode,
-    ModelNotLoadedException,
-    OllamaOfflineException,
     Result,
     SelectDeviceCommand,
     SelectModeCommand,
+    StatusMessage,
     TranscriptionMessage,
 )
 from utils.ipc import print_message, print_progress
@@ -46,7 +44,7 @@ class Controller:
 
     def update_status(self, status: ControllerStatusType):
         self.status = status
-        print_message("status", status)
+        print_message("status", StatusMessage(status=status))
 
     def execute_transcription_workflow(self):
         if self.recorder.recording:
@@ -134,12 +132,13 @@ class Controller:
 
         elif command.action == "audio_level":
             print_message(
-                "audio_level", AudioLevel(audio_level=self.recorder.get_audio_level())
+                "audio_level",
+                AudioLevelMessage(audio_level=self.recorder.get_audio_level()),
             )
 
         elif command.action == "select_mode":
             if not isinstance(command.data, SelectModeCommand):
-                print_message("error", Error(error="Invalid command data"))
+                print_message("error", ErrorMessage(error="Invalid command data"))
                 return
             mode_id = command.data.mode_id
             mode = self.database_manager.get_mode(mode_id)
@@ -147,20 +146,16 @@ class Controller:
                 self.mode = mode
                 logger.info(f"Mode changed to: {mode.name}")
             else:
-                print_message("error", Error(error="Mode not found"))
-
-        elif command.action == "get_history":
-            raise NotImplementedError()
-
-        elif command.action == "delete_transcription":
-            raise NotImplementedError()
+                print_message("error", ErrorMessage(error="Mode not found"))
 
         elif command.action == "get_devices":
-            print_message("devices", Devices(devices=self.recorder.get_devices()))
+            print_message(
+                "devices", DevicesMessage(devices=self.recorder.get_devices())
+            )
 
         elif command.action == "set_device":
             if not isinstance(command.data, SelectDeviceCommand):
-                print_message("error", Error(error="Invalid command data"))
+                print_message("error", ErrorMessage(error="Invalid command data"))
                 return
             self.recorder.set_device(command.data.index)
 
@@ -176,7 +171,7 @@ def main():
             controller.handle_command(data)
         except ValidationError as e:
             logger.error(f"Invalid data: {e}")
-            print_message("error", Error(error=f"Invalid data: {e}"))
+            print_message("error", ErrorMessage(error=f"Invalid data: {e}"))
             sys.stdout.flush()
 
 
@@ -184,6 +179,7 @@ def main():
 def debug():
     initialize_logger()
     logger.warning("Running Debug Mode")
+    # TODO: Check that ollama is running
     controller = Controller()
 
     mode_id = controller.database_manager.get_mode_by_name("General").id
@@ -200,5 +196,5 @@ def debug():
 
 
 if __name__ == "__main__":
-    # main()
-    debug()
+    main()
+    # debug()

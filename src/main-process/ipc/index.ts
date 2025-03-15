@@ -16,28 +16,8 @@ export function registerIpcHandlers(
   registerURLHandlers();
   registerDeviceHandlers(pythonService);
 
-  // Main recording controls
   ipcMain.on(CHANNELS.CONTROLLER.TOGGLE_RECORDING, () => {
     pythonService.toggleRecording();
-  });
-
-  ipcMain.on(CHANNELS.CONTROLLER.MODEL_STATUS_REQUEST, () => {
-    pythonService.sendCommand({
-      action: "model_status",
-    });
-  });
-
-  ipcMain.on(CHANNELS.CONTROLLER.HISTORY_REQUEST, () => {
-    pythonService.sendCommand({
-      action: "get_history",
-    });
-  });
-
-  ipcMain.on(CHANNELS.CONTROLLER.DELETE_TRANSCRIPTION, (_, id: number) => {
-    pythonService.sendCommand({
-      action: "delete_transcription",
-      data: { id },
-    });
   });
 
   ipcMain.on(CHANNELS.MINI.AUDIO_LEVEL_REQUEST, () => {

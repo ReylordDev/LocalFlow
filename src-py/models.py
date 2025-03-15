@@ -15,13 +15,7 @@ ActionType = Literal[
     "cancel",
     "reset",
     "audio_level",
-    "quit",
     "select_mode",
-    "model_status",
-    "model_load",
-    "get_history",
-    "delete_transcription",
-    "set_language",
     "get_devices",
     "set_device",
 ]
@@ -32,12 +26,11 @@ StepType = Union[
         "recording",
         "compression",
         "transcription",
-        "formatting",
-        "committing_to_history",
-        "loading_transcriber",
-        "loading_formatter",
     ],
 ]
+
+
+### Electron -> Python IPC
 
 
 class SelectModeCommand(BaseModel):
@@ -50,7 +43,13 @@ class SelectDeviceCommand(BaseModel):
 
 class Command(BaseModel):
     action: ActionType
-    data: Optional[dict] | SelectModeCommand = None
+    data: SelectModeCommand | SelectDeviceCommand | None = None
+
+
+#########################
+
+
+### Python -> Electron IPC
 
 
 class ProgressMessage(BaseModel):
@@ -72,27 +71,11 @@ class LanguageModelTranscriptionMessage(BaseModel):
     formatted_transcription: str
 
 
-class ModelStatus(BaseModel):
-    transcriber_status: Literal["offline", "online"]
-    formatter_status: Literal["offline", "online"]
-
-
-class AudioLevel(BaseModel):
+class AudioLevelMessage(BaseModel):
     audio_level: float
 
 
-class HistoryItem(BaseModel):
-    id: int
-    raw_transcription: str
-    formatted_transcription: str
-    created_at: str
-
-
-class History(BaseModel):
-    transcriptions: list[HistoryItem]
-
-
-class Error(BaseModel):
+class ErrorMessage(BaseModel):
     error: str
 
 
@@ -102,39 +85,56 @@ class Device(BaseModel):
     default_samplerate: float
 
 
-class Devices(BaseModel):
+class DevicesMessage(BaseModel):
     devices: list[Device]
 
 
+ControllerStatusType = Literal[
+    "idle",
+    "recording",
+    "compressing",
+    "loading_voice_model",
+    "transcribing",
+    "loading_language_model",
+    "generating_ai_result",
+    "saving",
+    "result",
+]
+
+
+class StatusMessage(BaseModel):
+    status: ControllerStatusType
+
+
 MessageType = Literal[
-    "audio_level",
     "progress",
     "transcription",
     "formatted_transcription",
+    "audio_level",
     "exception",
-    "model_status",
-    "history",
-    "error",
     "devices",
+    "error",
     "status",
 ]
+
 MessageDataType = Union[
     ProgressMessage,
     TranscriptionMessage,
     LanguageModelTranscriptionMessage,
-    AudioLevel,
+    AudioLevelMessage,
     ExceptionMessage,
-    ModelStatus,
-    History,
-    Devices,
-    Error,
-    "ControllerStatusType",
+    DevicesMessage,
+    ErrorMessage,
+    StatusMessage,
 ]
 
 
 class Message(BaseModel):
     type: MessageType
     data: MessageDataType
+
+
+#################
 
 
 class ModelNotLoadedException(Exception):
@@ -164,9 +164,7 @@ class ActiveWindowContext(BaseModel):
 ##################
 
 # TODO: Check that this is correct
-type LanguageType = Literal["auto", "en", "de", "fr", "it", "es", "pt", "hi", "th"]
-
-type VoiceModelNameType = Literal["large-v3-turbo", "large-v3", "distil-large-v3"]
+LanguageType = Literal["auto", "en", "de", "fr", "it", "es", "pt", "hi", "th"]
 
 language_name_map: dict[LanguageType, str] = {
     "auto": "Auto",
@@ -179,6 +177,8 @@ language_name_map: dict[LanguageType, str] = {
     "hi": "Hindi",
     "th": "Thai",
 }
+
+VoiceModelNameType = Literal["large-v3-turbo", "large-v3", "distil-large-v3"]
 
 
 class Mode(SQLModel, table=True):
@@ -250,7 +250,7 @@ class TextReplacement(SQLModel, table=True):
     original_text: str
     replacement_text: str
 
-    mode_id: UUID = Field(foreign_key="mode.id")
+    mode_id: UUID | None = Field(foreign_key="mode.id")
     mode: Mode | None = Relationship(back_populates="text_replacements")
 
 
@@ -269,16 +269,3 @@ class Result(SQLModel, table=True):
         location = f"{get_user_data_path()}/results/{self.id}"
         os.makedirs(location, exist_ok=True)
         return location
-
-
-type ControllerStatusType = Literal[
-    "idle",
-    "recording",
-    "compressing",
-    "loading_voice_model",
-    "transcribing",
-    "loading_language_model",
-    "generating_ai_result",
-    "saving",
-    "result",
-]

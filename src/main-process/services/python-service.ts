@@ -2,28 +2,23 @@ import { PythonShell } from "python-shell";
 import { EventEmitter } from "events";
 import { AppConfig, consoleLog } from "../utils/config";
 import {
-  AudioLevel,
+  AudioLevelMessage,
   Command,
-  Devices,
-  FormattedTranscripton,
+  DevicesMessage,
+  LanguageModelTranscriptionMessage,
   Message,
-  ModelStatus,
   ProgressMessage,
-  History,
   AppSettings,
   PYTHON_SERVICE_EVENTS,
-  Error,
-  MiniStatus,
+  ErrorMessage,
+  StatusMessage,
+  ControllerStatusType,
 } from "../../lib/models";
 import path from "path";
 import { SettingsService } from "./settings-service";
 
 export class PythonService extends EventEmitter {
   private shell: PythonShell;
-  private status: ModelStatus = {
-    transcriber_status: "offline",
-    formatter_status: "offline",
-  };
   private activeRecording = false;
 
   constructor(
@@ -35,21 +30,6 @@ export class PythonService extends EventEmitter {
       "settings-changed",
       this.handleSettingsChange.bind(this)
     );
-    setInterval(() => {
-      this.sendCommand({ action: "model_status" } as Command);
-    }, 5 * 1000); // 5 seconds in milliseconds
-    setInterval(
-      () => {
-        if (
-          this.status.formatter_status === "online" &&
-          this.status.transcriber_status === "online"
-        ) {
-          consoleLog("Auto extending models");
-          this.sendCommand({ action: "model_load" } as Command);
-        }
-      },
-      14 * 60 * 1000
-    ); // 14 minutes in milliseconds, should slightly undercut the keep_alive time of the models
   }
 
   async initialize() {
@@ -74,43 +54,38 @@ export class PythonService extends EventEmitter {
   private handleMessage(message: Message) {
     switch (message.type) {
       case "progress":
-        this.handleProgress(message.data as ProgressMessage);
+        this.handleProgressUpdate(message.data as ProgressMessage);
+        break;
+      case "status":
+        this.handleStatusUpdate((message.data as StatusMessage).status);
+        break;
+      case "transcription":
+        consoleLog("Voice Model Transcription:", message.data);
         break;
       case "formatted_transcription":
         this.emit(
           PYTHON_SERVICE_EVENTS.TRANSCRIPTION,
-          (message.data as FormattedTranscripton).formatted_transcription
+          (message.data as LanguageModelTranscriptionMessage)
+            .formatted_transcription
         );
         break;
       case "audio_level":
         this.emit(
           PYTHON_SERVICE_EVENTS.AUDIO_LEVEL,
-          (message.data as AudioLevel).audio_level
-        );
-        break;
-      case "model_status":
-        this.handleModelStatus(message);
-        break;
-      case "history":
-        this.emit(
-          PYTHON_SERVICE_EVENTS.HISTORY,
-          (message.data as History).transcriptions
+          (message.data as AudioLevelMessage).audio_level
         );
         break;
       case "devices":
         this.emit(
           PYTHON_SERVICE_EVENTS.DEVICES,
-          (message.data as Devices).devices
+          (message.data as DevicesMessage).devices
         );
-        break;
-      case "raw_transcription":
-        consoleLog("Raw Transcription:", message.data);
         break;
       case "error":
         consoleLog("Error:", message.data);
         this.emit(
           PYTHON_SERVICE_EVENTS.ERROR,
-          (message.data as unknown as Error).error
+          (message.data as unknown as ErrorMessage).error
         );
         break;
       case "exception":
@@ -121,86 +96,24 @@ export class PythonService extends EventEmitter {
     }
   }
 
-  private handleProgress(progress: ProgressMessage) {
+  private handleProgressUpdate(progress: ProgressMessage) {
     if (progress.step === "init" && progress.status === "complete") {
       this.emit(PYTHON_SERVICE_EVENTS.MODELS_READY);
     }
-    if (
-      progress.step === "loading_transcriber" &&
-      progress.status === "start"
-    ) {
-      this.emit(
-        PYTHON_SERVICE_EVENTS.STATUS_UPDATE,
-        "loading_transcriber" as MiniStatus
-      );
-    } else if (
-      progress.step === "transcription" &&
-      progress.status === "start"
-    ) {
-      this.emit(
-        PYTHON_SERVICE_EVENTS.STATUS_UPDATE,
-        "transcribing" as MiniStatus
-      );
-    } else if (
-      progress.step === "loading_formatter" &&
-      progress.status === "start"
-    ) {
-      this.emit(
-        PYTHON_SERVICE_EVENTS.STATUS_UPDATE,
-        "loading_formatter" as MiniStatus
-      );
-    } else if (progress.step === "formatting" && progress.status === "start") {
-      this.emit(
-        PYTHON_SERVICE_EVENTS.STATUS_UPDATE,
-        "formatting" as MiniStatus
-      );
-    } else if (
-      progress.step === "formatting" &&
-      progress.status === "complete"
-    ) {
-      this.emit(PYTHON_SERVICE_EVENTS.STATUS_UPDATE, "default" as MiniStatus);
-    }
-
-    consoleLog(`Progress: ${progress.step} - ${progress.status}`);
   }
 
-  private handleModelStatus(message: Message) {
-    const newStatus = message.data as ModelStatus;
-    if (
-      this.status.formatter_status !== newStatus.formatter_status ||
-      this.status.transcriber_status !== newStatus.transcriber_status
-    ) {
-      this.status = newStatus;
-      this.emit(PYTHON_SERVICE_EVENTS.MODEL_STATUS, this.status);
-    }
+  private handleStatusUpdate(status: ControllerStatusType) {
+    this.emit(PYTHON_SERVICE_EVENTS.STATUS_UPDATE, status);
   }
 
   toggleRecording() {
-    // TODO: might be removable now.
-    // if (
-    //   this.status.transcriber_status !== "online" ||
-    //   this.status.formatter_status !== "online"
-    // ) {
-    //   this.emit(PYTHON_SERVICE_EVENTS.ERROR, "Models are not ready");
-    //   return;
-    // }
-    if (!this.activeRecording) {
-      this.sendCommand({ action: "reset" } as Command);
-      this.sendCommand({ action: "start" } as Command);
-      this.emit(PYTHON_SERVICE_EVENTS.RECORDING_START);
-      this.activeRecording = true;
-    } else {
-      this.emit(PYTHON_SERVICE_EVENTS.RECORDING_STOP);
-      this.sendCommand({ action: "stop" } as Command);
-      this.activeRecording = false;
-    }
+    this.sendCommand({ action: "toggle" } as Command);
+    this.activeRecording = !this.activeRecording;
   }
 
   private handleSettingsChange(settings: AppSettings) {
-    this.sendCommand({
-      action: "set_language",
-      data: { language: settings.language },
-    });
+    consoleLog("Settings changed:", settings);
+    consoleLog("Not implemented yet.");
   }
 
   sendCommand(command: Command) {

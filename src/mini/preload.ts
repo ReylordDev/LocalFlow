@@ -2,30 +2,12 @@
 // https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
 
 import { contextBridge, ipcRenderer, IpcRendererEvent } from "electron";
-import { CHANNELS, MiniStatus } from "../lib/models";
+import { CHANNELS, ControllerStatusType } from "../lib/models";
 
 // Expose protected methods that allow the renderer process to use
 // the ipcRenderer without exposing the entire object
 
 contextBridge.exposeInMainWorld("mini", {
-  onRecordingStart: (callback) => {
-    const listener = () => {
-      callback();
-    };
-    ipcRenderer.on(CHANNELS.MINI.RECORDING_START, listener);
-    return () => {
-      ipcRenderer.off(CHANNELS.MINI.RECORDING_START, listener);
-    };
-  },
-  onRecordingStop: (callback) => {
-    const listener = () => {
-      callback();
-    };
-    ipcRenderer.on(CHANNELS.MINI.RECORDING_STOP, listener);
-    return () => {
-      ipcRenderer.off(CHANNELS.MINI.RECORDING_STOP, listener);
-    };
-  },
   requestAudioLevel: async () => {
     return ipcRenderer.send(CHANNELS.MINI.AUDIO_LEVEL_REQUEST);
   },
@@ -39,7 +21,7 @@ contextBridge.exposeInMainWorld("mini", {
     };
   },
   onStatusUpdate: (callback) => {
-    const listener = (_: IpcRendererEvent, status: MiniStatus) => {
+    const listener = (_: IpcRendererEvent, status: ControllerStatusType) => {
       callback(status);
     };
     ipcRenderer.on(CHANNELS.MINI.STATUS_UPDATE, listener);

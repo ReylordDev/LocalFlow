@@ -1,74 +1,38 @@
 // Python Models
 // These have to match the models in models.py
 
+import { UUID } from "crypto";
+
 type Action =
-  | "start"
-  | "stop"
+  | "toggle"
+  | "cancel"
   | "reset"
   | "audio_level"
-  | "quit"
-  | "model_status"
-  | "model_load"
-  | "get_history"
-  | "delete_transcription"
-  | "set_language"
+  | "select_mode"
   | "get_devices"
   | "set_device";
 
-export interface ProgressMessage {
-  step:
-    | Action
-    | "init"
-    | "recording"
-    | "compression"
-    | "transcription"
-    | "formatting"
-    | "committing_to_history"
-    | "loading_transcriber"
-    | "loading_formatter";
-  status: "start" | "complete" | "error";
-  timestamp: number;
+// --------------- Electron to Python IPC Models --------------- //
+
+interface SelectModeCommand {
+  mode_id: UUID;
+}
+
+interface SelectDeviceCommand {
+  index: number;
 }
 
 export interface Command {
   action: Action;
-  data?: object;
+  data?: SelectModeCommand | SelectDeviceCommand;
 }
 
-export interface Message {
-  type:
-    | "audio_level"
-    | "progress"
-    | "raw_transcription"
-    | "formatted_transcription"
-    | "exception"
-    | "model_status"
-    | "history"
-    | "error"
-    | "devices";
-  data:
-    | ProgressMessage
-    | RawTranscription
-    | FormattedTranscripton
-    | AudioLevel
-    | ExceptionMessage
-    | ModelStatus
-    | History
-    | Devices
-    | Error;
-}
+// --------------- Python to Electron IPC Models --------------- //
 
-// TODO: Fix snake case
-export interface RawTranscription {
-  raw_transcription: string;
-}
-
-export interface FormattedTranscripton {
-  formatted_transcription: string;
-}
-
-export interface AudioLevel {
-  audio_level: number;
+export interface ProgressMessage {
+  step: Action | "init" | "recording" | "compression" | "transcription";
+  status: "start" | "complete" | "error";
+  timestamp: number;
 }
 
 export interface ExceptionMessage {
@@ -76,24 +40,20 @@ export interface ExceptionMessage {
   timestamp: number;
 }
 
-export interface Error {
-  error: string;
+export interface TranscriptionMessage {
+  transcription: string;
 }
 
-export interface ModelStatus {
-  transcriber_status: "offline" | "online";
-  formatter_status: "offline" | "online";
-}
-
-export interface HistoryItem {
-  id: number;
-  raw_transcription: string;
+export interface LanguageModelTranscriptionMessage {
   formatted_transcription: string;
-  created_at: string;
 }
 
-export interface History {
-  transcriptions: HistoryItem[];
+export interface AudioLevelMessage {
+  audio_level: number;
+}
+
+export interface ErrorMessage {
+  error: string;
 }
 
 export interface Device {
@@ -102,12 +62,157 @@ export interface Device {
   default_samplerate: number;
 }
 
-export interface Devices {
+export interface DevicesMessage {
   devices: Device[];
 }
 
-// Frontend-only models
-export type Page = "Settings" | "History" | "Credits";
+export type ControllerStatusType =
+  | "idle"
+  | "recording"
+  | "compressing"
+  | "loading_voice_model"
+  | "transcribing"
+  | "loading_language_model"
+  | "generating_ai_result"
+  | "saving"
+  | "result";
+
+export interface StatusMessage {
+  status: ControllerStatusType;
+}
+
+export interface Message {
+  type:
+    | "progress"
+    | "transcription"
+    | "formatted_transcription"
+    | "audio_level"
+    | "exception"
+    | "devices"
+    | "error"
+    | "status";
+  data:
+    | ProgressMessage
+    | TranscriptionMessage
+    | LanguageModelTranscriptionMessage
+    | AudioLevelMessage
+    | ExceptionMessage
+    | DevicesMessage
+    | ErrorMessage
+    | StatusMessage;
+}
+
+// --------------- Database Models --------------- //
+
+type LanguageType =
+  | "auto"
+  | "en"
+  | "de"
+  | "fr"
+  | "it"
+  | "es"
+  | "pt"
+  | "hi"
+  | "th";
+
+export const languageNameMap: Record<LanguageType, string> = {
+  auto: "Auto",
+  en: "English",
+  de: "German",
+  fr: "French",
+  it: "Italian",
+  es: "Spanish",
+  pt: "Portuguese",
+  hi: "Hindi",
+  th: "Thai",
+};
+
+type VoiceModelType = "large-v3-turbo" | "large-v3" | "distil-large-v3";
+
+interface Mode {
+  id: UUID;
+  name: string;
+  default: boolean;
+  active: boolean;
+
+  text_replacements: TextReplacement[];
+
+  voice_model: VoiceModel;
+  voice_model_id: VoiceModelType;
+  voice_language: LanguageType;
+  translate_to_english: boolean;
+
+  use_language_model: boolean;
+  language_model?: LanguageModel;
+  language_model_id?: string;
+  prompt?: Prompt;
+
+  record_system_audio: boolean;
+}
+
+interface VoiceModel {
+  name: VoiceModelType;
+  language: "english-only" | "multilingual";
+  speed: number;
+  accuracy: number;
+  size: number;
+  parameters: number;
+
+  modes: Mode[];
+}
+
+interface LanguageModel {
+  name: string;
+  modes: Mode[];
+}
+
+interface Prompt {
+  id: string;
+
+  mode_id?: UUID;
+  mode?: Mode;
+
+  system_prompt: string;
+  examples: Example[];
+
+  include_clipboard: boolean;
+  include_active_window: boolean;
+}
+
+interface Example {
+  id: UUID;
+  input: string;
+  output: string;
+
+  prompt_id: UUID;
+  prompt: Prompt;
+}
+
+interface TextReplacement {
+  id: UUID;
+  original_text: string;
+  replacement_text: string;
+
+  mode_id?: UUID;
+  mode?: Mode;
+}
+
+interface Result {
+  id: UUID;
+  mode_id: UUID;
+  created_at: number;
+  transcription: string;
+  ai_result?: string;
+  duration: number;
+  processing_time: number;
+
+  location: string;
+}
+
+// --------------- Frontend Models --------------- //
+
+// TODO: update with new pages
+export type Page = "Settings" | "Credits";
 
 interface ApplicationConfig {
   launchAtStartup: boolean;
@@ -141,37 +246,21 @@ export interface AppSettings {
   keyboard: KeyboardConfig;
   audio: AudioConfig;
   output: OutputConfig;
-  language: string; // TODO: remove
 }
-
-export type MiniStatus =
-  | "default"
-  | "transcribing"
-  | "formatting"
-  | "loading_transcriber"
-  | "loading_formatter";
 
 export const CHANNELS = {
   CONTROLLER: {
     TOGGLE_RECORDING: "controller:toggle-recording",
-    MODEL_STATUS_REQUEST: "controller:requestModelStatus",
-    MODEL_STATUS_RESPONSE: "controller:model-status",
-    HISTORY_REQUEST: "controller:getHistory",
-    HISTORY_RESPONSE: "controller:history",
-    DELETE_TRANSCRIPTION: "controller:deleteTranscription",
   },
   SETTINGS: {
     GET: "settings:get-all",
     SET_SHORTCUT: "settings:set-shortcut",
     DISABLE_SHORTCUT: "settings:disable-shortcut",
-    SET_LANGUAGE: "settings:set-language",
   },
   URL: {
     OPEN: "url:open",
   },
   MINI: {
-    RECORDING_START: "mini:recording-start",
-    RECORDING_STOP: "mini:recording-stop",
     AUDIO_LEVEL_REQUEST: "mini:requestAudioLevel",
     AUDIO_LEVEL_RESPONSE: "mini:audio-level",
     STATUS_UPDATE: "mini:status-update",
@@ -187,33 +276,23 @@ declare global {
   interface Window {
     controller: {
       toggleRecording: () => void;
-      requestModelStatus: () => void;
-      onReceiveModelStatus: (
-        callback: (status: ModelStatus) => void
-      ) => () => void;
-      getHistory: () => void;
-      onReceiveHistory: (
-        callback: (transcriptions: HistoryItem[]) => void
-      ) => () => void;
-      deleteTranscription: (id: number) => void;
     };
     settings: {
       getAll: () => Promise<AppSettings>;
       setShortcut: (shortcut: string) => Promise<string>;
       disableShortcut: () => void;
-      setLanguage: (language: string) => Promise<string>;
     };
     url: {
       open: (url: string) => void;
     };
     mini: {
-      onRecordingStart: (callback: () => void) => () => void;
-      onRecordingStop: (callback: () => void) => () => void;
       requestAudioLevel: () => void;
       onReceiveAudioLevel: (
         callback: (audioLevel: number) => void
       ) => () => void;
-      onStatusUpdate: (callback: (status: MiniStatus) => void) => () => void;
+      onStatusUpdate: (
+        callback: (status: ControllerStatusType) => void
+      ) => () => void;
     };
     device: {
       requestAll: () => void;
@@ -226,12 +305,8 @@ declare global {
 export const PYTHON_SERVICE_EVENTS = {
   MODELS_READY: "models-ready",
   ERROR: "error",
-  RECORDING_START: "recording-start",
-  RECORDING_STOP: "recording-stop",
   TRANSCRIPTION: "transcription",
   AUDIO_LEVEL: "audio-level",
-  MODEL_STATUS: "model-status",
-  HISTORY: "history",
   DEVICES: "devices",
   STATUS_UPDATE: "status-update",
 };

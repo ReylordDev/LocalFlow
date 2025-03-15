@@ -10,31 +10,17 @@ import { Button } from "../components/ui/button";
 import { cn } from "../lib/utils";
 import { Device } from "../lib/models";
 
-const languages = [
-  { code: "auto", name: "Auto" },
-  { code: "en", name: "English" },
-  { code: "de", name: "German" },
-  { code: "fr", name: "French" },
-  { code: "it", name: "Italian" },
-  { code: "es", name: "Spanish" },
-  { code: "pt", name: "Portuguese" },
-  { code: "hi", name: "Hindi" },
-  { code: "th", name: "Thai" },
-];
-
 const Settings = () => {
   console.log("Settings");
 
   const [startShortcut, setStartShortcut] = useState("");
-  const [language, setLanguage] = useState("Auto");
   const [inputDevice, setInputDevice] = useState<Device | null>(null);
   const [devices, setDevices] = useState<Device[]>([]);
 
   useEffect(() => {
     window.settings.getAll().then((settings) => {
       console.log("Received Settings", settings);
-      setStartShortcut(settings.toggleRecordingShortcut);
-      setLanguage(settings.language);
+      setStartShortcut(settings.keyboard.toggleRecordingShortcut);
     });
   }, []);
 
@@ -51,7 +37,6 @@ const Settings = () => {
   }, []);
 
   console.log("Start Shortcut", startShortcut);
-  console.log("Language", language);
   console.log("Input Device", inputDevice);
   console.log("Devices", devices);
 
@@ -102,30 +87,6 @@ const Settings = () => {
                   className={cn(device === inputDevice && "bg-gray-200")}
                 >
                   {device.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="flex justify-between items-center">
-          <div className="flex flex-col gap-2">
-            <h2 className="text-xl font-semibold">Language</h2>
-            <p>Select your default speaking language</p>
-          </div>
-          <Select
-            value={language || "auto"}
-            onValueChange={(lang) => {
-              setLanguage(lang);
-              window.settings.setLanguage(lang);
-            }}
-          >
-            <SelectTrigger className="w-[180px] rounded text-lg">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {languages.map((lang) => (
-                <SelectItem key={lang.code} value={lang.code}>
-                  {lang.name}
                 </SelectItem>
               ))}
             </SelectContent>

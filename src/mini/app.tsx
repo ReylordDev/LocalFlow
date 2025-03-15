@@ -2,15 +2,10 @@ import { createRoot } from "react-dom/client";
 import SpeechVocalization from "../components/SpeechVocalization";
 import { useEffect, useState } from "react";
 import { LoaderCircle } from "lucide-react";
+import { ControllerStatusType } from "../lib/models";
 
 const App = () => {
-  const [status, setStatus] = useState<
-    | "default"
-    | "transcribing"
-    | "formatting"
-    | "loading_transcriber"
-    | "loading_formatter"
-  >("default");
+  const [status, setStatus] = useState<ControllerStatusType>("idle");
 
   useEffect(() => {
     const unsubscribe = window.mini.onStatusUpdate((status) => {
@@ -18,14 +13,14 @@ const App = () => {
     });
 
     return () => {
-      setStatus("default");
+      setStatus("idle");
       unsubscribe();
     };
   }, []);
 
   return (
     <div className="bg-transparent text-white flex justify-center items-center">
-      {status === "loading_transcriber" ? (
+      {status === "loading_voice_model" ? (
         <div className="flex h-10 bg-zinc-800 rounded-full p-1 px-4 justify-center drag">
           <div className="flex justify-center items-center gap-4 ">
             <LoaderCircle size={20} className="animate-spin-slow" />
@@ -39,14 +34,14 @@ const App = () => {
             Transcribing audio...
           </div>
         </div>
-      ) : status === "loading_formatter" ? (
+      ) : status === "loading_language_model" ? (
         <div className="flex h-10 bg-zinc-800 rounded-full p-1 px-4 justify-center drag">
           <div className="flex justify-center items-center gap-4 ">
             <LoaderCircle size={20} className="animate-spin-slow" />
             Loading formatter model...
           </div>
         </div>
-      ) : status === "formatting" ? (
+      ) : status === "generating_ai_result" ? (
         <div className="flex h-10 bg-zinc-800 rounded-full p-1 px-4 justify-center drag">
           <div className="flex justify-center items-center gap-4 ">
             <LoaderCircle size={20} className="animate-spin-slow" />

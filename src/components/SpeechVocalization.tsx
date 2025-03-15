@@ -49,18 +49,13 @@ const SpeechVocalization = () => {
   }, []);
 
   useEffect(() => {
-    const unsubscribe = window.mini.onRecordingStart(() => {
-      console.log("Recording started");
-      setRecording(true);
-    });
-
-    return () => unsubscribe();
-  }, []);
-
-  useEffect(() => {
-    const unsubscribe = window.mini.onRecordingStop(() => {
-      console.log("Recording stopped");
-      setRecording(false);
+    const unsubscribe = window.mini.onStatusUpdate((status) => {
+      console.log("Status update", status);
+      if (status == "recording") {
+        setRecording(true);
+      } else {
+        setRecording(false);
+      }
     });
 
     return () => unsubscribe();

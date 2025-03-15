@@ -6,13 +6,11 @@ import { TrayManager } from "./main-process/windows/tray-manager";
 import { registerIpcHandlers } from "./main-process/ipc";
 import { AppConfig, consoleLog } from "./main-process/utils/config";
 import {
-  HistoryItem,
   Device,
-  ModelStatus,
   CHANNELS,
   PYTHON_SERVICE_EVENTS,
   SETTINGS_SERVICE_EVENTS,
-  MiniStatus,
+  ControllerStatusType,
 } from "./lib/models";
 
 // Handle setup events
@@ -55,19 +53,9 @@ app.whenReady().then(async () => {
     app.quit();
   });
 
-  pythonService.on(PYTHON_SERVICE_EVENTS.RECORDING_START, () => {
-    windowManager.showMiniWindow();
-    windowManager.sendMiniWindowMessage(CHANNELS.MINI.RECORDING_START);
-  });
-
-  pythonService.on(PYTHON_SERVICE_EVENTS.RECORDING_STOP, () => {
-    windowManager.sendMiniWindowMessage(CHANNELS.MINI.RECORDING_STOP);
-  });
-
   pythonService.on(
     PYTHON_SERVICE_EVENTS.TRANSCRIPTION,
     (transcription: string) => {
-      windowManager.hideMiniWindow();
       clipboard.writeText(transcription);
       new Notification({
         title: "Transcription copied to clipboard",
@@ -83,27 +71,6 @@ app.whenReady().then(async () => {
     );
   });
 
-  pythonService.on(
-    PYTHON_SERVICE_EVENTS.MODEL_STATUS,
-    (status: ModelStatus) => {
-      windowManager.sendMainWindowMessage(
-        CHANNELS.CONTROLLER.MODEL_STATUS_RESPONSE,
-        status
-      );
-      trayManager.updateContextMenu();
-    }
-  );
-
-  pythonService.on(
-    PYTHON_SERVICE_EVENTS.HISTORY,
-    (transcriptions: HistoryItem[]) => {
-      windowManager.sendMainWindowMessage(
-        CHANNELS.CONTROLLER.HISTORY_RESPONSE,
-        transcriptions
-      );
-    }
-  );
-
   pythonService.on(PYTHON_SERVICE_EVENTS.DEVICES, (devices: Device[]) => {
     windowManager.sendMainWindowMessage(
       CHANNELS.DEVICE.DEVICES_RESPONSE,
@@ -113,7 +80,7 @@ app.whenReady().then(async () => {
 
   pythonService.on(
     PYTHON_SERVICE_EVENTS.STATUS_UPDATE,
-    (status: MiniStatus) => {
+    (status: ControllerStatusType) => {
       windowManager.sendMiniWindowMessage(CHANNELS.MINI.STATUS_UPDATE, status);
     }
   );

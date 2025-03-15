@@ -19,13 +19,4 @@ export function registerSettingsHandlers(
   ipcMain.on(CHANNELS.SETTINGS.DISABLE_SHORTCUT, () => {
     settingsService.disableStartShortcut();
   });
-
-  ipcMain.handle(CHANNELS.SETTINGS.SET_LANGUAGE, (_, language: string) => {
-    settingsService.setLanguage(language);
-    pythonService.sendCommand({
-      action: "set_language",
-      data: { language: language },
-    });
-    return language;
-  });
 }
