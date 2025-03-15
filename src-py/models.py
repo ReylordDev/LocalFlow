@@ -1,3 +1,4 @@
+import abc
 import os
 import time
 from typing import Literal, Optional, Union
@@ -10,11 +11,12 @@ from utils.utils import get_user_data_path
 
 StatusType = Literal["start", "complete", "error"]
 ActionType = Literal[
-    "start",
-    "stop",
+    "toggle",
+    "cancel",
     "reset",
     "audio_level",
     "quit",
+    "select_mode",
     "model_status",
     "model_load",
     "get_history",
@@ -38,9 +40,17 @@ StepType = Union[
 ]
 
 
+class SelectModeCommand(BaseModel):
+    mode_id: UUID
+
+
+class SelectDeviceCommand(BaseModel):
+    index: int
+
+
 class Command(BaseModel):
     action: ActionType
-    data: Optional[dict] = None
+    data: Optional[dict] | SelectModeCommand = None
 
 
 class ProgressMessage(BaseModel):
@@ -54,11 +64,11 @@ class ExceptionMessage(BaseModel):
     timestamp: float
 
 
-class RawTranscription(BaseModel):
+class TranscriptionMessage(BaseModel):
     transcription: str
 
 
-class FormattedTranscription(BaseModel):
+class LanguageModelTranscriptionMessage(BaseModel):
     formatted_transcription: str
 
 
@@ -99,24 +109,26 @@ class Devices(BaseModel):
 MessageType = Literal[
     "audio_level",
     "progress",
-    "raw_transcription",
+    "transcription",
     "formatted_transcription",
     "exception",
     "model_status",
     "history",
     "error",
     "devices",
+    "status",
 ]
 MessageDataType = Union[
     ProgressMessage,
-    RawTranscription,
-    FormattedTranscription,
+    TranscriptionMessage,
+    LanguageModelTranscriptionMessage,
     AudioLevel,
     ExceptionMessage,
     ModelStatus,
     History,
     Devices,
     Error,
+    "ControllerStatusType",
 ]
 
 
@@ -173,6 +185,7 @@ class Mode(SQLModel, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     name: str
     default: bool = False
+    active: bool = False
 
     text_replacements: list["TextReplacement"] = Relationship(back_populates="mode")
 
@@ -193,7 +206,7 @@ class Mode(SQLModel, table=True):
     record_system_audio: bool = False
 
 
-class VoiceModel(SQLModel, table=True):
+class VoiceModel(SQLModel, abc.ABC, table=True):
     name: VoiceModelNameType = Field(primary_key=True, sa_type=String)
     language: Literal["english-only", "multilingual"] = Field(sa_type=String)
     speed: int
@@ -241,7 +254,7 @@ class TextReplacement(SQLModel, table=True):
     mode: Mode | None = Relationship(back_populates="text_replacements")
 
 
-class Recording(SQLModel, table=True):
+class Result(SQLModel, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     mode_id: UUID = Field(foreign_key="mode.id")
     created_at: float = Field(default_factory=time.time)
@@ -256,3 +269,16 @@ class Recording(SQLModel, table=True):
         location = f"{get_user_data_path()}/results/{self.id}"
         os.makedirs(location, exist_ok=True)
         return location
+
+
+type ControllerStatusType = Literal[
+    "idle",
+    "recording",
+    "compressing",
+    "loading_voice_model",
+    "transcribing",
+    "loading_language_model",
+    "generating_ai_result",
+    "saving",
+    "result",
+]

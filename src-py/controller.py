@@ -1,32 +1,33 @@
 import sys
+import time
+from uuid import UUID
 from pydantic import ValidationError
 from recorder import AudioRecorder
 from compressor import Compressor
 from transcriber import LocalTranscriber
-from formatter import LocalFormatter
+from formatter import AIProcessor
 from utils.logging import initialize_logger
+from utils.utils import get_temp_path
 from window_detector import WindowDetector
 from models import (
-    ActiveWindowContext,
     AudioLevel,
     Command,
+    ControllerStatusType,
     Devices,
     Error,
-    FormattedTranscription,
-    History,
+    LanguageModelTranscriptionMessage,
+    Mode,
     ModelNotLoadedException,
-    ModelStatus,
     OllamaOfflineException,
-    RawTranscription,
+    Result,
+    SelectDeviceCommand,
+    SelectModeCommand,
+    TranscriptionMessage,
 )
 from utils.ipc import print_message, print_progress
 from loguru import logger
 from database import (
     DatabaseManager,
-    initialize_db,
-    commit_transcription_to_db,
-    get_all_transcriptions_from_db,
-    delete_transcription_from_db,
 )
 
 
@@ -35,147 +36,139 @@ class Controller:
         print_progress("init", "start")
 
         self.recorder = AudioRecorder()
+        self.compressor = Compressor()
         self.database_manager = DatabaseManager()
-        self.transcriber = LocalTranscriber()
-        self.formatter = LocalFormatter()
         self.window_detector = WindowDetector()
-        self.db_con = initialize_db()
 
+        self.status: ControllerStatusType = "idle"
+        self.mode: Mode = self.database_manager.get_active_mode()
         print_progress("init", "complete")
 
-    def handle_stop(self):
+    def update_status(self, status: ControllerStatusType):
+        self.status = status
+        print_message("status", status)
+
+    def execute_transcription_workflow(self):
         if self.recorder.recording:
             self.recorder.stop()
-        print_progress("recording", "complete")
-        print_progress("compression", "start")
-        self.compressor = Compressor()
-        self.compressor.compress()
-        print_progress("compression", "complete")
+        processing_start_time = time.time()
 
-        print_progress("loading_transcriber", "start")
+        self.update_status("compressing")
+        self.compressor.compress()
+
+        self.update_status("loading_voice_model")
+        self.transcriber = LocalTranscriber(
+            self.mode.voice_model, self.mode.voice_language
+        )
         self.transcriber.load_model()
-        print_progress("loading_transcriber", "complete")
-        print_progress("transcription", "start")
+
+        self.update_status("transcribing")
         transcription = self.transcriber.transcribe_audio(
-            f"{self.compressor.PATH}/recording.flac"
+            f"{get_temp_path()}/recording.flac"
+        )
+        print_message(
+            "transcription",
+            TranscriptionMessage(transcription=transcription),
         )
         self.transcriber.unload_model()
-        print_progress("transcription", "complete")
-        print_message(
-            "raw_transcription",
-            RawTranscription(transcription=transcription),
+
+        if self.mode.use_language_model:
+            assert self.mode.language_model is not None
+            assert self.mode.prompt is not None
+            self.update_status("loading_language_model")
+            self.processor = AIProcessor(self.mode.language_model, self.mode.prompt)
+            self.processor.load_model()
+
+            self.update_status("generating_ai_result")
+            ai_result = self.processor.process(transcription)
+            print_message(
+                "formatted_transcription",
+                LanguageModelTranscriptionMessage(formatted_transcription=ai_result),
+            )
+            self.processor.unload_model()
+
+        self.update_status("saving")
+        result = Result(
+            transcription=transcription,
+            ai_result=ai_result if self.mode.use_language_model else None,
+            duration=self.recorder.get_duration(),
+            processing_time=time.time() - processing_start_time,
+            mode_id=self.mode.id,
         )
-        print_progress("loading_formatter", "start")
-        self.formatter.load_model()
-        print_progress("loading_formatter", "complete")
-        print_progress("formatting", "start")
-        self.formatter.set_language(self.transcriber.language)
-        formatted_transcription = self.formatter.improve_transcription(transcription)
-        self.formatter.unload_model()
-        print_progress("formatting", "complete")
-        print_message(
-            "formatted_transcription",
-            FormattedTranscription(
-                formatted_transcription=formatted_transcription.encode("utf-8").decode(
-                    "cp1252"
-                )
-            ),
-        )
-        print_progress("committing_to_history", "start")
-        commit_transcription_to_db(self.db_con, transcription, formatted_transcription)
-        print_progress("committing_to_history", "complete")
+        self.database_manager.save_result(result)
         self.compressor.cleanup()
+
+        self.update_status("result")
+
+    def handle_toggle(self):
+        if self.status == "idle":
+            window_info = self.window_detector.get_active_window()
+            if window_info:
+                # TODO: outdated code
+                # self.formatter.set_active_window(ActiveWindowContext(**window_info))
+                pass
+            self.recorder.start()
+            self.update_status("recording")
+        elif self.status == "recording":
+            self.execute_transcription_workflow()
+        else:
+            logger.warning("Controller is not in a valid state to toggle recording.")
+
+    def handle_cancel(self):
+        if self.status == "recording":
+            self.recorder.interrupt_recording()
+            self.recorder = AudioRecorder()
+            self.update_status("idle")
+        # TODO: implement other states if needed
+        else:
+            logger.warning("Controller is not in a valid state to cancel recording.")
 
     # TODO: Move each command into their own functions
     def handle_command(self, command: Command):
         logger.info(f"Received command: {command}")
-        if command.action == "start":
-            window_info = self.window_detector.get_active_window()
-            if window_info:
-                self.formatter.set_active_window(ActiveWindowContext(**window_info))
-            self.recorder.start()
-            print_progress("recording", "start")
+        if command.action == "toggle":
+            self.handle_toggle()
 
-        elif command.action == "stop":
-            self.handle_stop()
-
-        elif command.action == "reset":
-            print_progress("reset", "start")
-            if self.recorder.recording:
-                self.recorder.stop()
-            self.recorder = AudioRecorder()
-            print_progress("reset", "complete")
+        elif command.action == "cancel":
+            self.handle_cancel()
 
         elif command.action == "audio_level":
             print_message(
-                "audio_level", AudioLevel(audio_level=self.recorder.current_audio_level)
+                "audio_level", AudioLevel(audio_level=self.recorder.get_audio_level())
             )
 
-        elif command.action == "quit":
-            if self.recorder.recording:
-                self.recorder.stop()
-            self.formatter.unload_model()
-            sys.exit(0)
-
-        elif command.action == "model_status":
-            print_message(
-                "model_status",
-                ModelStatus(
-                    transcriber_status=self.transcriber.get_status(),
-                    formatter_status=self.formatter.get_status(),
-                ),
-            )
-
-        elif command.action == "model_load":
-            print_progress("model_load", "start")
-            self.transcriber.load_model()
-            self.formatter.load_model()
-            print_progress("model_load", "complete")
+        elif command.action == "select_mode":
+            if not isinstance(command.data, SelectModeCommand):
+                print_message("error", Error(error="Invalid command data"))
+                return
+            mode_id = command.data.mode_id
+            mode = self.database_manager.get_mode(mode_id)
+            if mode:
+                self.mode = mode
+                logger.info(f"Mode changed to: {mode.name}")
+            else:
+                print_message("error", Error(error="Mode not found"))
 
         elif command.action == "get_history":
-            print_progress("get_history", "start")
-            transcriptions = get_all_transcriptions_from_db(self.db_con)
-            print_message("history", History(transcriptions=transcriptions))
-            print_progress("get_history", "complete")
+            raise NotImplementedError()
 
         elif command.action == "delete_transcription":
-            if command.data and "id" in command.data:
-                print_progress("delete_transcription", "start")
-                transcription_id = command.data["id"]
-                delete_transcription_from_db(self.db_con, transcription_id)
-                # Send updated list
-                transcriptions = get_all_transcriptions_from_db(self.db_con)
-                print_message("history", History(transcriptions=transcriptions))
-                print_progress("delete_transcription", "complete")
-            else:
-                print_message("error", Error(error="Transcription ID not provided"))
-
-        elif command.action == "set_language":
-            if command.data and "language" in command.data:
-                self.transcriber.set_language(command.data["language"])
-                self.formatter.set_language(command.data["language"])
-            else:
-                print_message("error", Error(error="Language not provided"))
+            raise NotImplementedError()
 
         elif command.action == "get_devices":
             print_message("devices", Devices(devices=self.recorder.get_devices()))
 
         elif command.action == "set_device":
-            if command.data and "index" in command.data:
-                self.recorder.set_device(command.data["index"])
-            else:
-                print_message("error", Error(error="Device index not provided"))
+            if not isinstance(command.data, SelectDeviceCommand):
+                print_message("error", Error(error="Invalid command data"))
+                return
+            self.recorder.set_device(command.data.index)
 
 
 @logger.catch
 def main():
     initialize_logger()
-    try:
-        controller = Controller()
-    except OllamaOfflineException as e:
-        logger.error(f"Ollama offline: {e}")
-        print_message("error", Error(error=f"Ollama offline: {e}"))
-        sys.exit(1)
+    controller = Controller()
     while True:
         message = sys.stdin.readline()
         try:
@@ -185,11 +178,27 @@ def main():
             logger.error(f"Invalid data: {e}")
             print_message("error", Error(error=f"Invalid data: {e}"))
             sys.stdout.flush()
-        except ModelNotLoadedException as e:
-            logger.error(f"Model not loaded: {e}")
-            print_message("error", Error(error=f"Model not loaded: {e}"))
-            sys.stdout.flush()
+
+
+@logger.catch
+def debug():
+    initialize_logger()
+    logger.warning("Running Debug Mode")
+    controller = Controller()
+
+    mode_id = controller.database_manager.get_mode_by_name("General").id
+    controller.handle_command(
+        Command(
+            action="select_mode",
+            data=SelectModeCommand(mode_id=mode_id),
+        )
+    )
+    controller.handle_command(Command(action="toggle"))
+    print("Recording started")
+    input("Press Enter to stop recording...")
+    controller.handle_command(Command(action="toggle"))
 
 
 if __name__ == "__main__":
-    main()
+    # main()
+    debug()

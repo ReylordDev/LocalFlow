@@ -6,10 +6,10 @@ from loguru import logger
 from models import (
     ActiveWindowContext,
     ApplicationContext,
+    LanguageModel,
     OllamaOfflineException,
+    Prompt,
 )
-
-
 import ollama
 
 LANGUAGES = {
@@ -22,6 +22,55 @@ LANGUAGES = {
     "hi": "Hindi",
     "th": "Thai",
 }
+
+
+class AIProcessor:
+    def __init__(self, language_model: LanguageModel, prompt: Prompt) -> None:
+        self.language_model = language_model
+        self.prompt = prompt
+
+    def load_model(self, keep_alive_minutes="15"):
+        ollama.generate(
+            model=self.language_model.name,
+            prompt="Wake up!",
+            keep_alive=keep_alive_minutes + "m",
+        )
+        current_time = time.time()
+        self.timeout = current_time + int(keep_alive_minutes) * 60
+        logger.info(
+            f"Activated {self.language_model.name} for {keep_alive_minutes} Minutes."
+        )
+
+    def unload_model(self):
+        os.system(f"ollama stop {self.language_model.name}")
+        logger.info(f"Deactivated formatting model {self.language_model.name}")
+
+    def process(self, transcription: str) -> str:
+        if not transcription:
+            logger.info("No transcription provided")
+            return ""
+
+        logger.info(f"System Prompt: {self.prompt.system_prompt}")
+        logger.info(f"Prompt: {transcription}")
+
+        response = ollama.generate(
+            model=self.language_model.name,
+            system=self.prompt.system_prompt,
+            prompt=transcription,
+            keep_alive="1m",
+        )
+
+        result: str = response["response"]
+        prompt_tokens = response["prompt_eval_count"]
+        response_tokens = response["eval_count"]
+        total_duration = response["total_duration"] / 10**9
+        logger.info(result)
+        logger.info(
+            f"Tokens: Prompt: {prompt_tokens}, Response: {response_tokens}, Total: {prompt_tokens + response_tokens}"
+        )
+        logger.info(f"Total duration: {total_duration:.2f} seconds")
+
+        return result
 
 
 class Formatter:

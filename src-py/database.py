@@ -1,9 +1,11 @@
 import os
 import sqlite3
+from uuid import UUID
 
 from sqlmodel import SQLModel, create_engine, Session, select
-from models import HistoryItem, LanguageModel, Mode, Prompt, VoiceModel
-from utils.utils import get_user_data_path
+from sqlalchemy.orm import subqueryload
+from models import HistoryItem, LanguageModel, Mode, Prompt, Result, VoiceModel
+from utils.utils import get_temp_path, get_user_data_path
 from loguru import logger
 
 import ollama
@@ -124,59 +126,82 @@ class DatabaseManager:
 
             session.commit()
 
+    def get_active_mode(self):
+        with self.create_session() as session:
+            active_mode = session.exec(
+                select(Mode)
+                .where(Mode.active)
+                .options(
+                    subqueryload(Mode.voice_model),  # type: ignore
+                    subqueryload(Mode.language_model),  # type: ignore
+                    subqueryload(Mode.prompt),  # type: ignore
+                )
+            ).first()  # type: ignore
+            if not active_mode:
+                # If no active mode is found, return the default mode
+                active_mode = session.exec(
+                    select(Mode)
+                    .where(Mode.default)
+                    .options(
+                        subqueryload(Mode.voice_model),  # type: ignore
+                        subqueryload(Mode.language_model),  # type: ignore
+                        subqueryload(Mode.prompt),  # type: ignore
+                    ),
+                ).first()  # type: ignore
+            if not active_mode:
+                logger.warning("No default mode found")
+                raise Exception("No default mode found")
+            return active_mode
 
-# Outdated
-def initialize_db():
-    # Intialize the database that contains a history of the transcriptions
-    conn = sqlite3.connect(f"{get_user_data_path()}/transcriptions.db")
-    c = conn.cursor()
+    def get_mode(self, mode_id: UUID):
+        with self.create_session() as session:
+            mode = session.exec(
+                select(Mode)
+                .where(Mode.id == mode_id)
+                .options(
+                    subqueryload(Mode.voice_model),  # type: ignore
+                    subqueryload(Mode.language_model),  # type: ignore
+                    subqueryload(Mode.prompt),  # type: ignore
+                )
+            ).first()
+            if not mode:
+                logger.warning(f"Mode not found: {mode_id}")
+                raise Exception(f"Mode not found: {mode_id}")
+            return mode
 
-    c.execute(
-        """CREATE TABLE IF NOT EXISTS transcriptions (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            raw_transcription TEXT,
-            formatted_transcription TEXT,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )"""
-    )
+    def get_mode_by_name(self, mode_name: str):
+        with self.create_session() as session:
+            mode = session.exec(
+                select(Mode)
+                .where(Mode.name == mode_name)
+                .options(
+                    subqueryload(Mode.voice_model),  # type: ignore
+                    subqueryload(Mode.language_model),  # type: ignore
+                    subqueryload(Mode.prompt),  # type: ignore
+                )
+            ).first()
+            if not mode:
+                logger.warning(f"Mode not found: {mode_name}")
+                raise Exception(f"Mode not found: {mode_name}")
+            return mode
 
-    conn.commit()
+    def save_result(self, result: Result):
+        # Copy the temp files to the results folder
+        temp_location = get_temp_path()
+        result_location = result.location
 
-    return conn
-
-
-# Outdated
-def commit_transcription_to_db(
-    db: sqlite3.Connection, transcription: str, formatted_transcription: str
-):
-    db.cursor().execute(
-        "INSERT INTO transcriptions (raw_transcription, formatted_transcription) VALUES (?, ?)",
-        (transcription, formatted_transcription),
-    )
-
-    db.commit()
-
-
-# Outdated
-def get_all_transcriptions_from_db(db: sqlite3.Connection):
-    c = db.cursor()
-    c.execute("SELECT * FROM transcriptions ORDER BY created_at DESC")
-    transcriptions = c.fetchall()
-    logger.info(f"Length of transcriptions: {len(transcriptions)}")
-    return [
-        HistoryItem(
-            id=row[0],
-            raw_transcription=row[1],
-            formatted_transcription=row[2],
-            created_at=row[3],
+        os.makedirs(result_location, exist_ok=True)
+        os.rename(f"{temp_location}/recording.wav", f"{result_location}/recording.wav")
+        os.rename(
+            f"{temp_location}/recording.flac", f"{result_location}/recording.flac"
         )
-        for row in transcriptions
-    ]
 
-
-def delete_transcription_from_db(db: sqlite3.Connection, transcription_id: int):
-    db.cursor().execute("DELETE FROM transcriptions WHERE id = ?", (transcription_id,))
-    db.commit()
+        # Save the result to the database
+        with self.create_session() as session:
+            session.add(result)
+            session.commit()
+            logger.info(f"Result saved: {result.id}")
+        return result
 
 
 if __name__ == "__main__":

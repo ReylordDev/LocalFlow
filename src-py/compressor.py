@@ -1,18 +1,16 @@
 from ffmpeg import FFmpeg
 import os
 from loguru import logger
-from utils.utils import get_user_data_path
+from utils.utils import get_temp_path
 
 
 class Compressor:
-    PATH = f"{get_user_data_path()}/temp"
-
     def __init__(self):
-        pass
+        logger.debug("Compressor initialized")
 
     def compress(self):
-        file_name = f"{self.PATH}/recording.wav"
-        logger.debug(f"Processing {file_name}")
+        file_name = f"{get_temp_path()}/recording.wav"
+        logger.debug(f"Compressing {file_name}")
 
         output_name = file_name.replace(".wav", ".flac")
 
@@ -26,6 +24,9 @@ class Compressor:
         logger.info(f"Compressed {file_name} to {output_name}")
 
     def cleanup(self):
-        os.remove(f"{self.PATH}/recording.wav")
-        os.remove(f"{self.PATH}/recording.flac")
+        temp_path = get_temp_path()
+        if os.path.exists(f"{temp_path}/recording.wav"):
+            os.remove(f"{temp_path}/recording.wav")
+        if os.path.exists(f"{temp_path}/recording.flac"):
+            os.remove(f"{temp_path}/recording.flac")
         logger.debug("Removed recording files")

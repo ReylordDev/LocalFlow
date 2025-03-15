@@ -20,6 +20,10 @@ def get_user_data_path():
         return os.getcwd()
 
 
+def get_temp_path():
+    return f"{get_user_data_path()}/temp"
+
+
 if __name__ == "__main__":
     print(is_bundled())
     print(is_production_environment())

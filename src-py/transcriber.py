@@ -1,13 +1,14 @@
-from typing import Literal
+import gc
 from loguru import logger
 from faster_whisper import WhisperModel
-from models import ModelNotLoadedException
+from models import LanguageType, ModelNotLoadedException, VoiceModel
 
 
 class Transcriber:
-    def __init__(self, language: str | None = None):
+    def __init__(self, voice_model: VoiceModel, language: LanguageType):
+        self.voice_model = voice_model
         self.language = language
-        pass
+        self.model = None
 
     def transcribe_audio(self, file_name: str, language: str | None = None):
         raise NotImplementedError
@@ -18,53 +19,46 @@ class Transcriber:
     def set_language(self, language: str):
         self.language = language
 
+    def load_model(self):
+        raise NotImplementedError
+
+    def unload_model(self):
+        raise NotImplementedError
+
 
 class LocalTranscriber(Transcriber):
     # Maybe I should turn this into into a type safe class
 
-    def __init__(
-        self,
-        model_size="large-v3-turbo",
-        language: str | None = None,
-    ):
-        self.model = None
-        self.model_size = model_size
-        self.status: Literal["offline", "online"] = "offline"
-        self.language = language
-        logger.info(f"Using Whisper Model: {model_size}")
-        super().__init__()
+    def __init__(self, voice_model: VoiceModel, language: LanguageType):
+        super().__init__(voice_model, language)
 
     def load_model(self):
-        self.model = WhisperModel(model_size_or_path=self.model_size, device="cuda")
-        self.status = "online"
-        logger.info("Whisper Model loaded into memory")
+        self.model = WhisperModel(
+            model_size_or_path=self.voice_model.name, device="cuda"
+        )
+        logger.info(f"{self.voice_model.name} loaded into memory")
 
     def unload_model(self):
         del self.model
         self.model = None
-        self.status = "offline"
-        logger.info("Whisper Model unloaded from memory")
-
-    def get_status(self):
-        # logger.info(f"Whisper Model status: {self.status}")
-        return self.status
+        gc.collect()
+        logger.info(f"{self.voice_model.name} unloaded from memory")
 
     def transcribe_audio(
         self,
         file_name: str,
     ):
-        if self.language == "auto":
-            self.language = None
         if not self.model:
             raise ModelNotLoadedException()
         with open(file_name, "rb") as file:
             logger.info(
-                f"Transcribing {file_name} using Local Whisper Model, language: {self.language}"
+                f"Transcribing {file_name} using {self.voice_model.name}, language: {self.language}"
             )
+            language = self.language if self.language != "auto" else None
             segments, info = self.model.transcribe(
                 file,
                 beam_size=5,
-                language=self.language,
+                language=language,
                 vad_filter=True,
                 temperature=0.0,
             )
@@ -77,8 +71,3 @@ class LocalTranscriber(Transcriber):
             logger.info(f'Transcription: "{transcription}"')
             self.set_language(info.language)
             return transcription
-
-
-if __name__ == "__main__":
-    transcriber = LocalTranscriber()
-    transcriber.load_model()

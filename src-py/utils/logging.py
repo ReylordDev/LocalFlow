@@ -66,3 +66,8 @@ def initialize_logger():
     logger.info(f"Python utf-8 mode: {sys.flags.utf8_mode}")
     logger.info(f"Stdout encoding: {sys.stdout.encoding}")
     logger.info(f"faster-whisper logs will be captured at {log_level} level")
+
+    if not sys.flags.utf8_mode:
+        logger.warning(
+            "Python is not running in UTF-8 mode. This may cause issues with non-ASCII characters."
+        )
