@@ -15,3 +15,9 @@ export function formatDate(date: string) {
     year: "numeric",
   });
 }
+
+export function formatTimer(timer: number) {
+  const minutes = Math.floor(timer / 60);
+  const seconds = timer % 60;
+  return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+}

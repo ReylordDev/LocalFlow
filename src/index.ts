@@ -31,8 +31,6 @@ const trayManager = new TrayManager(
 app.whenReady().then(async () => {
   await pythonService.initialize();
   windowManager.createStartupWindow();
-  windowManager.createMiniWindow();
-  settingsService.registerShortcuts();
 
   settingsService.on(SETTINGS_SERVICE_EVENTS.SHORTCUT_PRESSED, () => {
     pythonService.toggleRecording();
@@ -41,6 +39,8 @@ app.whenReady().then(async () => {
   pythonService.on(PYTHON_SERVICE_EVENTS.MODELS_READY, () => {
     windowManager.hideStartupWindow();
     windowManager.createMainWindow();
+    windowManager.createMiniWindow();
+    settingsService.registerShortcuts();
     trayManager.initialize();
   });
 

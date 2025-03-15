@@ -2,10 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { cn } from "../lib/utils";
 
 const SpeechVocalization = () => {
-  const barCount = 10;
+  const barCount = 75;
   const [audioLevel, setAudioLevel] = useState(0);
-  const [timer, setTimer] = useState(0);
-  const [recording, setRecording] = useState(false);
 
   // Generate random factors for each bar, biased towards the center
   const randomFactors = useMemo(() => {
@@ -26,20 +24,6 @@ const SpeechVocalization = () => {
   }, []);
 
   useEffect(() => {
-    let timerInterval: NodeJS.Timeout;
-    if (recording) {
-      timerInterval = setInterval(() => {
-        setTimer((prevTimer) => prevTimer + 1);
-      }, 1000);
-    } else {
-      clearInterval(timerInterval);
-      setTimer(0);
-    }
-
-    return () => clearInterval(timerInterval);
-  }, [recording]);
-
-  useEffect(() => {
     const unsubscribe = window.mini.onReceiveAudioLevel((audioLevel) => {
       console.log("Audio level", audioLevel);
       setAudioLevel(audioLevel);
@@ -48,29 +32,10 @@ const SpeechVocalization = () => {
     return () => unsubscribe();
   }, []);
 
-  useEffect(() => {
-    const unsubscribe = window.mini.onStatusUpdate((status) => {
-      console.log("Status update", status);
-      if (status == "recording") {
-        setRecording(true);
-      } else {
-        setRecording(false);
-      }
-    });
-
-    return () => unsubscribe();
-  }, []);
-
   console.log("Audio level", audioLevel);
-  console.log("Timer", timer);
 
   return (
-    <div
-      className={cn(
-        "flex gap-2 h-10 bg-zinc-800 rounded-full p-1 px-4 justify-center drag",
-        timer > 0 ? (timer > 600 ? "w-40" : "w-36") : "w-32"
-      )}
-    >
+    <div className={cn("flex gap-2 h-10 rounded-full p-1 px-4 justify-center")}>
       <div className="flex justify-center items-center gap-1 ">
         {randomFactors.map((factor, i) => (
           <div
@@ -88,19 +53,8 @@ const SpeechVocalization = () => {
           />
         ))}
       </div>
-      {timer > 0 ? (
-        <div className="flex justify-center text-white items-center">
-          {formatTimer(timer)}
-        </div>
-      ) : null}
     </div>
   );
 };
 
 export default SpeechVocalization;
-
-function formatTimer(timer: number) {
-  const minutes = Math.floor(timer / 60);
-  const seconds = timer % 60;
-  return `${minutes}:${seconds.toString().padStart(2, "0")}`;
-}

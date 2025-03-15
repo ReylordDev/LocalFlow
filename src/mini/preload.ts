@@ -30,3 +30,15 @@ contextBridge.exposeInMainWorld("mini", {
     };
   },
 } satisfies Window["mini"]);
+
+contextBridge.exposeInMainWorld("settings", {
+  getAll: async () => {
+    return ipcRenderer.invoke(CHANNELS.SETTINGS.GET);
+  },
+  setShortcut: async (shortcut) => {
+    return ipcRenderer.invoke(CHANNELS.SETTINGS.SET_SHORTCUT, shortcut);
+  },
+  disableShortcut: async () => {
+    return ipcRenderer.send(CHANNELS.SETTINGS.DISABLE_SHORTCUT);
+  },
+} satisfies Window["settings"]);
