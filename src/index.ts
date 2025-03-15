@@ -11,6 +11,7 @@ import {
   PYTHON_SERVICE_EVENTS,
   SETTINGS_SERVICE_EVENTS,
   ControllerStatusType,
+  Mode,
 } from "./lib/models";
 
 // Handle setup events
@@ -84,6 +85,13 @@ app.whenReady().then(async () => {
       windowManager.sendMiniWindowMessage(CHANNELS.MINI.STATUS_UPDATE, status);
     }
   );
+
+  pythonService.on(PYTHON_SERVICE_EVENTS.MODES, (modes: Mode[]) => {
+    windowManager.sendMainWindowMessage(
+      CHANNELS.DATABASE.MODES.MODES_RESPONSE,
+      modes
+    );
+  });
 
   registerIpcHandlers(settingsService, config, pythonService);
 });

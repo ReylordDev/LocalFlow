@@ -1,7 +1,7 @@
 import { createRoot } from "react-dom/client";
 import SpeechVocalization from "../components/SpeechVocalization";
 import { useEffect, useState } from "react";
-import { AudioWaveform, Loader2, LoaderCircle, Timer } from "lucide-react";
+import { AudioWaveform, Loader2 } from "lucide-react";
 import { ControllerStatusType } from "../lib/models";
 import { Separator } from "../components/ui/separator";
 import { useSettings } from "../lib/hooks";

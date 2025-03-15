@@ -10,7 +10,8 @@ type Action =
   | "audio_level"
   | "select_mode"
   | "get_devices"
-  | "set_device";
+  | "set_device"
+  | "get_modes";
 
 // --------------- Electron to Python IPC Models --------------- //
 
@@ -66,6 +67,10 @@ export interface DevicesMessage {
   devices: Device[];
 }
 
+export interface ModesMessage {
+  modes: Mode[];
+}
+
 export type ControllerStatusType =
   | "idle"
   | "recording"
@@ -90,7 +95,8 @@ export interface Message {
     | "exception"
     | "devices"
     | "error"
-    | "status";
+    | "status"
+    | "modes";
   data:
     | ProgressMessage
     | TranscriptionMessage
@@ -99,7 +105,8 @@ export interface Message {
     | ExceptionMessage
     | DevicesMessage
     | ErrorMessage
-    | StatusMessage;
+    | StatusMessage
+    | ModesMessage;
 }
 
 // --------------- Database Models --------------- //
@@ -129,7 +136,7 @@ export const languageNameMap: Record<LanguageType, string> = {
 
 type VoiceModelType = "large-v3-turbo" | "large-v3" | "distil-large-v3";
 
-interface Mode {
+export interface Mode {
   id: UUID;
   name: string;
   default: boolean;
@@ -212,7 +219,8 @@ interface Result {
 // --------------- Frontend Models --------------- //
 
 // TODO: update with new pages
-export type Page = "Settings" | "Credits";
+export const pages = ["Modes", "Settings", "Credits"] as const;
+export type Page = (typeof pages)[number];
 
 interface ApplicationConfig {
   launchAtStartup: boolean;
@@ -248,6 +256,15 @@ export interface AppSettings {
   output: OutputConfig;
 }
 
+export const CHANNEL_NAMES = {
+  CONTROLLER: "controller",
+  SETTINGS: "settings",
+  URL: "url",
+  MINI: "mini",
+  DEVICE: "device",
+  DATABASE: "database",
+};
+
 export const CHANNELS = {
   CONTROLLER: {
     TOGGLE_RECORDING: "controller:toggle-recording",
@@ -269,6 +286,12 @@ export const CHANNELS = {
     DEVICES_REQUEST: "device:requestAll",
     DEVICES_RESPONSE: "device:receiveDevices",
     SET: "device:set",
+  },
+  DATABASE: {
+    MODES: {
+      MODES_REQUEST: "database:modes:getAll",
+      MODES_RESPONSE: "database:modes:receiveModes",
+    },
   },
 };
 
@@ -299,6 +322,12 @@ declare global {
       onReceiveDevices: (callback: (devices: Device[]) => void) => () => void;
       set: (device: Device) => void;
     };
+    database: {
+      modes: {
+        requestAll: () => void;
+        onReceiveModes: (callback: (modes: Mode[]) => void) => () => void;
+      };
+    };
   }
 }
 
@@ -309,6 +338,7 @@ export const PYTHON_SERVICE_EVENTS = {
   AUDIO_LEVEL: "audio-level",
   DEVICES: "devices",
   STATUS_UPDATE: "status-update",
+  MODES: "modes",
 };
 
 export const SETTINGS_SERVICE_EVENTS = {

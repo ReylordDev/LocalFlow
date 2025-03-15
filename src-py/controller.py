@@ -16,6 +16,7 @@ from models import (
     ErrorMessage,
     LanguageModelTranscriptionMessage,
     Mode,
+    ModesMessage,
     Result,
     SelectDeviceCommand,
     SelectModeCommand,
@@ -158,6 +159,10 @@ class Controller:
                 print_message("error", ErrorMessage(error="Invalid command data"))
                 return
             self.recorder.set_device(command.data.index)
+
+        elif command.action == "get_modes":
+            modes = list(self.database_manager.get_all_modes())
+            print_message("modes", ModesMessage(modes=modes))
 
 
 @logger.catch

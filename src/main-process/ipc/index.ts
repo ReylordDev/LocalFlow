@@ -25,4 +25,10 @@ export function registerIpcHandlers(
       action: "audio_level",
     });
   });
+
+  ipcMain.on(CHANNELS.DATABASE.MODES.MODES_REQUEST, () => {
+    pythonService.sendCommand({
+      action: "get_modes",
+    });
+  });
 }

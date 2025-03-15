@@ -18,6 +18,7 @@ ActionType = Literal[
     "select_mode",
     "get_devices",
     "set_device",
+    "get_modes",
 ]
 StepType = Union[
     ActionType,
@@ -89,6 +90,10 @@ class DevicesMessage(BaseModel):
     devices: list[Device]
 
 
+class ModesMessage(BaseModel):
+    modes: list["Mode"]
+
+
 ControllerStatusType = Literal[
     "idle",
     "recording",
@@ -115,6 +120,7 @@ MessageType = Literal[
     "devices",
     "error",
     "status",
+    "modes",
 ]
 
 MessageDataType = Union[
@@ -126,6 +132,7 @@ MessageDataType = Union[
     DevicesMessage,
     ErrorMessage,
     StatusMessage,
+    ModesMessage,
 ]
 
 

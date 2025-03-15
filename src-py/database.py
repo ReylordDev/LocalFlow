@@ -94,6 +94,11 @@ class DatabaseManager:
             session.commit()
 
     def create_default_modes(self):
+        try:
+            active_mode = self.get_active_mode()
+            missing_active = False
+        except Exception:
+            missing_active = True
         with self.create_session() as session:
             existing_default_modes = session.exec(
                 select(Mode).where(Mode.default)
@@ -103,6 +108,7 @@ class DatabaseManager:
                 voice_language="en",
                 voice_model_id="large-v3-turbo",
                 default=True,
+                active=missing_active,
             )
             general = Mode(
                 name="General",
@@ -137,18 +143,6 @@ class DatabaseManager:
                 )
             ).first()  # type: ignore
             if not active_mode:
-                # If no active mode is found, return the default mode
-                active_mode = session.exec(
-                    select(Mode)
-                    .where(Mode.default)
-                    .options(
-                        subqueryload(Mode.voice_model),  # type: ignore
-                        subqueryload(Mode.language_model),  # type: ignore
-                        subqueryload(Mode.prompt),  # type: ignore
-                    ),
-                ).first()  # type: ignore
-            if not active_mode:
-                logger.warning("No default mode found")
                 raise Exception("No default mode found")
             return active_mode
 
@@ -183,6 +177,17 @@ class DatabaseManager:
                 logger.warning(f"Mode not found: {mode_name}")
                 raise Exception(f"Mode not found: {mode_name}")
             return mode
+
+    def get_all_modes(self):
+        with self.create_session() as session:
+            modes = session.exec(
+                select(Mode).options(
+                    subqueryload(Mode.voice_model),  # type: ignore
+                    subqueryload(Mode.language_model),  # type: ignore
+                    subqueryload(Mode.prompt),  # type: ignore
+                )
+            ).all()
+            return modes
 
     def save_result(self, result: Result):
         # Copy the temp files to the results folder

@@ -1,14 +1,17 @@
 import { useState } from "react";
-import Settings from "./Settings";
-import Credits from "./Credits";
+import Settings from "./pages/Settings";
+import Credits from "./pages/Credits";
+import Modes from "./pages/Modes";
 import { AppSidebar } from "../components/app-sidebar";
 import { Page } from "../lib/models";
 const MainWindow = () => {
   console.log("MainWindow");
-  const [page, setPage] = useState<Page>("Settings");
+  const [page, setPage] = useState<Page>("Modes");
 
   function renderPage(page: Page) {
     switch (page) {
+      case "Modes":
+        return <Modes />;
       case "Settings":
         return <Settings />;
       case "Credits":
@@ -17,9 +20,9 @@ const MainWindow = () => {
   }
 
   return (
-    <div className="flex justify-start h-screen w-screen">
+    <div className="flex justify-start h-screen w-screen select-none">
       <AppSidebar currentPage={page} setPage={setPage} />
-      <div className="px-8 py-16 bg-white w-full">{renderPage(page)}</div>
+      <div className="bg-white w-full">{renderPage(page)}</div>
     </div>
   );
 };

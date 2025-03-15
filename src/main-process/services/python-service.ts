@@ -13,6 +13,7 @@ import {
   ErrorMessage,
   StatusMessage,
   ControllerStatusType,
+  ModesMessage,
 } from "../../lib/models";
 import path from "path";
 import { SettingsService } from "./settings-service";
@@ -90,6 +91,12 @@ export class PythonService extends EventEmitter {
         break;
       case "exception":
         consoleLog("Exception:", message.data);
+        break;
+      case "modes":
+        this.emit(
+          PYTHON_SERVICE_EVENTS.MODES,
+          (message.data as ModesMessage).modes
+        );
         break;
       default:
         consoleLog("Unknown message type:", message.type);

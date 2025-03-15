@@ -5,10 +5,10 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../components/ui/select";
-import { Button } from "../components/ui/button";
-import { cn } from "../lib/utils";
-import { Device } from "../lib/models";
+} from "../../components/ui/select";
+import { Button } from "../../components/ui/button";
+import { cn } from "../../lib/utils";
+import { Device } from "../../lib/models";
 
 const Settings = () => {
   console.log("Settings");
