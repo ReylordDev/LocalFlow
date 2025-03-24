@@ -1,4 +1,5 @@
 from loguru import logger
+from sqlmodel import SQLModel
 from models import (
     ProgressMessage,
     Message,
@@ -9,6 +10,15 @@ from models import (
 )
 import sys
 import time
+
+
+def print_message2(type: MessageType, data: dict):
+    message = Message(type=type, data=data)
+    logger.debug(message)
+    print(
+        message.model_dump_json(serialize_as_any=True, indent=2),
+        flush=True,
+    )
 
 
 def print_message(type: MessageType, data: MessageDataType):

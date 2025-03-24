@@ -107,9 +107,9 @@ const StatusDisplay = ({ status }: { status: ControllerStatusType }) => {
 const MainContentDisplay = ({ status }: { status: ControllerStatusType }) => {
   switch (status) {
     case "idle":
-      return <SpeechVocalization />;
+      return <SpeechVocalization isRecording={false} />;
     case "recording":
-      return <SpeechVocalization />;
+      return <SpeechVocalization isRecording={true} />;
     case "compressing":
       return <Loader2 className="animate-spin-slow" />;
     case "loading_voice_model":

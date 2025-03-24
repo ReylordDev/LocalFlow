@@ -1,12 +1,17 @@
-import abc
 import os
 import time
-from typing import Literal, Optional, Union
+from typing import Literal, Union, Optional
 from uuid import uuid4, UUID
-from pydantic import BaseModel, computed_field
-from sqlalchemy import String
-from sqlmodel import Field, Relationship, SQLModel
+from pydantic import BaseModel, ConfigDict, computed_field
 from utils.utils import get_user_data_path
+
+
+from sqlmodel import (
+    Field,
+    Relationship,
+    SQLModel,
+    String,
+)
 
 
 StatusType = Literal["start", "complete", "error"]
@@ -90,7 +95,7 @@ class DevicesMessage(BaseModel):
     devices: list[Device]
 
 
-class ModesMessage(BaseModel):
+class ModesMessage(SQLModel):
     modes: list["Mode"]
 
 
@@ -133,6 +138,7 @@ MessageDataType = Union[
     ErrorMessage,
     StatusMessage,
     ModesMessage,
+    dict,
 ]
 
 
@@ -168,7 +174,7 @@ class ActiveWindowContext(BaseModel):
     app_name: str
 
 
-##################
+### SQLModels
 
 # TODO: Check that this is correct
 LanguageType = Literal["auto", "en", "de", "fr", "it", "es", "pt", "hi", "th"]
@@ -188,100 +194,132 @@ language_name_map: dict[LanguageType, str] = {
 VoiceModelNameType = Literal["large-v3-turbo", "large-v3", "distil-large-v3"]
 
 
-class Mode(SQLModel, table=True):
-    id: UUID = Field(default_factory=uuid4, primary_key=True)
-    name: str
+class ModeBase(SQLModel):
+    name: str = Field(index=True)
     default: bool = False
     active: bool = False
+    voice_language: LanguageType = Field(sa_type=String)
+    translate_to_english: bool = False
+    use_language_model: bool = False
+    record_system_audio: bool = False
+    model_config = ConfigDict(
+        from_attributes=True,
+    )  # type: ignore
 
-    text_replacements: list["TextReplacement"] = Relationship(back_populates="mode")
 
-    voice_model: "VoiceModel" = Relationship(back_populates="modes")
+class Mode(ModeBase, table=True):
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
+    text_replacements: list["TextReplacement"] = Relationship(
+        back_populates="mode", sa_relationship_kwargs={"lazy": "selectin"}
+    )
+
+    voice_model: "VoiceModel" = Relationship(
+        back_populates="modes", sa_relationship_kwargs={"lazy": "selectin"}
+    )
     voice_model_id: VoiceModelNameType = Field(
         foreign_key="voicemodel.name", sa_type=String
     )
-    voice_language: LanguageType = Field(sa_type=String)
-    translate_to_english: bool = False
 
-    use_language_model: bool = False
-    language_model: Optional["LanguageModel"] = Relationship(back_populates="modes")
+    language_model: Optional["LanguageModel"] = Relationship(
+        back_populates="modes", sa_relationship_kwargs={"lazy": "selectin"}
+    )
     language_model_id: str | None = Field(
         foreign_key="languagemodel.name", default=None
     )
-    prompt: Optional["Prompt"] = Relationship(back_populates="mode")
 
-    record_system_audio: bool = False
+    prompt: Optional["Prompt"] = Relationship(
+        back_populates="mode", sa_relationship_kwargs={"lazy": "selectin"}
+    )
 
-    # def model_dump(self, *args, **kwargs) -> dict[str, object]:
-    #     dict = super().model_dump(*args, **kwargs)
-    #     dict["voice_model"] = self.voice_model.model_dump()
-    #     dict["language_model"] = (
-    #         self.language_model.model_dump() if self.language_model else None
-    #     )
-    #     dict["prompt"] = self.prompt.model_dump() if self.prompt else None
-    #     return dict
-
-    # def model_dump_json(self, indent, *args, **kwargs) -> str:
-    #     dict = self.model_dump(*args, **kwargs)
-    #     return json.dumps(dict, indent=indent)
+    results: list["Result"] = Relationship(back_populates="mode")
 
 
-class VoiceModel(SQLModel, abc.ABC, table=True):
-    name: VoiceModelNameType = Field(primary_key=True, sa_type=String)
+class VoiceModelBase(SQLModel):
+    name: VoiceModelNameType = Field(sa_type=String, index=True)
     language: Literal["english-only", "multilingual"] = Field(sa_type=String)
     speed: int
     accuracy: int
     size: int
     parameters: int
+    model_config = ConfigDict(
+        from_attributes=True,
+    )  # type: ignore
 
+
+class VoiceModel(VoiceModelBase, table=True):
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
     modes: list[Mode] = Relationship(back_populates="voice_model")
 
 
 class LanguageModel(SQLModel, table=True):
     name: str = Field(primary_key=True)  # Replace type with compatible models
-
     modes: list[Mode] = Relationship(back_populates="language_model")
+    model_config = ConfigDict(
+        from_attributes=True,
+    )  # type: ignore
 
 
-class Prompt(SQLModel, table=True):
+class PromptBase(SQLModel):
+    system_prompt: str
+    include_clipboard: bool = False
+    include_active_window: bool = False  # TODO: research
+    model_config = ConfigDict(
+        from_attributes=True,
+    )  # type: ignore
+
+
+class Prompt(PromptBase, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True)
 
     mode_id: UUID | None = Field(foreign_key="mode.id", default=None)
     mode: Mode | None = Relationship(back_populates="prompt")
 
-    system_prompt: str
     examples: list["Example"] = Relationship(back_populates="prompt")
 
-    include_clipboard: bool = False
-    include_active_window: bool = False  # TODO: research
 
-
-class Example(SQLModel, table=True):
-    id: UUID = Field(default_factory=uuid4, primary_key=True)
+class ExampleBase(SQLModel):
     input: str
     output: str
+    model_config = ConfigDict(
+        from_attributes=True,
+    )  # type: ignore
+
+
+class Example(ExampleBase, table=True):
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
 
     prompt_id: UUID = Field(foreign_key="prompt.id")
     prompt: Prompt = Relationship(back_populates="examples")
 
 
-class TextReplacement(SQLModel, table=True):
-    id: UUID = Field(default_factory=uuid4, primary_key=True)
+class TextReplacementBase(SQLModel):
     original_text: str
     replacement_text: str
+
+    model_config = ConfigDict(
+        from_attributes=True,
+    )  # type: ignore
+
+
+class TextReplacement(TextReplacementBase, table=True):
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
 
     mode_id: UUID | None = Field(foreign_key="mode.id")
     mode: Mode | None = Relationship(back_populates="text_replacements")
 
 
-class Result(SQLModel, table=True):
-    id: UUID = Field(default_factory=uuid4, primary_key=True)
-    mode_id: UUID = Field(foreign_key="mode.id")
+class ResultBase(SQLModel):
     created_at: float = Field(default_factory=time.time)
     transcription: str
     ai_result: str | None
     duration: float
     processing_time: float
+
+
+class Result(ResultBase, table=True):
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
+    mode_id: UUID = Field(foreign_key="mode.id")
+    mode: Mode = Relationship(back_populates="results")
 
     @computed_field
     @property

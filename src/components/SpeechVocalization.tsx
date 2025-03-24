@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { cn } from "../lib/utils";
 
-const SpeechVocalization = () => {
+const SpeechVocalization = ({ isRecording }: { isRecording: boolean }) => {
   const barCount = 75;
   const [audioLevel, setAudioLevel] = useState(0);
 
@@ -15,13 +15,15 @@ const SpeechVocalization = () => {
   }, [audioLevel]);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      window.mini.requestAudioLevel();
-      console.log("Requesting audio level");
-    }, 500);
+    if (isRecording) {
+      const interval = setInterval(() => {
+        window.mini.requestAudioLevel();
+        console.log("Requesting audio level");
+      }, 500);
 
-    return () => clearInterval(interval);
-  }, []);
+      return () => clearInterval(interval);
+    }
+  }, [isRecording]);
 
   useEffect(() => {
     const unsubscribe = window.mini.onReceiveAudioLevel((audioLevel) => {

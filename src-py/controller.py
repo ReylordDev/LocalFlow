@@ -7,6 +7,7 @@ from transcriber import LocalTranscriber
 from formatter import AIProcessor
 from utils.logging import initialize_logger
 from utils.utils import get_temp_path
+from utils.model_utils import create_instance, dump_instance
 from window_detector import WindowDetector
 from models import (
     AudioLevelMessage,
@@ -16,14 +17,13 @@ from models import (
     ErrorMessage,
     LanguageModelTranscriptionMessage,
     Mode,
-    ModesMessage,
     Result,
     SelectDeviceCommand,
     SelectModeCommand,
     StatusMessage,
     TranscriptionMessage,
 )
-from utils.ipc import print_message, print_progress
+from utils.ipc import print_message, print_message2, print_progress
 from loguru import logger
 from database import (
     DatabaseManager,
@@ -87,13 +87,17 @@ class Controller:
             self.processor.unload_model()
 
         self.update_status("saving")
-        result = Result(
-            transcription=transcription,
-            ai_result=ai_result if self.mode.use_language_model else None,
-            duration=self.recorder.get_duration(),
-            processing_time=time.time() - processing_start_time,
-            mode_id=self.mode.id,
+        result = create_instance(
+            Result,
+            {
+                "transcription": transcription,
+                "ai_result": ai_result if self.mode.use_language_model else None,
+                "mode": self.mode,
+                "duration": self.recorder.get_duration(),
+                "processing_time": time.time() - processing_start_time,
+            },
         )
+        assert isinstance(result, Result)
         self.database_manager.save_result(result)
         self.compressor.cleanup()
 
@@ -161,8 +165,34 @@ class Controller:
             self.recorder.set_device(command.data.index)
 
         elif command.action == "get_modes":
-            modes = list(self.database_manager.get_all_modes())
-            print_message("modes", ModesMessage(modes=modes))
+            modes: list[Mode] = list(self.database_manager.get_all_modes())
+            mode_instances = []
+            for mode in modes:
+                mode_instance = create_instance(
+                    Mode,
+                    {
+                        "name": mode.name,
+                        "id": mode.id,
+                        "default": mode.default,
+                        "active": mode.active,
+                        "voice_language": mode.voice_language,
+                        "translate_to_english": mode.translate_to_english,
+                        "use_language_model": mode.use_language_model,
+                        "record_system_audio": mode.record_system_audio,
+                        "text_replacements": mode.text_replacements,
+                        "voice_model": mode.voice_model.model_dump(),
+                        "language_model": mode.language_model.model_dump()
+                        if mode.language_model
+                        else None,
+                        "prompt": mode.prompt.model_dump() if mode.prompt else None,
+                        # "results": mode.results, # needs session implementation maybe do it later
+                    },
+                )
+                mode_instances.append(mode_instance)
+
+            print_message2(
+                "modes", {"modes": [dump_instance(m) for m in mode_instances]}
+            )
 
 
 @logger.catch
@@ -203,5 +233,5 @@ def debug():
 
 
 if __name__ == "__main__":
-    # main()
-    debug()
+    main()
+    # debug()
