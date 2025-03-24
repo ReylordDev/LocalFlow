@@ -82,7 +82,8 @@ export default function Modes() {
               variant="ghost"
               size="icon"
               onClick={() => {
-                console.log("Edit Mode", mode);
+                setIndex(1);
+                setSelectedMode(mode);
               }}
             >
               <ChevronRight />
@@ -101,6 +102,17 @@ const ModeDetails = ({
   mode: Mode | null;
   setIndex: (index: number) => void;
 }) => {
+  const [useAi, setUseAi] = useState<boolean>(
+    mode ? mode.use_language_model : false
+  );
+  const [languageModel, setLanguageModel] = useState(
+    mode ? mode.language_model_id : null
+  );
+  const [prompt, setPrompt] = useState(mode ? mode.prompt : null);
+  const [name, setName] = useState<string>(mode ? mode.name : "");
+
+  console.log("ModeDetails", mode);
+
   return (
     <div className="h-full w-full flex flex-col ">
       <div className="flex items-center gap-4 px-4 bg-gradient-to-l from-sky-300 to-sky-600 text-white border-b border-zinc-200">
@@ -131,16 +143,19 @@ const ModeDetails = ({
                   </p>
                 </div>
               </div>
-              <Switch />
+              <Switch
+                checked={useAi}
+                onCheckedChange={(checked) => setUseAi(checked)}
+              />
             </div>
             <Separator orientation="horizontal" />
-            <div className={cn(menuItemClass)}>
+            <div className={cn(menuItemClass, !useAi && "opacity-50")}>
               <h3 className="text-md font-semibold">Model</h3>
+              {/* TODO: Fetch the available language models */}
               <Combobox
-                // TODO: Disable this combobox if AI is disabled
                 items={[
                   {
-                    value: "gemma3-4b",
+                    value: "gemma3:4b",
                     label: "Gemma 3 (4b)",
                   },
                   {
@@ -160,21 +175,28 @@ const ModeDetails = ({
                     label: "GPT-4 Turbo 32k",
                   },
                 ]}
+                initialValue={languageModel}
                 intialMessage="Select a model..."
                 noMatchesMessage="No models found"
                 searchPlaceholder="Search for a model"
+                disabled={!useAi}
               />
             </div>
             <Separator orientation="horizontal" />
-            <div className={cn(menuItemClass)}>
+            <div className={cn(menuItemClass, !useAi && "opacity-50")}>
               <div className="flex flex-col gap-1">
                 <h3 className="text-md font-semibold">Prompt</h3>
-                <p className="text-gray-500">This is a prompt placeholder.</p>
+                <p className="text-gray-500">
+                  {prompt
+                    ? prompt.system_prompt.slice(0, 50)
+                    : "No prompt selected."}
+                </p>
               </div>
               <Button
                 onClick={() => {
                   console.log("Change prompt...");
                 }}
+                disabled={!useAi}
               >
                 Change prompt...
               </Button>
@@ -186,7 +208,12 @@ const ModeDetails = ({
           <div className="flex flex-col gap-2 bg-white border border-zinc-200 rounded-md p-2">
             <div className={cn(menuItemClass)}>
               <h3 className="text-md font-semibold">Name</h3>
-              <Input className="max-w-[200px]"></Input>
+              <Input
+                className={cn("max-w-[200px]", name && "text-lg font-medium")}
+                placeholder="Mode name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
             </div>
           </div>
         </div>

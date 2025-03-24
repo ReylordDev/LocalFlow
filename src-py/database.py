@@ -146,7 +146,7 @@ class DatabaseManager:
                 raise Exception("No default mode found")
             return active_mode
 
-    def get_mode(self, mode_id: UUID):
+    def get_mode(self, mode_id: UUID) -> Mode:
         with self.create_session() as session:
             mode = session.exec(
                 select(Mode)
@@ -211,4 +211,8 @@ class DatabaseManager:
 if __name__ == "__main__":
     db = DatabaseManager()
     with db.create_session() as session:
-        pass
+        id = UUID("25c68e1960704a859c977ddb65551d6d")
+        mode = db.get_mode(id)
+        dict = mode.model_dump()
+        json = mode.model_dump_json(indent=2)
+        logger.info(json)

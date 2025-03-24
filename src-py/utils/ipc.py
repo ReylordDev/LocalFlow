@@ -12,7 +12,11 @@ import time
 
 
 def print_message(type: MessageType, data: MessageDataType):
-    print(Message(type=type, data=data).model_dump_json(), flush=True)
+    message = Message(type=type, data=data).model_dump_json(
+        serialize_as_any=True, indent=2
+    )
+    logger.debug(message)
+    print(message, flush=True)
 
 
 def print_progress(

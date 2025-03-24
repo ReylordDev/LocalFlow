@@ -15,19 +15,21 @@ import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 
 export function Combobox({
   items,
+  initialValue,
   intialMessage = "Select an option",
   searchPlaceholder = "Search...",
   noMatchesMessage = "No matches found",
   disabled = false,
 }: {
   items: { label: string; value: string }[];
+  initialValue?: string;
   intialMessage?: string;
   searchPlaceholder?: string;
   noMatchesMessage?: string;
   disabled?: boolean;
 }) {
   const [open, setOpen] = React.useState(false);
-  const [value, setValue] = React.useState("");
+  const [value, setValue] = React.useState(initialValue || "");
 
   return (
     <Popover open={open} onOpenChange={setOpen}>

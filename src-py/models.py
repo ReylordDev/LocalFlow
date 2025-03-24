@@ -212,6 +212,19 @@ class Mode(SQLModel, table=True):
 
     record_system_audio: bool = False
 
+    # def model_dump(self, *args, **kwargs) -> dict[str, object]:
+    #     dict = super().model_dump(*args, **kwargs)
+    #     dict["voice_model"] = self.voice_model.model_dump()
+    #     dict["language_model"] = (
+    #         self.language_model.model_dump() if self.language_model else None
+    #     )
+    #     dict["prompt"] = self.prompt.model_dump() if self.prompt else None
+    #     return dict
+
+    # def model_dump_json(self, indent, *args, **kwargs) -> str:
+    #     dict = self.model_dump(*args, **kwargs)
+    #     return json.dumps(dict, indent=indent)
+
 
 class VoiceModel(SQLModel, abc.ABC, table=True):
     name: VoiceModelNameType = Field(primary_key=True, sa_type=String)
