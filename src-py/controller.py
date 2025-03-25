@@ -23,7 +23,7 @@ from models import (
     StatusMessage,
     TranscriptionMessage,
 )
-from utils.ipc import print_message, print_message2, print_progress
+from utils.ipc import print_message, print_nested_model, print_progress
 from loguru import logger
 from database import (
     DatabaseManager,
@@ -190,7 +190,7 @@ class Controller:
                 )
                 mode_instances.append(mode_instance)
 
-            print_message2(
+            print_nested_model(
                 "modes", {"modes": [dump_instance(m) for m in mode_instances]}
             )
 

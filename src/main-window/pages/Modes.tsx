@@ -75,7 +75,7 @@ export default function Modes() {
                 )}
               </div>
               <p className="text-sm font-medium">
-                {mode.voice_model_id} ({languageNameMap[mode.voice_language]})
+                {mode.voice_model.name} ({languageNameMap[mode.voice_language]})
               </p>
             </div>
             <Button
@@ -110,6 +110,18 @@ const ModeDetails = ({
   );
   const [prompt, setPrompt] = useState(mode ? mode.prompt : null);
   const [name, setName] = useState<string>(mode ? mode.name : "");
+  const [voiceModelName, setVoiceModelName] = useState<string>(
+    mode ? mode.voice_model.name : ""
+  );
+  const [voiceLanguage, setVoiceLanguage] = useState<string>(
+    mode ? mode.voice_language : ""
+  );
+  const [translateToEnglish, setTranslateToEnglish] = useState<boolean>(
+    mode ? mode.translate_to_english : false
+  );
+  const [textReplacements, setTextReplacements] = useState(
+    mode ? mode.text_replacements : []
+  );
 
   console.log("ModeDetails", mode);
 
@@ -188,7 +200,7 @@ const ModeDetails = ({
                 <h3 className="text-md font-semibold">Prompt</h3>
                 <p className="text-gray-500">
                   {prompt
-                    ? prompt.system_prompt.slice(0, 50)
+                    ? prompt.system_prompt.slice(0, 100).concat("...")
                     : "No prompt selected."}
                 </p>
               </div>
@@ -225,13 +237,14 @@ const ModeDetails = ({
               <Combobox
                 items={[
                   {
-                    value: "whisper-v3-turbo",
-                    label: "Whisper V3 Turbo",
+                    value: "large-v3-turbo",
+                    label: "Whisper Large V3 Turbo",
                   },
                 ]}
                 intialMessage="Select a model..."
                 noMatchesMessage="No models found"
                 searchPlaceholder="Search for a model"
+                initialValue={voiceModelName}
               />
             </div>
             <Separator orientation="horizontal" />
@@ -239,6 +252,10 @@ const ModeDetails = ({
               <h3 className="text-md font-semibold">Language</h3>
               <Combobox
                 items={[
+                  {
+                    value: "auto",
+                    label: "Automatic",
+                  },
                   {
                     value: "en",
                     label: "English",
@@ -255,13 +272,16 @@ const ModeDetails = ({
                 intialMessage="Select a language..."
                 noMatchesMessage="No languages found"
                 searchPlaceholder="Search for a language"
+                initialValue={voiceLanguage}
               />
             </div>
             <Separator orientation="horizontal" />
             <div className={cn(menuItemClass)}>
               <h3 className="text-md font-semibold">Translate to English</h3>
               <Switch
-              // TODO: disable this switch if the language is English
+                disabled={voiceLanguage === "en"}
+                checked={translateToEnglish}
+                onCheckedChange={(checked) => setTranslateToEnglish(checked)}
               />
             </div>
           </div>

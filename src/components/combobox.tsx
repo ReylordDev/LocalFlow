@@ -13,6 +13,7 @@ import {
 } from "./ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 
+// TODO: pass state and setState as props
 export function Combobox({
   items,
   initialValue,
