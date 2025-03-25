@@ -5,7 +5,6 @@ import {
   Mode,
   TextReplacement,
   TextReplacementBase,
-  VoiceModelType,
   languageNameMap,
 } from "../../lib/models";
 import { Separator } from "../../components/ui/separator";
@@ -25,7 +24,7 @@ export default function Modes() {
 
   useEffect(() => {
     window.database.modes.requestAll();
-  }, []);
+  }, [index]);
 
   useEffect(() => {
     const unsubscribe = window.database.modes.onReceiveModes(
@@ -35,7 +34,7 @@ export default function Modes() {
       }
     );
     return () => unsubscribe();
-  }, []);
+  }, [index]);
 
   if (index === 1) {
     return <ModeDetails mode={selectedMode} setIndex={setIndex} />;
@@ -108,7 +107,7 @@ const ModeDetails = ({
   const [useAi, setUseAi] = useState<boolean>(
     mode ? mode.use_language_model : false
   );
-  const [languageModel, setLanguageModel] = useState(
+  const [languageModelName, setLanguageModelName] = useState(
     mode ? (mode.language_model ? mode.language_model.name : null) : null
   );
   const [prompt, setPrompt] = useState(mode ? mode.prompt : null); // TODO: Check the validity
@@ -144,7 +143,28 @@ const ModeDetails = ({
       translateToEnglish,
       textReplacements,
     });
-    // TODO: Save the mode to the database
+    if (!settingsAreValid) {
+      console.log("Settings are not valid");
+      return;
+    }
+    if (mode) {
+      console.log("Update Mode", mode.id);
+    } else {
+      window.database.modes.createMode({
+        name,
+        active: false,
+        default: false,
+        record_system_audio: false,
+        use_language_model: useAi,
+        text_replacements: textReplacements,
+        voice_model_name: voiceModelName,
+        voice_language: voiceLanguage as LanguageType,
+        translate_to_english: translateToEnglish,
+        language_model_name: languageModelName,
+        prompt: prompt,
+      });
+    }
+    setIndex(0);
   }
 
   console.log("ModeDetails", mode);
@@ -171,6 +191,7 @@ const ModeDetails = ({
           variant="secondary"
           className="mr-4"
           disabled={!settingsAreValid}
+          onClick={handleSaveMode}
         >
           {mode ? "Save Mode" : "Create Mode"}
         </Button>
@@ -221,8 +242,8 @@ const ModeDetails = ({
                     label: "GPT-4 Turbo 32k",
                   },
                 ]}
-                value={languageModel}
-                setValue={setLanguageModel}
+                value={languageModelName}
+                setValue={setLanguageModelName}
                 initialMessage="Select a model..."
                 noMatchesMessage="No models found"
                 searchPlaceholder="Search for a model"

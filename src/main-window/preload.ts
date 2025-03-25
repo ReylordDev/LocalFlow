@@ -63,5 +63,8 @@ contextBridge.exposeInMainWorld(CHANNEL_NAMES.DATABASE, {
         ipcRenderer.off(CHANNELS.DATABASE.MODES.MODES_RESPONSE, listener);
       };
     },
+    createMode: (mode) => {
+      return ipcRenderer.send(CHANNELS.DATABASE.MODES.CREATE_MODE, mode);
+    },
   },
 } satisfies Window["database"]);

@@ -11,7 +11,8 @@ type Action =
   | "select_mode"
   | "get_devices"
   | "set_device"
-  | "get_modes";
+  | "get_modes"
+  | "create_mode";
 
 // --------------- Electron to Python IPC Models --------------- //
 
@@ -25,7 +26,7 @@ interface SelectDeviceCommand {
 
 export interface Command {
   action: Action;
-  data?: SelectModeCommand | SelectDeviceCommand;
+  data?: SelectModeCommand | SelectDeviceCommand | ModeCreate;
 }
 
 // --------------- Python to Electron IPC Models --------------- //
@@ -153,6 +154,13 @@ export interface Mode extends ModeBase {
   language_model?: LanguageModel;
   prompt?: Prompt;
   results: Result[];
+}
+
+export interface ModeCreate extends ModeBase {
+  voice_model_name: string;
+  language_model_name?: string;
+  prompt?: PromptBase;
+  text_replacements: TextReplacementBase[];
 }
 
 interface VoiceModelBase {
@@ -337,8 +345,7 @@ declare global {
       modes: {
         requestAll: () => void;
         onReceiveModes: (callback: (modes: Mode[]) => void) => () => void;
-        createMode: (mode: Mode) => void;
-        updateMode: (mode: Mode) => void;
+        createMode: (mode: ModeCreate) => void;
       };
     };
   }

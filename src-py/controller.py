@@ -17,6 +17,7 @@ from models import (
     ErrorMessage,
     LanguageModelTranscriptionMessage,
     Mode,
+    ModeCreate,
     Result,
     SelectDeviceCommand,
     SelectModeCommand,
@@ -193,6 +194,13 @@ class Controller:
             print_nested_model(
                 "modes", {"modes": [dump_instance(m) for m in mode_instances]}
             )
+
+        elif command.action == "create_mode":
+            if not isinstance(command.data, ModeCreate):
+                print_message("error", ErrorMessage(error="Invalid command data"))
+                return
+            mode = command.data
+            self.database_manager.create_mode(mode)
 
 
 @logger.catch

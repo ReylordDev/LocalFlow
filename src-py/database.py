@@ -3,7 +3,17 @@ from uuid import UUID
 
 from sqlmodel import SQLModel, create_engine, Session, select
 from sqlalchemy.orm import subqueryload
-from models import LanguageModel, Mode, Prompt, Result, VoiceModel
+from models import (
+    LanguageModel,
+    Mode,
+    ModeCreate,
+    Prompt,
+    PromptBase,
+    Result,
+    TextReplacement,
+    TextReplacementBase,
+    VoiceModel,
+)
 from utils.utils import get_temp_path, get_user_data_path
 from loguru import logger
 
@@ -99,6 +109,8 @@ class DatabaseManager:
             missing_active = False
         except Exception:
             missing_active = True
+
+        large_v3_turbo = self.get_voice_model_by_name("large-v3-turbo")
         with self.create_session() as session:
             existing_default_modes = session.exec(
                 select(Mode).where(Mode.default)
@@ -106,14 +118,16 @@ class DatabaseManager:
             voice_only = Mode(
                 name="Voice Only",
                 voice_language="en",
-                voice_model_id="large-v3-turbo",
+                voice_model=large_v3_turbo,
+                voice_model_id=large_v3_turbo.id,
                 default=True,
                 active=missing_active,
             )
             general = Mode(
                 name="General",
                 voice_language="auto",
-                voice_model_id="large-v3-turbo",
+                voice_model=large_v3_turbo,
+                voice_model_id=large_v3_turbo.id,
                 language_model_id="gemma3:4b",
                 prompt=Prompt(
                     system_prompt="You are a helpful assistant. Fix any grammar, spelling or punctuation mistakes in the following text."
@@ -188,6 +202,71 @@ class DatabaseManager:
                 )
             ).all()
             return modes
+
+    def create_text_replacement(self, text_replacement: TextReplacementBase):
+        with self.create_session() as session:
+            # Create the new text replacement
+            text_replacement = TextReplacement(
+                original_text=text_replacement.original_text,
+                replacement_text=text_replacement.replacement_text,
+                mode_id=None,
+            )
+            session.add(text_replacement)
+            session.commit()
+            logger.info(f"Text replacement created: {text_replacement.id}")
+            return text_replacement
+
+    def create_prompt(self, prompt: PromptBase):
+        with self.create_session() as session:
+            # Create the new prompt
+            prompt = Prompt(
+                system_prompt=prompt.system_prompt,
+                include_clipboard=prompt.include_clipboard,
+                include_active_window=prompt.include_active_window,
+            )
+            session.add(prompt)
+            session.commit()
+            logger.info(f"Prompt created: {prompt.id}")
+            return prompt
+
+    def get_voice_model_by_name(self, voice_model_name: str) -> VoiceModel:
+        with self.create_session() as session:
+            voice_model = session.exec(
+                select(VoiceModel).where(VoiceModel.name == voice_model_name)
+            ).first()
+            if not voice_model:
+                logger.warning(f"Voice model not found: {voice_model_name}")
+                raise Exception(f"Voice model not found: {voice_model_name}")
+            return voice_model
+
+    def create_mode(self, mode: ModeCreate):
+        voice_model = self.get_voice_model_by_name(mode.voice_model_name)
+        text_replacements = []
+        for text_replacement_base in mode.text_replacements:
+            text_replacement = self.create_text_replacement(text_replacement_base)
+            text_replacements.append(text_replacement)
+        prompt = self.create_prompt(mode.prompt) if mode.prompt else None
+
+        with self.create_session() as session:
+            # Create the new mode
+            new_mode = Mode(
+                name=mode.name,
+                voice_language=mode.voice_language,
+                voice_model=voice_model,
+                voice_model_id=voice_model.id,
+                language_model_id=mode.language_model_id,
+                prompt=prompt,
+                use_language_model=mode.use_language_model,
+                default=mode.default,
+                active=mode.active,
+                record_system_audio=mode.record_system_audio,
+                translate_to_english=mode.translate_to_english,
+                text_replacements=text_replacements,
+            )
+            session.add(new_mode)
+            session.commit()
+            logger.info(f"Mode created: {new_mode.id}")
+            return new_mode
 
     def save_result(self, result: Result):
         # Copy the temp files to the results folder

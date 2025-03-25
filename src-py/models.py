@@ -24,6 +24,7 @@ ActionType = Literal[
     "get_devices",
     "set_device",
     "get_modes",
+    "create_mode",
 ]
 StepType = Union[
     ActionType,
@@ -49,7 +50,7 @@ class SelectDeviceCommand(BaseModel):
 
 class Command(BaseModel):
     action: ActionType
-    data: SelectModeCommand | SelectDeviceCommand | None = None
+    data: Optional[Union[SelectModeCommand, SelectDeviceCommand, "ModeCreate"]] = None
 
 
 #########################
@@ -216,9 +217,7 @@ class Mode(ModeBase, table=True):
     voice_model: "VoiceModel" = Relationship(
         back_populates="modes", sa_relationship_kwargs={"lazy": "selectin"}
     )
-    voice_model_id: VoiceModelNameType = Field(
-        foreign_key="voicemodel.name", sa_type=String
-    )
+    voice_model_id: UUID = Field(foreign_key="voicemodel.id")
 
     language_model: Optional["LanguageModel"] = Relationship(
         back_populates="modes", sa_relationship_kwargs={"lazy": "selectin"}
@@ -232,6 +231,13 @@ class Mode(ModeBase, table=True):
     )
 
     results: list["Result"] = Relationship(back_populates="mode")
+
+
+class ModeCreate(ModeBase):
+    voice_model_name: VoiceModelNameType
+    language_model_id: str | None = None
+    prompt: Optional["PromptBase"] = None
+    text_replacements: list["TextReplacementBase"] = []
 
 
 class VoiceModelBase(SQLModel):
