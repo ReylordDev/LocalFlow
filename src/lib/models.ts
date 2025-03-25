@@ -111,7 +111,7 @@ export interface Message {
 
 // --------------- Database Models --------------- //
 
-type LanguageType =
+export type LanguageType =
   | "auto"
   | "en"
   | "de"
@@ -134,37 +134,38 @@ export const languageNameMap: Record<LanguageType, string> = {
   th: "Thai",
 };
 
-type VoiceModelType = "large-v3-turbo" | "large-v3" | "distil-large-v3";
+export type VoiceModelType = "large-v3-turbo" | "large-v3" | "distil-large-v3";
 
-export interface Mode {
-  id: UUID;
+interface ModeBase {
   name: string;
   default: boolean;
   active: boolean;
-
-  text_replacements: TextReplacement[];
-
-  voice_model: VoiceModel;
-  voice_model_id: VoiceModelType;
   voice_language: LanguageType;
   translate_to_english: boolean;
-
-  use_language_model: boolean;
-  language_model?: LanguageModel;
-  language_model_id?: string;
-  prompt?: Prompt;
-
   record_system_audio: boolean;
+  use_language_model: boolean;
 }
 
-interface VoiceModel {
+export interface Mode extends ModeBase {
+  id: UUID;
+  text_replacements: TextReplacement[];
+  voice_model: VoiceModel;
+  language_model?: LanguageModel;
+  prompt?: Prompt;
+  results: Result[];
+}
+
+interface VoiceModelBase {
   name: VoiceModelType;
   language: "english-only" | "multilingual";
   speed: number;
   accuracy: number;
   size: number;
   parameters: number;
+}
 
+interface VoiceModel extends VoiceModelBase {
+  id: UUID;
   modes: Mode[];
 }
 
@@ -173,45 +174,53 @@ interface LanguageModel {
   modes: Mode[];
 }
 
-interface Prompt {
-  id: string;
-
-  mode_id?: UUID;
-  mode?: Mode;
-
+interface PromptBase {
   system_prompt: string;
-  examples: Example[];
-
   include_clipboard: boolean;
   include_active_window: boolean;
 }
 
-interface Example {
-  id: UUID;
+interface Prompt extends PromptBase {
+  id: string;
+  // mode_id?: UUID;
+  mode?: Mode;
+  examples: Example[];
+}
+
+interface ExampleBase {
   input: string;
   output: string;
+}
 
-  prompt_id: UUID;
+interface Example extends ExampleBase {
+  id: UUID;
+  // prompt_id: UUID;
   prompt: Prompt;
 }
 
-interface TextReplacement {
-  id: UUID;
+export interface TextReplacementBase {
   original_text: string;
   replacement_text: string;
+}
+
+export interface TextReplacement extends TextReplacementBase {
+  id: UUID;
 
   mode_id?: UUID;
   mode?: Mode;
 }
 
-interface Result {
-  id: UUID;
-  mode_id: UUID;
+interface ResultBase {
   created_at: number;
   transcription: string;
   ai_result?: string;
   duration: number;
   processing_time: number;
+}
+
+interface Result extends ResultBase {
+  id: UUID;
+  mode: Mode;
 
   location: string;
 }
@@ -291,6 +300,8 @@ export const CHANNELS = {
     MODES: {
       MODES_REQUEST: "database:modes:getAll",
       MODES_RESPONSE: "database:modes:receiveModes",
+      CREATE_MODE: "database:modes:createMode",
+      UPDATE_MODE: "database:modes:updateMode",
     },
   },
 };
@@ -326,6 +337,8 @@ declare global {
       modes: {
         requestAll: () => void;
         onReceiveModes: (callback: (modes: Mode[]) => void) => () => void;
+        createMode: (mode: Mode) => void;
+        updateMode: (mode: Mode) => void;
       };
     };
   }

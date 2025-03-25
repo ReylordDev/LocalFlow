@@ -15,22 +15,23 @@ import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 
 // TODO: pass state and setState as props
 export function Combobox({
+  value,
+  setValue,
   items,
-  initialValue,
-  intialMessage = "Select an option",
+  initialMessage = "Select an option",
   searchPlaceholder = "Search...",
   noMatchesMessage = "No matches found",
   disabled = false,
 }: {
+  value: string;
+  setValue: React.Dispatch<React.SetStateAction<string>>;
   items: { label: string; value: string }[];
-  initialValue?: string;
-  intialMessage?: string;
+  initialMessage?: string;
   searchPlaceholder?: string;
   noMatchesMessage?: string;
   disabled?: boolean;
 }) {
   const [open, setOpen] = React.useState(false);
-  const [value, setValue] = React.useState(initialValue || "");
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -39,16 +40,16 @@ export function Combobox({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-[200px] justify-between"
+          className="w-[300px] justify-between"
           disabled={disabled}
         >
           {value
             ? items.find((item) => item.value === value)?.label
-            : intialMessage}
+            : initialMessage}
           <ChevronsUpDown className="text-sky-600" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[200px] p-0">
+      <PopoverContent className="w-[300px] p-0">
         <Command>
           <CommandInput placeholder={searchPlaceholder} className="h-9" />
           <CommandList>
