@@ -1,25 +1,44 @@
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "../../components/ui/button";
 import {
+  ExampleBase,
   LanguageType,
   Mode,
+  PromptBase,
   TextReplacement,
   TextReplacementBase,
   languageNameMap,
 } from "../../lib/models";
 import { Separator } from "../../components/ui/separator";
-import { ChevronLeft, ChevronRight, Trash2, Wand } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  ChevronUp,
+  Trash2,
+  Wand,
+} from "lucide-react";
 import { Badge } from "../../components/ui/badge";
 import { Switch } from "../../components/ui/switch";
 import { Combobox } from "../../components/combobox";
 import { Input } from "../../components/ui/input";
 import { cn } from "../../lib/utils";
+import { Textarea } from "../../components/ui/textarea";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "../../components/ui/dialog";
 
 const menuItemClass = "justify-between items-center flex px-4 min-h-[50px]";
 
 export default function Modes() {
   const [modes, setModes] = useState<Mode[]>([]);
-  const [index, setIndex] = useState<number>(0);
+  const [index, setIndex] = useState<number>(1);
   const [selectedMode, setSelectedMode] = useState<Mode | null>(null);
 
   useEffect(() => {
@@ -39,6 +58,10 @@ export default function Modes() {
   if (index === 1) {
     return <ModeDetails mode={selectedMode} setIndex={setIndex} />;
   }
+
+  // if (index === 2) {
+  //   return <PromptDetails mode={selectedMode} setIndex={setIndex} />;
+  // }
 
   return (
     <div className="h-full w-full flex flex-col py-24 px-32 gap-2">
@@ -110,7 +133,7 @@ const ModeDetails = ({
   const [languageModelName, setLanguageModelName] = useState(
     mode ? (mode.language_model ? mode.language_model.name : null) : null
   );
-  const [prompt, setPrompt] = useState(mode ? mode.prompt : null); // TODO: Check the validity
+  const [prompt, setPrompt] = useState<PromptBase>(mode ? mode.prompt : null); // TODO: Check the validity
   const [name, setName] = useState<string>(mode ? mode.name : "");
   const [voiceModelName, setVoiceModelName] = useState<string>(
     mode ? mode.voice_model.name : ""
@@ -128,12 +151,18 @@ const ModeDetails = ({
     replacement_text: "",
     original_text: "",
   });
+  const [showPromptDialog, setShowPromptDialog] = useState<boolean>(false);
 
   const settingsAreValid = useMemo(() => {
-    return (
-      name.length > 0 && voiceModelName.length > 0 && voiceLanguage.length > 0
-    );
-  }, [name, voiceModelName, voiceLanguage]);
+    if (name.length === 0) return false;
+    if (voiceModelName.length === 0) return false;
+    // TODO: validate voice language input
+
+    if (useAi) {
+      if (!languageModelName) return false;
+    }
+    return true;
+  }, [name, voiceModelName, voiceLanguage, useAi, languageModelName]);
 
   function handleSaveMode() {
     console.log("Save Mode", {
@@ -265,22 +294,29 @@ const ModeDetails = ({
             </div>
             <Separator orientation="horizontal" />
             <div className={cn(menuItemClass, !useAi && "opacity-50")}>
-              <div className="flex flex-col gap-1">
+              <div className="flex flex-col gap-1 shrink w-3/4 sm:max-w-[300px] md:max-w-[400px] lg:max-w-[500px] xl:max-w-full">
                 <h3 className="text-md font-semibold">Prompt</h3>
-                <p className="text-gray-500">
-                  {prompt
-                    ? prompt.system_prompt.slice(0, 100).concat("...")
-                    : "No prompt selected."}
+                <p className="text-gray-500 truncate">
+                  {prompt ? prompt.system_prompt : "No prompt selected."}
                 </p>
               </div>
               <Button
+                className="flex-none"
                 onClick={() => {
-                  console.log("Change prompt...");
+                  // setIndex(2);
+                  setShowPromptDialog(true);
                 }}
                 disabled={!useAi}
               >
                 Change prompt...
               </Button>
+              {showPromptDialog && (
+                <PromptDetails
+                  prompt={prompt}
+                  setPrompt={setPrompt}
+                  hidePromptDialog={() => setShowPromptDialog(false)}
+                />
+              )}
             </div>
           </div>
         </div>
@@ -438,5 +474,299 @@ const ModeDetails = ({
         </div>
       </div>
     </div>
+  );
+};
+
+const PromptDetails = ({
+  prompt,
+  setPrompt,
+  hidePromptDialog,
+}: {
+  prompt: PromptBase | null;
+  setPrompt: (prompt: PromptBase) => void;
+  hidePromptDialog: () => void;
+}) => {
+  const [systemPrompt, setSystemPrompt] = useState<string>(
+    prompt ? prompt.system_prompt : ""
+  );
+  const [includeClipboard, setIncludeClipboard] = useState<boolean>(
+    prompt ? prompt.include_clipboard : false
+  );
+  const [includeActiveWindow, setIncludeActiveWindow] = useState<boolean>(
+    prompt ? prompt.include_active_window : false
+  );
+  const [examples, setExamples] = useState<ExampleBase[]>(
+    prompt ? prompt.examples : []
+  );
+  const [exampleInput, setExampleInput] = useState<string>("");
+  const [exampleOutput, setExampleOutput] = useState<string>("");
+
+  const handleSavePrompt = () => {
+    console.log("Save Prompt");
+    setPrompt({
+      ...prompt,
+      system_prompt: systemPrompt,
+      include_clipboard: includeClipboard,
+      include_active_window: includeActiveWindow,
+      examples: examples,
+    });
+  };
+
+  console.log("PromptDetails", prompt);
+  console.log("System Prompt", systemPrompt);
+
+  return (
+    <div className="inset-y-0 left-80 right-0 flex flex-col fixed z-50">
+      <div className="flex justify-between items-center px-4 bg-gradient-to-l from-sky-300 to-sky-600 text-white border-b border-zinc-200">
+        <div className="flex items-center gap-4">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="hover:bg-sky-700 hover:text-white"
+            onClick={() => {
+              handleSavePrompt();
+              hidePromptDialog();
+            }}
+          >
+            <ChevronLeft className="size-8 " />
+          </Button>
+          <h1 className="font-bold text-2xl py-5">
+            {prompt ? "Prompt" : "Create a new Prompt"}
+          </h1>
+        </div>
+      </div>
+      <div className="flex flex-col gap-4 px-8 py-8 bg-zinc-50 overflow-y-auto h-full">
+        <div className="flex flex-col gap-2">
+          <h2 className="text-lg font-semibold">Prompt</h2>
+          <Textarea
+            className="h-40"
+            placeholder="Enter your prompt here..."
+            value={systemPrompt}
+            onChange={(e) => setSystemPrompt(e.target.value)}
+          />
+        </div>
+        <div className="flex flex-col gap-2">
+          <h2 className="text-lg font-semibold">Additional Context</h2>
+          <div className="flex flex-col gap-2 bg-white border border-zinc-200 rounded-md p-2">
+            <div className={cn(menuItemClass)}>
+              <div className="flex flex-col gap-1">
+                <h3 className="text-md font-semibold">Use copied text</h3>
+                <p className="text-sm font-medium">
+                  Text copied to the clipboard will be included in the prompt.
+                </p>
+              </div>
+              <Switch
+                checked={includeClipboard}
+                onCheckedChange={(checked) => setIncludeClipboard(checked)}
+              />
+            </div>
+            <Separator orientation="horizontal" />
+            <div className={cn(menuItemClass)}>
+              <div className="flex flex-col gap-1">
+                <h3 className="text-md font-semibold">Use active window</h3>
+                <p className="text-sm font-medium">
+                  The active window process and title will be included in the
+                  prompt.
+                </p>
+              </div>
+              <Switch
+                checked={includeActiveWindow}
+                onCheckedChange={(checked) => setIncludeActiveWindow(checked)}
+              />
+            </div>
+          </div>
+        </div>
+        {!examples || examples.length === 0 ? (
+          <div className="bg-zinc-100 gap-4 rounded-md flex flex-col justify-center items-center p-4">
+            <Wand size={64} />
+            <h2 className="text-lg font-semibold">
+              Use Examples to enhance AI output
+            </h2>
+            <p className="text-sm font-medium">
+              Add examples of the voice input and AI output. This shows the AI
+              what it is supposed to do.
+            </p>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button
+                  variant="default"
+                  className="mt-4"
+                  onClick={() => {
+                    console.log("Add example");
+                  }}
+                >
+                  + Add Example
+                </Button>
+              </DialogTrigger>
+              <ExampleDialogContent
+                exampleInput={exampleInput}
+                setExampleInput={setExampleInput}
+                exampleOutput={exampleOutput}
+                setExampleOutput={setExampleOutput}
+                examples={examples}
+                setExamples={setExamples}
+              />
+            </Dialog>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold">Examples</h2>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button className="h-7" variant="ghost">
+                    + Add Example
+                  </Button>
+                </DialogTrigger>
+                <ExampleDialogContent
+                  exampleInput={exampleInput}
+                  setExampleInput={setExampleInput}
+                  exampleOutput={exampleOutput}
+                  setExampleOutput={setExampleOutput}
+                  examples={examples}
+                  setExamples={setExamples}
+                />
+              </Dialog>
+            </div>
+            {examples.map((example, index) => (
+              <Dialog key={index}>
+                <DialogTrigger>
+                  <div className="flex flex-col gap-2 bg-white border border-zinc-200 rounded-md p-2 hover:bg-zinc-100">
+                    <div className={cn(menuItemClass)}>
+                      <div className="flex gap-2 items-center">
+                        <h3 className="text-md font-semibold">
+                          Example {index + 1}
+                        </h3>
+                        <p className="text-sm font-medium">{example.output}</p>
+                      </div>
+                      <ChevronUp className="size-8 " />
+                    </div>
+                  </div>
+                </DialogTrigger>
+                <ExampleDialogContent
+                  example={example}
+                  index={index}
+                  exampleInput={exampleInput}
+                  setExampleInput={setExampleInput}
+                  exampleOutput={exampleOutput}
+                  setExampleOutput={setExampleOutput}
+                  examples={examples}
+                  setExamples={setExamples}
+                />
+              </Dialog>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+const ExampleDialogContent = ({
+  example,
+  index,
+  exampleInput,
+  setExampleInput,
+  exampleOutput,
+  setExampleOutput,
+  examples,
+  setExamples,
+}: {
+  example?: ExampleBase | null;
+  index?: number;
+  exampleInput: string;
+  setExampleInput: (input: string) => void;
+  exampleOutput: string;
+  setExampleOutput: (output: string) => void;
+  examples: ExampleBase[] | null;
+  setExamples: (examples: ExampleBase[]) => void;
+}) => {
+  useEffect(() => {
+    if (example) {
+      setExampleInput(example.input);
+      setExampleOutput(example.output);
+    } else {
+      setExampleInput("");
+      setExampleOutput("");
+    }
+  }, [example, setExampleInput, setExampleOutput]);
+
+  const isUpdating = useMemo(() => {
+    if (example && index !== null) {
+      return true;
+    }
+    return false;
+  }, [example, index]);
+
+  console.log("Example Dialog, isUpdating", isUpdating);
+  console.log("Example Dialog, example", example);
+  console.log("Example Dialog, index", index);
+
+  const handleSaveExample = () => {
+    console.log("Save Example", exampleInput, exampleOutput);
+    if (isUpdating) {
+      console.log("Updating example", index);
+      const updatedExamples = [...examples];
+      updatedExamples[index] = {
+        input: exampleInput,
+        output: exampleOutput,
+      };
+      setExamples(updatedExamples);
+    } else {
+      console.log("Adding example", exampleInput, exampleOutput);
+      setExamples([
+        ...examples,
+        {
+          input: exampleInput,
+          output: exampleOutput,
+        },
+      ]);
+    }
+    setExampleInput("");
+    setExampleOutput("");
+  };
+
+  return (
+    <DialogContent className=" flex flex-col max-w-full w-[800px] h-3/4">
+      <DialogHeader>
+        <DialogTitle>
+          {isUpdating ? "Update Example" : "Add Example"}
+        </DialogTitle>
+        <DialogDescription>
+          Add an example of the voice input (as text) and the desired AI output.{" "}
+        </DialogDescription>
+      </DialogHeader>
+      <div className="flex justify-between items-start gap-3 h-full w-full">
+        <div className="flex flex-col gap-2 w-full h-full">
+          <h3 className="text-md font-semibold pl-1">Input</h3>
+          <Textarea
+            className="h-full"
+            placeholder="Enter your example input here..."
+            value={exampleInput}
+            onChange={(e) => setExampleInput(e.target.value)}
+          />
+        </div>
+        <Separator orientation="vertical" className="h-full my-2" />
+        <div className="flex flex-col gap-2 w-full h-full">
+          <h3 className="text-md font-semibold pl-1">Output</h3>
+          <Textarea
+            className="h-full"
+            placeholder="Enter your desired output here..."
+            value={exampleOutput}
+            onChange={(e) => setExampleOutput(e.target.value)}
+          />
+        </div>
+      </div>
+      <DialogFooter className="flex justify-end gap-2 mt-4">
+        <DialogClose asChild>
+          <Button variant="secondary">Cancel</Button>
+        </DialogClose>
+        <DialogClose asChild>
+          <Button variant="default" onClick={handleSaveExample}>
+            {isUpdating ? "Update Example" : "Add Example"}
+          </Button>
+        </DialogClose>
+      </DialogFooter>
+    </DialogContent>
   );
 };

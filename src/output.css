@@ -30,12 +30,25 @@
   inset: 0px;
 }
 
+.inset-y-0 {
+  top: 0px;
+  bottom: 0px;
+}
+
 .left-2 {
   left: 0.5rem;
 }
 
+.left-80 {
+  left: 20rem;
+}
+
 .left-\[50\%\] {
   left: 50%;
+}
+
+.right-0 {
+  right: 0px;
 }
 
 .right-4 {
@@ -62,6 +75,11 @@
 .my-1 {
   margin-top: 0.25rem;
   margin-bottom: 0.25rem;
+}
+
+.my-2 {
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
 }
 
 .my-6 {
@@ -144,8 +162,16 @@
   height: 0.875rem;
 }
 
+.h-3\/4 {
+  height: 75%;
+}
+
 .h-4 {
   height: 1rem;
+}
+
+.h-40 {
+  height: 10rem;
 }
 
 .h-5 {
@@ -154,6 +180,10 @@
 
 .h-6 {
   height: 1.5rem;
+}
+
+.h-7 {
+  height: 1.75rem;
 }
 
 .h-8 {
@@ -200,6 +230,10 @@
   min-height: 50px;
 }
 
+.min-h-\[80px\] {
+  min-height: 80px;
+}
+
 .w-1 {
   width: 0.25rem;
 }
@@ -216,6 +250,10 @@
   width: 0.875rem;
 }
 
+.w-3\/4 {
+  width: 75%;
+}
+
 .w-4 {
   width: 1rem;
 }
@@ -226,10 +264,6 @@
 
 .w-72 {
   width: 18rem;
-}
-
-.w-96 {
-  width: 24rem;
 }
 
 .w-\[180px\] {
@@ -244,12 +278,20 @@
   width: 300px;
 }
 
+.w-\[800px\] {
+  width: 800px;
+}
+
 .w-full {
   width: 100%;
 }
 
 .w-screen {
   width: 100vw;
+}
+
+.min-w-80 {
+  min-width: 20rem;
 }
 
 .min-w-\[8rem\] {
@@ -268,8 +310,20 @@
   max-width: 600px;
 }
 
+.max-w-full {
+  max-width: 100%;
+}
+
 .max-w-lg {
   max-width: 32rem;
+}
+
+.flex-none {
+  flex: none;
+}
+
+.shrink {
+  flex-shrink: 1;
 }
 
 .shrink-0 {
@@ -338,6 +392,10 @@
 
 .flex-col-reverse {
   flex-direction: column-reverse;
+}
+
+.items-start {
+  align-items: flex-start;
 }
 
 .items-center {
@@ -414,6 +472,12 @@
 
 .overflow-x-hidden {
   overflow-x: hidden;
+}
+
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .whitespace-nowrap {
@@ -696,6 +760,10 @@
 .py-8 {
   padding-top: 2rem;
   padding-bottom: 2rem;
+}
+
+.pl-1 {
+  padding-left: 0.25rem;
 }
 
 .pl-5 {
@@ -1934,6 +2002,11 @@ Usage:
   background-color: rgb(244 244 245 / 0.8);
 }
 
+.hover\:bg-zinc-200:hover {
+  --tw-bg-opacity: 1;
+  background-color: rgb(228 228 231 / var(--tw-bg-opacity));
+}
+
 .hover\:bg-zinc-500:hover {
   --tw-bg-opacity: 1;
   background-color: rgb(113 113 122 / var(--tw-bg-opacity));
@@ -2109,6 +2182,10 @@ Usage:
 }
 
 @media (min-width: 640px) {
+  .sm\:max-w-\[300px\] {
+    max-width: 300px;
+  }
+
   .sm\:flex-row {
     flex-direction: row;
   }
@@ -2133,9 +2210,25 @@ Usage:
 }
 
 @media (min-width: 768px) {
+  .md\:max-w-\[400px\] {
+    max-width: 400px;
+  }
+
   .md\:text-sm {
     font-size: 0.875rem;
     line-height: 1.25rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .lg\:max-w-\[500px\] {
+    max-width: 500px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .xl\:max-w-full {
+    max-width: 100%;
   }
 }
 

@@ -4,6 +4,8 @@ from uuid import UUID
 from sqlmodel import SQLModel, create_engine, Session, select
 from sqlalchemy.orm import subqueryload
 from models import (
+    Example,
+    ExampleBase,
     LanguageModel,
     Mode,
     ModeCreate,
@@ -124,17 +126,25 @@ class DatabaseManager:
                 default=True,
                 active=missing_active,
             )
+            general_prompt = Prompt(
+                system_prompt="You are a helpful assistant. Fix any grammar, spelling or punctuation mistakes in the following text.",
+            )
+            general_prompt.examples = [
+                Example(
+                    input="I am a big fan of the show.",
+                    output="I am a big fan of the show.",
+                    prompt_id=general_prompt.id,
+                )
+            ]
             general = Mode(
                 name="General",
                 voice_language="auto",
                 voice_model=large_v3_turbo,
                 voice_model_id=large_v3_turbo.id,
                 language_model_id="gemma3:4b",
-                prompt=Prompt(
-                    system_prompt="You are a helpful assistant. Fix any grammar, spelling or punctuation mistakes in the following text."
-                ),
                 use_language_model=True,
                 default=True,
+                prompt=general_prompt,
             )
 
             if voice_only.name not in [mode.name for mode in existing_default_modes]:

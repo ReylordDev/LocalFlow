@@ -29,7 +29,7 @@ export function AppSidebar({
   setPage: (page: Page) => void;
 }) {
   return (
-    <div className="flex flex-col w-96 border-r-2 border-gray-200 ">
+    <div className="flex flex-col min-w-80 border-r-2 border-gray-200 ">
       <h1 className="text-3xl font-bold justify-center flex p-8 select-none">
         LocalFlow
       </h1>

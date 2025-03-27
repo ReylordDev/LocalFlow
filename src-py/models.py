@@ -7,6 +7,7 @@ from utils.utils import get_user_data_path
 
 
 from sqlmodel import (
+    JSON,
     Field,
     Relationship,
     SQLModel,
@@ -287,7 +288,9 @@ class Prompt(PromptBase, table=True):
     mode_id: UUID | None = Field(foreign_key="mode.id", default=None)
     mode: Mode | None = Relationship(back_populates="prompt")
 
-    examples: list["Example"] = Relationship(back_populates="prompt")
+    examples: list["Example"] = Relationship(
+        back_populates="prompt", sa_relationship_kwargs={"lazy": "selectin"}
+    )
 
 
 class ExampleBase(SQLModel):

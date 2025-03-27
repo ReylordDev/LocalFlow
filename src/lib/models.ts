@@ -187,20 +187,22 @@ interface LanguageModel {
   modes: Mode[];
 }
 
-interface PromptBase {
+export interface PromptBase {
   system_prompt: string;
   include_clipboard: boolean;
   include_active_window: boolean;
+
+  examples?: ExampleBase[];
 }
 
-interface Prompt extends PromptBase {
+export interface Prompt extends PromptBase {
   id: string;
   // mode_id?: UUID;
   mode?: Mode;
   examples: Example[];
 }
 
-interface ExampleBase {
+export interface ExampleBase {
   input: string;
   output: string;
 }

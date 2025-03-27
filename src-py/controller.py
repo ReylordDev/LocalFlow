@@ -170,6 +170,14 @@ class Controller:
             modes: list[Mode] = list(self.database_manager.get_all_modes())
             mode_instances = []
             for mode in modes:
+                if mode.prompt:
+                    prompt_dumped = mode.prompt.model_dump()
+                    if prompt_dumped and mode.prompt.examples:
+                        prompt_dumped["examples"] = [
+                            example.model_dump() for example in mode.prompt.examples
+                        ]
+                else:
+                    prompt_dumped = None
                 mode_instance = create_instance(
                     Mode,
                     {
@@ -188,7 +196,7 @@ class Controller:
                         "language_model": mode.language_model.model_dump()
                         if mode.language_model
                         else None,
-                        "prompt": mode.prompt.model_dump() if mode.prompt else None,
+                        "prompt": prompt_dumped,
                         # "results": mode.results, # needs session implementation maybe do it later
                     },
                 )
