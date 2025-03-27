@@ -5,7 +5,7 @@ import { AppConfig } from "../utils/config";
 import { registerURLHandlers } from "./url";
 import { registerDeviceHandlers } from "./device";
 import { registerSettingsHandlers } from "./settings";
-import { CHANNELS, ModeCreate } from "../../lib/models";
+import { CHANNELS, ModeCreate, ModeUpdate } from "../../lib/models";
 
 export function registerIpcHandlers(
   settingsService: SettingsService,
@@ -35,6 +35,13 @@ export function registerIpcHandlers(
   ipcMain.on(CHANNELS.DATABASE.MODES.CREATE_MODE, (_, mode: ModeCreate) => {
     pythonService.sendCommand({
       action: "create_mode",
+      data: mode,
+    });
+  });
+
+  ipcMain.on(CHANNELS.DATABASE.MODES.UPDATE_MODE, (_, mode: ModeUpdate) => {
+    pythonService.sendCommand({
+      action: "update_mode",
       data: mode,
     });
   });

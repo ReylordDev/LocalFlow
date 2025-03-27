@@ -124,6 +124,7 @@ export class PythonService extends EventEmitter {
   }
 
   sendCommand(command: Command) {
+    consoleLog("Sending command to Python:", command);
     this.shell.send(command);
   }
 

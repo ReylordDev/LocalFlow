@@ -12,7 +12,8 @@ type Action =
   | "get_devices"
   | "set_device"
   | "get_modes"
-  | "create_mode";
+  | "create_mode"
+  | "update_mode";
 
 // --------------- Electron to Python IPC Models --------------- //
 
@@ -161,6 +162,10 @@ export interface ModeCreate extends ModeBase {
   language_model_name?: string;
   prompt?: PromptBase;
   text_replacements: TextReplacementBase[];
+}
+
+export interface ModeUpdate extends ModeCreate {
+  id: UUID;
 }
 
 interface VoiceModelBase {
@@ -346,6 +351,7 @@ declare global {
         requestAll: () => void;
         onReceiveModes: (callback: (modes: Mode[]) => void) => () => void;
         createMode: (mode: ModeCreate) => void;
+        updateMode: (mode: ModeUpdate) => void;
       };
     };
   }

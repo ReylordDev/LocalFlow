@@ -18,6 +18,7 @@ from models import (
     LanguageModelTranscriptionMessage,
     Mode,
     ModeCreate,
+    ModeUpdate,
     Result,
     SelectDeviceCommand,
     SelectModeCommand,
@@ -180,7 +181,9 @@ class Controller:
                         "translate_to_english": mode.translate_to_english,
                         "use_language_model": mode.use_language_model,
                         "record_system_audio": mode.record_system_audio,
-                        "text_replacements": mode.text_replacements,
+                        "text_replacements": [
+                            tr.model_dump() for tr in mode.text_replacements
+                        ],
                         "voice_model": mode.voice_model.model_dump(),
                         "language_model": mode.language_model.model_dump()
                         if mode.language_model
@@ -201,6 +204,13 @@ class Controller:
                 return
             mode = command.data
             self.database_manager.create_mode(mode)
+
+        elif command.action == "update_mode":
+            if not isinstance(command.data, ModeUpdate):
+                print_message("error", ErrorMessage(error="Invalid command data"))
+                return
+            mode = command.data
+            self.database_manager.update_mode(mode)
 
 
 @logger.catch

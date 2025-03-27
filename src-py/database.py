@@ -7,6 +7,7 @@ from models import (
     LanguageModel,
     Mode,
     ModeCreate,
+    ModeUpdate,
     Prompt,
     PromptBase,
     Result,
@@ -239,6 +240,16 @@ class DatabaseManager:
                 raise Exception(f"Voice model not found: {voice_model_name}")
             return voice_model
 
+    def get_language_model_by_name(self, language_model_name: str) -> LanguageModel:
+        with self.create_session() as session:
+            language_model = session.exec(
+                select(LanguageModel).where(LanguageModel.name == language_model_name)
+            ).first()
+            if not language_model:
+                logger.warning(f"Language model not found: {language_model_name}")
+                raise Exception(f"Language model not found: {language_model_name}")
+            return language_model
+
     def create_mode(self, mode: ModeCreate):
         voice_model = self.get_voice_model_by_name(mode.voice_model_name)
         text_replacements = []
@@ -254,7 +265,7 @@ class DatabaseManager:
                 voice_language=mode.voice_language,
                 voice_model=voice_model,
                 voice_model_id=voice_model.id,
-                language_model_id=mode.language_model_id,
+                language_model_id=mode.language_model_name,
                 prompt=prompt,
                 use_language_model=mode.use_language_model,
                 default=mode.default,
@@ -267,6 +278,54 @@ class DatabaseManager:
             session.commit()
             logger.info(f"Mode created: {new_mode.id}")
             return new_mode
+
+    def update_mode(self, mode: ModeUpdate):
+        voice_model = self.get_voice_model_by_name(mode.voice_model_name)
+        language_model = (
+            self.get_language_model_by_name(mode.language_model_name)
+            if mode.language_model_name
+            else None
+        )
+        text_replacements = []
+        for text_replacement_base in mode.text_replacements:
+            text_replacement = self.create_text_replacement(text_replacement_base)
+            text_replacements.append(text_replacement)
+        prompt = self.create_prompt(mode.prompt) if mode.prompt else None
+        with self.create_session() as session:
+            # Get the existing mode
+            existing_mode = session.exec(select(Mode).where(Mode.id == mode.id)).first()
+            if not existing_mode:
+                logger.warning(f"Mode not found: {mode.id}")
+                raise Exception(f"Mode not found: {mode.id}")
+
+            # Update the mode attributes
+            existing_mode.name = mode.name
+            existing_mode.voice_language = mode.voice_language
+            if existing_mode.voice_model.id != voice_model.id:
+                existing_mode.voice_model = voice_model
+            existing_mode.use_language_model = mode.use_language_model
+            if (
+                language_model
+                and (
+                    existing_mode.language_model
+                    and existing_mode.language_model.name != language_model.name
+                )
+                or not existing_mode.language_model
+            ):
+                existing_mode.language_model = language_model
+            existing_mode.prompt = prompt
+            existing_mode.default = mode.default
+            existing_mode.active = mode.active
+            existing_mode.record_system_audio = mode.record_system_audio
+            existing_mode.translate_to_english = mode.translate_to_english
+            existing_mode.text_replacements = text_replacements
+
+            # Commit the changes to the database
+            session.add(existing_mode)
+            session.commit()
+            session.refresh(existing_mode)
+            logger.info(f"Mode updated: {existing_mode.id}")
+            return existing_mode
 
     def save_result(self, result: Result):
         # Copy the temp files to the results folder

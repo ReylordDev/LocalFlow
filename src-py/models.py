@@ -25,6 +25,7 @@ ActionType = Literal[
     "set_device",
     "get_modes",
     "create_mode",
+    "update_mode",
 ]
 StepType = Union[
     ActionType,
@@ -50,7 +51,9 @@ class SelectDeviceCommand(BaseModel):
 
 class Command(BaseModel):
     action: ActionType
-    data: Optional[Union[SelectModeCommand, SelectDeviceCommand, "ModeCreate"]] = None
+    data: Optional[
+        Union[SelectModeCommand, SelectDeviceCommand, "ModeUpdate", "ModeCreate"]
+    ] = None
 
 
 #########################
@@ -235,9 +238,13 @@ class Mode(ModeBase, table=True):
 
 class ModeCreate(ModeBase):
     voice_model_name: VoiceModelNameType
-    language_model_id: str | None = None
+    language_model_name: str | None = None
     prompt: Optional["PromptBase"] = None
     text_replacements: list["TextReplacementBase"] = []
+
+
+class ModeUpdate(ModeCreate):
+    id: UUID
 
 
 class VoiceModelBase(SQLModel):

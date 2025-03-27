@@ -19,7 +19,7 @@ const menuItemClass = "justify-between items-center flex px-4 min-h-[50px]";
 
 export default function Modes() {
   const [modes, setModes] = useState<Mode[]>([]);
-  const [index, setIndex] = useState<number>(1);
+  const [index, setIndex] = useState<number>(0);
   const [selectedMode, setSelectedMode] = useState<Mode | null>(null);
 
   useEffect(() => {
@@ -148,7 +148,20 @@ const ModeDetails = ({
       return;
     }
     if (mode) {
-      console.log("Update Mode", mode.id);
+      window.database.modes.updateMode({
+        id: mode.id,
+        name,
+        active: false,
+        default: false,
+        record_system_audio: false,
+        use_language_model: useAi,
+        text_replacements: textReplacements,
+        voice_model_name: voiceModelName,
+        voice_language: voiceLanguage as LanguageType,
+        translate_to_english: translateToEnglish,
+        language_model_name: languageModelName,
+        prompt: prompt,
+      });
     } else {
       window.database.modes.createMode({
         name,
