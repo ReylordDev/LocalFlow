@@ -302,7 +302,6 @@ export const CHANNELS = {
   },
   SETTINGS: {
     GET: "settings:get-all",
-    SET_SHORTCUT: "settings:set-shortcut",
     DISABLE_SHORTCUT: "settings:disable-shortcut",
     SET_AUDIO: "settings:set-audio",
     SET_KEYBOARD: "settings:set-keyboard",
@@ -340,8 +339,7 @@ declare global {
     };
     settings: {
       getAll: () => Promise<AppSettings>;
-      setShortcut: (shortcut: string) => Promise<string>;
-      disableShortcut: () => void;
+      disableShortcut: (shortcut: string) => void;
       setAudio: (audioConfig: AudioConfig) => void;
       setKeyboard: (keyboardConfig: KeyboardConfig) => void;
       setApplication: (applicationConfig: ApplicationConfig) => void;
@@ -391,5 +389,9 @@ export const PYTHON_SERVICE_EVENTS = {
 
 export const SETTINGS_SERVICE_EVENTS = {
   SETTINGS_CHANGED: "settings-changed",
-  SHORTCUT_PRESSED: "start-shortcut-pressed",
+  SHORTCUT_PRESSED: {
+    TOGGLE: "shortcut-pressed-toggle",
+    CANCEL: "shortcut-pressed-cancel",
+    CHANGE_MODE: "shortcut-pressed-change-mode",
+  },
 };

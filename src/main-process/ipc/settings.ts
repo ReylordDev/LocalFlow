@@ -16,13 +16,8 @@ export function registerSettingsHandlers(
     return settingsService.currentSettings;
   });
 
-  ipcMain.handle(CHANNELS.SETTINGS.SET_SHORTCUT, (_, shortcut: string) => {
-    settingsService.setStartShortcut(shortcut);
-    return shortcut;
-  });
-
-  ipcMain.on(CHANNELS.SETTINGS.DISABLE_SHORTCUT, () => {
-    settingsService.disableStartShortcut();
+  ipcMain.on(CHANNELS.SETTINGS.DISABLE_SHORTCUT, (_, shortcut: string) => {
+    settingsService.disableShortcut(shortcut);
   });
 
   ipcMain.on(CHANNELS.SETTINGS.SET_AUDIO, (_, audioConfig: AudioConfig) => {

@@ -16,7 +16,7 @@ const App = () => {
   useEffect(() => {
     const unsubscribe = window.mini.onStatusUpdate((status) => {
       console.log("Status updated: ", status);
-      // setStatus(status);
+      setStatus(status);
     });
 
     return () => {
@@ -46,7 +46,7 @@ const App = () => {
   }
 
   return (
-    <div className="bg-transparent text-white h-screen w-full font-sans select-none">
+    <div className="bg-transparent text-white h-screen w-full font-sans select-none flex flex-col justify-end">
       <div className="w-full flex flex-col justify-end items-center bg-zinc-900 rounded-3xl border-zinc-600 border drag">
         <div className="size-full flex justify-center items-center">
           <MainContentDisplay status={status} />

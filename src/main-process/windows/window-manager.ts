@@ -36,7 +36,9 @@ export class WindowManager {
   }
 
   toggleMainWindow() {
-    if (this.mainWindow.isVisible()) {
+    if (this.mainWindow.isDestroyed()) {
+      this.createMainWindow();
+    } else if (this.mainWindow.isVisible()) {
       this.mainWindow.hide();
     } else {
       this.mainWindow.show();
@@ -44,7 +46,7 @@ export class WindowManager {
   }
 
   sendMainWindowMessage(channel: string, data?: unknown) {
-    if (this.mainWindow) {
+    if (this.mainWindow && !this.mainWindow.isDestroyed()) {
       this.mainWindow.webContents.send(channel, data);
     }
   }
@@ -53,7 +55,7 @@ export class WindowManager {
     const { width: screenWidth, height: screenHeight } =
       screen.getPrimaryDisplay().workAreaSize;
     // const height = 180;
-    const height = 1800;
+    const height = 800;
     const width = 860;
     const edgeGap = 120;
 
@@ -74,6 +76,7 @@ export class WindowManager {
       webPreferences: {
         preload: MINI_PRELOAD_WEBPACK_ENTRY,
       },
+      // Problem: click through issue, can we dynamically resize the window instead?
     });
     // TEMP for development
     // miniWindow.hide();
@@ -85,13 +88,13 @@ export class WindowManager {
   }
 
   showMiniWindow() {
-    if (this.miniWindow) {
+    if (this.miniWindow && !this.miniWindow.isDestroyed()) {
       this.miniWindow.showInactive();
     }
   }
 
   hideMiniWindow() {
-    if (this.miniWindow) {
+    if (this.miniWindow && !this.miniWindow.isDestroyed()) {
       this.sendMiniWindowMessage(CHANNELS.MINI.STATUS_UPDATE, "default");
       // TEMPORARY for deveopment
       // this.miniWindow.hide();
@@ -99,7 +102,7 @@ export class WindowManager {
   }
 
   sendMiniWindowMessage(channel: string, data?: unknown) {
-    if (this.miniWindow) {
+    if (this.miniWindow && !this.miniWindow.isDestroyed()) {
       this.miniWindow.webContents.send(channel, data);
     }
   }
@@ -121,19 +124,19 @@ export class WindowManager {
   };
 
   hideStartupWindow = () => {
-    if (this.startupWindow) {
+    if (this.startupWindow && !this.startupWindow.isDestroyed()) {
       this.startupWindow.hide();
     }
   };
 
   cleanup() {
-    if (this.mainWindow) {
+    if (this.mainWindow && !this.mainWindow.isDestroyed()) {
       this.mainWindow.destroy();
     }
-    if (this.miniWindow) {
+    if (this.miniWindow && !this.miniWindow.isDestroyed()) {
       this.miniWindow.destroy();
     }
-    if (this.startupWindow) {
+    if (this.startupWindow && !this.startupWindow.isDestroyed()) {
       this.startupWindow.destroy();
     }
   }

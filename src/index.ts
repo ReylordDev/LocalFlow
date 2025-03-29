@@ -43,9 +43,23 @@ app.whenReady().then(async () => {
     }
   );
 
-  settingsService.on(SETTINGS_SERVICE_EVENTS.SHORTCUT_PRESSED, () => {
+  settingsService.on(SETTINGS_SERVICE_EVENTS.SHORTCUT_PRESSED.TOGGLE, () => {
     pythonService.toggleRecording();
   });
+
+  settingsService.on(SETTINGS_SERVICE_EVENTS.SHORTCUT_PRESSED.CANCEL, () => {
+    pythonService.sendCommand({
+      action: "cancel",
+    });
+  });
+
+  settingsService.on(
+    SETTINGS_SERVICE_EVENTS.SHORTCUT_PRESSED.CHANGE_MODE,
+    () => {
+      consoleLog("Change mode shortcut pressed");
+      // TODO: Implement change mode functionality
+    }
+  );
 
   pythonService.on(PYTHON_SERVICE_EVENTS.MODELS_READY, () => {
     windowManager.hideStartupWindow();

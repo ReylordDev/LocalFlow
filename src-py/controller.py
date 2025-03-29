@@ -128,8 +128,12 @@ class Controller:
         if self.status == "recording":
             self.recorder.interrupt_recording()
             self.recorder = AudioRecorder()
+            print_message(
+                "audio_level",
+                AudioLevelMessage(audio_level=0),
+            )
             self.update_status("idle")
-        # TODO: implement other states if needed
+        # TODO: implement other states if needed (would need everything to be in a separate thread)
         else:
             logger.warning("Controller is not in a valid state to cancel recording.")
 

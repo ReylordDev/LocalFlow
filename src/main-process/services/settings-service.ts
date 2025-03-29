@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { EventEmitter } from "events";
-import { AppConfig } from "../utils/config";
+import { AppConfig, consoleLog } from "../utils/config";
 import { globalShortcut } from "electron";
 import {
   ApplicationConfig,
@@ -61,6 +61,7 @@ export class SettingsService extends EventEmitter {
   }
 
   private persistSettings() {
+    if (this.settings === this.loadSettings()) return;
     fs.writeFileSync(this.settingsPath, JSON.stringify(this.settings));
     this.emit(SETTINGS_SERVICE_EVENTS.SETTINGS_CHANGED, this.settings);
   }
@@ -69,26 +70,44 @@ export class SettingsService extends EventEmitter {
     return { ...this.settings };
   }
 
-  setStartShortcut(shortcut: string) {
-    globalShortcut.unregister(this.settings.keyboard.toggleRecordingShortcut);
-    globalShortcut.register(shortcut, () => {
-      this.emit(SETTINGS_SERVICE_EVENTS.SHORTCUT_PRESSED);
-    });
-    this.settings.keyboard.toggleRecordingShortcut = shortcut;
-    this.persistSettings();
-  }
-
-  disableStartShortcut() {
-    globalShortcut.unregister(this.settings.keyboard.toggleRecordingShortcut);
+  disableShortcut(shortcut: string) {
+    if (!shortcut) return;
+    consoleLog("Unregistering shortcut:", shortcut);
+    globalShortcut.unregister(shortcut);
   }
 
   registerShortcuts() {
-    globalShortcut.register(
-      this.settings.keyboard.toggleRecordingShortcut,
-      () => {
-        this.emit(SETTINGS_SERVICE_EVENTS.SHORTCUT_PRESSED);
-      }
-    );
+    if (this.settings.keyboard.toggleRecordingShortcut) {
+      consoleLog(
+        "Registering toggle recording shortcut:",
+        this.settings.keyboard.toggleRecordingShortcut
+      );
+      globalShortcut.register(
+        this.settings.keyboard.toggleRecordingShortcut,
+        () => this.emit(SETTINGS_SERVICE_EVENTS.SHORTCUT_PRESSED.TOGGLE)
+      );
+    }
+
+    if (this.settings.keyboard.cancelRecordingShortcut) {
+      consoleLog(
+        "Registering cancel recording shortcut:",
+        this.settings.keyboard.cancelRecordingShortcut
+      );
+      globalShortcut.register(
+        this.settings.keyboard.cancelRecordingShortcut,
+        () => this.emit(SETTINGS_SERVICE_EVENTS.SHORTCUT_PRESSED.CANCEL)
+      );
+    }
+
+    if (this.settings.keyboard.changeModeShortcut) {
+      consoleLog(
+        "Registering change mode shortcut:",
+        this.settings.keyboard.changeModeShortcut
+      );
+      globalShortcut.register(this.settings.keyboard.changeModeShortcut, () =>
+        this.emit(SETTINGS_SERVICE_EVENTS.SHORTCUT_PRESSED.CHANGE_MODE)
+      );
+    }
   }
 
   updateAudioConfig(audioConfig: AudioConfig) {
@@ -98,6 +117,7 @@ export class SettingsService extends EventEmitter {
 
   updateKeyboardConfig(keyboardConfig: KeyboardConfig) {
     this.settings.keyboard = { ...this.settings.keyboard, ...keyboardConfig };
+    this.registerShortcuts();
     this.persistSettings();
   }
 

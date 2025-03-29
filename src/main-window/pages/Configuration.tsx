@@ -13,27 +13,21 @@ export default function ConfigurationPage() {
 
   const [changeModeShortcut, setChangeModeShortcut] = useState("");
 
-  const [launchOnLogin, setLaunchOnLogin] = useState(false);
+  const [launchAtStartup, setLaunchAtStartup] = useState(false);
   const [enableRecordingWindow, setEnableRecordingWindow] = useState(true);
-  const [
-    closeRecordingWindowAutomatically,
-    setCloseRecordingWindowAutomatically,
-  ] = useState(false);
+  const [autoCloseRecordingWindow, setAutoCloseRecordingWindow] =
+    useState(false);
 
   useEffect(() => {
     window.settings.getAll().then((settings) => {
       console.log("Settings: ", settings);
-      setToggleRecordingShortcut(
-        settings.keyboard.toggleRecordingShortcut || null
-      );
-      setCancelRecordingShortcut(
-        settings.keyboard.cancelRecordingShortcut || null
-      );
-      setChangeModeShortcut(settings.keyboard.changeModeShortcut || null);
+      setToggleRecordingShortcut(settings.keyboard.toggleRecordingShortcut);
+      setCancelRecordingShortcut(settings.keyboard.cancelRecordingShortcut);
+      setChangeModeShortcut(settings.keyboard.changeModeShortcut);
 
-      setLaunchOnLogin(settings.application.launchAtStartup);
+      setLaunchAtStartup(settings.application.launchAtStartup);
       setEnableRecordingWindow(settings.application.enableRecordingWindow);
-      setCloseRecordingWindowAutomatically(
+      setAutoCloseRecordingWindow(
         settings.application.autoCloseRecordingWindow
       );
     });
@@ -47,11 +41,11 @@ export default function ConfigurationPage() {
     });
 
     window.settings.setApplication({
-      launchAtStartup: launchOnLogin,
+      launchAtStartup,
       minimizeToTray: true,
       closeToTray: true,
       enableRecordingWindow,
-      autoCloseRecordingWindow: closeRecordingWindowAutomatically,
+      autoCloseRecordingWindow,
     });
   };
 
@@ -61,9 +55,9 @@ export default function ConfigurationPage() {
     toggleRecordingShortcut,
     cancelRecordingShortcut,
     changeModeShortcut,
-    launchOnLogin,
+    launchAtStartup,
     enableRecordingWindow,
-    closeRecordingWindowAutomatically,
+    autoCloseRecordingWindow,
   ]);
 
   return (
@@ -116,9 +110,9 @@ export default function ConfigurationPage() {
             <div className={cn(menuItemClass)}>
               <h3 className="text-md font-semibold">Launch on Login</h3>
               <Switch
-                checked={launchOnLogin}
+                checked={launchAtStartup}
                 onCheckedChange={(checked) => {
-                  setLaunchOnLogin(checked);
+                  setLaunchAtStartup(checked);
                 }}
               />
             </div>
@@ -138,9 +132,9 @@ export default function ConfigurationPage() {
                 Close Recording Window Automatically
               </h3>
               <Switch
-                checked={closeRecordingWindowAutomatically}
+                checked={autoCloseRecordingWindow}
                 onCheckedChange={(checked) => {
-                  setCloseRecordingWindowAutomatically(checked);
+                  setAutoCloseRecordingWindow(checked);
                 }}
               />
             </div>
@@ -159,6 +153,8 @@ function ShortcutRecorder({
   onNewShortcut: (shortcut: string) => void;
 }) {
   const [recording, setRecording] = useState(false);
+
+  console.log("Current Shortcut: ", currentShortcut);
 
   function abortShortcutRecording() {
     setRecording(false);
@@ -183,6 +179,8 @@ function ShortcutRecorder({
           if (keys.length > 0 && isValidShortcut(keys.join("+"))) {
             onNewShortcut(keys.join("+"));
             setRecording(false);
+          } else {
+            console.log("Invalid shortcut: ", keys.join("+"));
           }
         }
       };
@@ -190,7 +188,7 @@ function ShortcutRecorder({
       window.addEventListener("keydown", handleKeyDown);
       return () => window.removeEventListener("keydown", handleKeyDown);
     }
-  }, [recording, onNewShortcut]);
+  }, [recording]);
 
   return (
     <Button
@@ -200,7 +198,7 @@ function ShortcutRecorder({
           abortShortcutRecording();
         } else {
           setRecording(true);
-          window.settings.disableShortcut(); // Disable the current shortcut while recording a new one
+          window.settings.disableShortcut(currentShortcut);
           console.log("Recording Shortcut Setting");
         }
       }}

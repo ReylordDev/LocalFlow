@@ -23,11 +23,8 @@ contextBridge.exposeInMainWorld(CHANNEL_NAMES.SETTINGS, {
   getAll: async () => {
     return ipcRenderer.invoke(CHANNELS.SETTINGS.GET);
   },
-  setShortcut: async (shortcut) => {
-    return ipcRenderer.invoke(CHANNELS.SETTINGS.SET_SHORTCUT, shortcut);
-  },
-  disableShortcut: async () => {
-    return ipcRenderer.send(CHANNELS.SETTINGS.DISABLE_SHORTCUT);
+  disableShortcut: async (shortcut) => {
+    return ipcRenderer.send(CHANNELS.SETTINGS.DISABLE_SHORTCUT, shortcut);
   },
   setAudio(audioConfig) {
     return ipcRenderer.send(CHANNELS.SETTINGS.SET_AUDIO, audioConfig);
