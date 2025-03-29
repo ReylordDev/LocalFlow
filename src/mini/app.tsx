@@ -2,7 +2,7 @@ import { createRoot } from "react-dom/client";
 import SpeechVocalization from "../components/SpeechVocalization";
 import { useEffect, useState } from "react";
 import { AudioWaveform, Loader2 } from "lucide-react";
-import { ControllerStatusType } from "../lib/models";
+import { ControllerStatusType, Mode } from "../lib/models";
 import { Separator } from "../components/ui/separator";
 import { useSettings } from "../lib/hooks";
 import { ShortcutDisplay } from "../components/shortcut";
@@ -11,14 +11,32 @@ import { formatTimer } from "../lib/utils";
 const App = () => {
   const [status, setStatus] = useState<ControllerStatusType>("idle");
   const settings = useSettings();
+  const [activeMode, setActiveMode] = useState<Mode | null>(null);
 
   useEffect(() => {
     const unsubscribe = window.mini.onStatusUpdate((status) => {
-      setStatus(status);
+      console.log("Status updated: ", status);
+      // setStatus(status);
     });
 
     return () => {
       setStatus("idle");
+      unsubscribe();
+    };
+  }, []);
+
+  useEffect(() => {
+    window.database.modes.requestAll();
+  }, []);
+
+  useEffect(() => {
+    const unsubscribe = window.database.modes.onReceiveModes((modes) => {
+      console.log("Received modes: ", modes);
+      const activeMode = modes.find((mode) => mode.active);
+      setActiveMode(activeMode || null);
+    });
+
+    return () => {
       unsubscribe();
     };
   }, []);
@@ -28,8 +46,8 @@ const App = () => {
   }
 
   return (
-    <div className="bg-transparent text-white h-screen w-screen font-sans select-none">
-      <div className="h-full w-full flex flex-col justify-end items-center bg-zinc-900 rounded-3xl border-zinc-600 border drag">
+    <div className="bg-transparent text-white h-screen w-full font-sans select-none">
+      <div className="w-full flex flex-col justify-end items-center bg-zinc-900 rounded-3xl border-zinc-600 border drag">
         <div className="size-full flex justify-center items-center">
           <MainContentDisplay status={status} />
         </div>
@@ -40,14 +58,14 @@ const App = () => {
           <TimerDisplay status={status} />
           <div className="flex h-6 items-center pr-8 space-x-6">
             <div className="flex items-center gap-4">
-              Mode
+              {activeMode ? activeMode.name : "No active mode"}
               <ShortcutDisplay
                 shortcut={settings.keyboard.changeModeShortcut}
               />
             </div>
             <Separator orientation="vertical" decorative />
             <div className="flex items-center gap-4">
-              {status === "idle" ? "Start" : "Stop"}
+              {status === "idle" || status === "result" ? "Start" : "Stop"}
               <ShortcutDisplay
                 shortcut={settings.keyboard.toggleRecordingShortcut}
               />
@@ -85,7 +103,7 @@ const StatusDisplay = ({ status }: { status: ControllerStatusType }) => {
     case "transcribing":
       return <div>Transcribing audio...</div>;
     case "loading_language_model":
-      return <div>Loading formatter model...</div>;
+      return <div>Loading languge model...</div>;
     case "generating_ai_result":
       return <div>Formatting transcription...</div>;
     case "compressing":
@@ -105,6 +123,19 @@ const StatusDisplay = ({ status }: { status: ControllerStatusType }) => {
 };
 
 const MainContentDisplay = ({ status }: { status: ControllerStatusType }) => {
+  const [resultText, setResultText] = useState<string | null>(null);
+
+  useEffect(() => {
+    const unsubscribe = window.mini.onResult((result) => {
+      console.log("Result updated: ", result);
+      setResultText(result.transcription);
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, []);
+
   switch (status) {
     case "idle":
       return <SpeechVocalization isRecording={false} />;
@@ -120,8 +151,19 @@ const MainContentDisplay = ({ status }: { status: ControllerStatusType }) => {
       return <Loader2 className="animate-spin-slow" />;
     case "generating_ai_result":
       return <Loader2 className="animate-spin-slow" />;
+    case "saving":
+      return <Loader2 className="animate-spin-slow" />;
     case "result":
-      return <div>Done</div>;
+      return (
+        // <textarea
+        //   readOnly
+        //   className="bg-zinc-900 text-white resize-none overflow-y-auto no-drag select-text border-0 ring-0 rounded-3xl w-full text-wrapjjj p-4 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
+        //   value={resultText || ""}
+        // />
+        <div className="whitespace-pre text-wrap p-4 overflow-y-auto select-text no-drag">
+          {resultText}
+        </div>
+      );
     default:
       return <div>Unknown status</div>;
   }
@@ -133,6 +175,7 @@ const TimerDisplay = ({ status }: { status: ControllerStatusType }) => {
   useEffect(() => {
     let timerInterval: NodeJS.Timeout;
     if (status === "recording") {
+      setTimer(0); // Reset timer when starting to record
       timerInterval = setInterval(() => {
         setTimer((prevTimer) => prevTimer + 1);
       }, 1000);

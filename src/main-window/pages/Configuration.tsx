@@ -7,17 +7,11 @@ import { Switch } from "../../components/ui/switch";
 const menuItemClass = "justify-between items-center flex px-4 min-h-[50px]";
 
 export default function ConfigurationPage() {
-  const [toggleRecordingShortcut, setToggleRecordingShortcut] = useState<
-    string | null
-  >(null);
+  const [toggleRecordingShortcut, setToggleRecordingShortcut] = useState("");
 
-  const [cancelRecordingShortcut, setCancelRecordingShortcut] = useState<
-    string | null
-  >(null);
+  const [cancelRecordingShortcut, setCancelRecordingShortcut] = useState("");
 
-  const [changeModeShortcut, setChangeModeShortcut] = useState<string | null>(
-    null
-  );
+  const [changeModeShortcut, setChangeModeShortcut] = useState("");
 
   const [launchOnLogin, setLaunchOnLogin] = useState(false);
   const [enableRecordingWindow, setEnableRecordingWindow] = useState(true);

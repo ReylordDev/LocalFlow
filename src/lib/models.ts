@@ -89,6 +89,10 @@ export interface StatusMessage {
   status: ControllerStatusType;
 }
 
+export interface ResultMessage {
+  result: Result;
+}
+
 export interface Message {
   type:
     | "progress"
@@ -99,7 +103,8 @@ export interface Message {
     | "devices"
     | "error"
     | "status"
-    | "modes";
+    | "modes"
+    | "result";
   data:
     | ProgressMessage
     | TranscriptionMessage
@@ -109,7 +114,8 @@ export interface Message {
     | DevicesMessage
     | ErrorMessage
     | StatusMessage
-    | ModesMessage;
+    | ModesMessage
+    | ResultMessage;
 }
 
 // --------------- Database Models --------------- //
@@ -234,7 +240,7 @@ interface ResultBase {
   processing_time: number;
 }
 
-interface Result extends ResultBase {
+export interface Result extends ResultBase {
   id: UUID;
   mode: Mode;
 
@@ -301,6 +307,7 @@ export const CHANNELS = {
     SET_AUDIO: "settings:set-audio",
     SET_KEYBOARD: "settings:set-keyboard",
     SET_APPLICATION: "settings:set-application",
+    SETTINGS_CHANGED: "settings:changed",
   },
   URL: {
     OPEN: "url:open",
@@ -309,6 +316,7 @@ export const CHANNELS = {
     AUDIO_LEVEL_REQUEST: "mini:requestAudioLevel",
     AUDIO_LEVEL_RESPONSE: "mini:audio-level",
     STATUS_UPDATE: "mini:status-update",
+    RESULT: "mini:result",
   },
   DEVICE: {
     DEVICES_REQUEST: "device:requestAll",
@@ -337,6 +345,9 @@ declare global {
       setAudio: (audioConfig: AudioConfig) => void;
       setKeyboard: (keyboardConfig: KeyboardConfig) => void;
       setApplication: (applicationConfig: ApplicationConfig) => void;
+      onSettingsChanged: (
+        callback: (settings: AppSettings) => void
+      ) => () => void;
     };
     url: {
       open: (url: string) => void;
@@ -349,6 +360,7 @@ declare global {
       onStatusUpdate: (
         callback: (status: ControllerStatusType) => void
       ) => () => void;
+      onResult: (callback: (result: Result) => void) => () => void;
     };
     device: {
       requestAll: () => void;
@@ -374,6 +386,7 @@ export const PYTHON_SERVICE_EVENTS = {
   DEVICES: "devices",
   STATUS_UPDATE: "status-update",
   MODES: "modes",
+  RESULT: "result",
 };
 
 export const SETTINGS_SERVICE_EVENTS = {

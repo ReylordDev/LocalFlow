@@ -4,6 +4,7 @@ from typing import Literal, Union, Optional
 from uuid import uuid4, UUID
 from pydantic import BaseModel, ConfigDict, computed_field
 from utils.utils import get_user_data_path
+from utils.model_utils import create_instance, dump_instance
 
 
 from sqlmodel import (
@@ -121,6 +122,10 @@ class StatusMessage(BaseModel):
     status: ControllerStatusType
 
 
+class ResultMessage(BaseModel):
+    result: "Result"
+
+
 MessageType = Literal[
     "progress",
     "transcription",
@@ -131,6 +136,7 @@ MessageType = Literal[
     "error",
     "status",
     "modes",
+    "result",
 ]
 
 MessageDataType = Union[
@@ -143,6 +149,7 @@ MessageDataType = Union[
     ErrorMessage,
     StatusMessage,
     ModesMessage,
+    ResultMessage,
     dict,
 ]
 
@@ -235,6 +242,37 @@ class Mode(ModeBase, table=True):
     )
 
     results: list["Result"] = Relationship(back_populates="mode")
+
+    def create_instance(self) -> "Mode":
+        if self.prompt:
+            prompt_dumped = self.prompt.model_dump()
+            if prompt_dumped and self.prompt.examples:
+                prompt_dumped["examples"] = [
+                    example.model_dump() for example in self.prompt.examples
+                ]
+        else:
+            prompt_dumped = None
+        mode_instance = create_instance(
+            Mode,
+            {
+                "name": self.name,
+                "id": self.id,
+                "default": self.default,
+                "active": self.active,
+                "voice_language": self.voice_language,
+                "translate_to_english": self.translate_to_english,
+                "use_language_model": self.use_language_model,
+                "record_system_audio": self.record_system_audio,
+                "text_replacements": [tr.model_dump() for tr in self.text_replacements],
+                "voice_model": self.voice_model.model_dump(),
+                "language_model": self.language_model.model_dump()
+                if self.language_model
+                else None,
+                "prompt": prompt_dumped,
+                # "results": mode.results, # needs session implementation maybe do it later
+            },
+        )
+        return mode_instance  # type: ignore[return-value]
 
 
 class ModeCreate(ModeBase):
@@ -339,7 +377,9 @@ class ResultBase(SQLModel):
 class Result(ResultBase, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     mode_id: UUID = Field(foreign_key="mode.id")
-    mode: Mode = Relationship(back_populates="results")
+    mode: Mode = Relationship(
+        back_populates="results", sa_relationship_kwargs={"lazy": "selectin"}
+    )
 
     @computed_field
     @property
@@ -347,3 +387,18 @@ class Result(ResultBase, table=True):
         location = f"{get_user_data_path()}/results/{self.id}"
         os.makedirs(location, exist_ok=True)
         return location
+
+    def create_instance(self) -> "Result":
+        result_instance = create_instance(
+            Result,
+            {
+                "id": self.id,
+                "created_at": self.created_at,
+                "transcription": self.transcription,
+                "ai_result": self.ai_result,
+                "duration": self.duration,
+                "processing_time": self.processing_time,
+                "mode": dump_instance(self.mode.create_instance()),
+            },
+        )
+        return result_instance  # type: ignore[return-value]

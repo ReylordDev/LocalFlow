@@ -1,7 +1,13 @@
 // See the Electron documentation for details on how to use preload scripts:
 // https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
 
-import { Device, CHANNELS, Mode, CHANNEL_NAMES } from "../lib/models";
+import {
+  Device,
+  CHANNELS,
+  Mode,
+  CHANNEL_NAMES,
+  AppSettings,
+} from "../lib/models";
 import { contextBridge, ipcRenderer, IpcRendererEvent } from "electron";
 
 // Expose protected methods that allow the renderer process to use
@@ -34,6 +40,15 @@ contextBridge.exposeInMainWorld(CHANNEL_NAMES.SETTINGS, {
       CHANNELS.SETTINGS.SET_APPLICATION,
       applicationConfig
     );
+  },
+  onSettingsChanged(callback) {
+    const listener = (_: IpcRendererEvent, settings: AppSettings) => {
+      callback(settings);
+    };
+    ipcRenderer.on(CHANNELS.SETTINGS.SETTINGS_CHANGED, listener);
+    return () => {
+      ipcRenderer.off(CHANNELS.SETTINGS.SETTINGS_CHANGED, listener);
+    };
   },
 } satisfies Window["settings"]);
 

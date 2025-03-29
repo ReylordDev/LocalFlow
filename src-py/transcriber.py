@@ -1,23 +1,22 @@
 import gc
 from loguru import logger
 from faster_whisper import WhisperModel
-from models import LanguageType, ModelNotLoadedException, VoiceModel
+from models import LanguageType, Mode, ModelNotLoadedException, VoiceModel
 
 
 class Transcriber:
-    def __init__(self, voice_model: VoiceModel, language: LanguageType):
-        self.voice_model = voice_model
-        self.language = language
+    def __init__(self, mode: Mode):
+        self.mode = mode
         self.model = None
 
     def transcribe_audio(self, file_name: str, language: str | None = None):
         raise NotImplementedError
 
-    def get_language(self):
-        return self.language
+    def get_voice_language(self):
+        return self.mode.voice_language
 
-    def set_language(self, language: str):
-        self.language = language
+    # def set_language(self, language: str):
+    #     self.language = language
 
     def load_model(self):
         raise NotImplementedError
@@ -27,22 +26,20 @@ class Transcriber:
 
 
 class LocalTranscriber(Transcriber):
-    # Maybe I should turn this into into a type safe class
-
-    def __init__(self, voice_model: VoiceModel, language: LanguageType):
-        super().__init__(voice_model, language)
+    def __init__(self, mode: Mode):
+        super().__init__(mode)
 
     def load_model(self):
         self.model = WhisperModel(
-            model_size_or_path=self.voice_model.name, device="cuda"
+            model_size_or_path=self.mode.voice_model.name, device="cuda"
         )
-        logger.info(f"{self.voice_model.name} loaded into memory")
+        logger.info(f"{self.mode.voice_model.name} loaded into memory")
 
     def unload_model(self):
         del self.model
         self.model = None
         gc.collect()
-        logger.info(f"{self.voice_model.name} unloaded from memory")
+        logger.info(f"{self.mode.voice_model.name} unloaded from memory")
 
     def transcribe_audio(
         self,
@@ -52,15 +49,22 @@ class LocalTranscriber(Transcriber):
             raise ModelNotLoadedException()
         with open(file_name, "rb") as file:
             logger.info(
-                f"Transcribing {file_name} using {self.voice_model.name}, language: {self.language}"
+                f"Transcribing {file_name} using {self.mode.voice_model.name}, language: {self.get_voice_language()}"
             )
-            language = self.language if self.language != "auto" else None
+            language = (
+                self.get_voice_language()
+                if self.get_voice_language() != "auto"
+                else None
+            )
             segments, info = self.model.transcribe(
                 file,
                 beam_size=5,
                 language=language,
                 vad_filter=True,
                 temperature=0.0,
+                task="transcribe"
+                if not self.mode.translate_to_english
+                else "translate",
             )
             logger.debug(
                 f"Language: {info.language} ({info.language_probability * 100:.2f}%)"
@@ -69,5 +73,5 @@ class LocalTranscriber(Transcriber):
             for segment in segments:
                 transcription += segment.text
             logger.info(f'Transcription: "{transcription}"')
-            self.set_language(info.language)
+            # self.set_language(info.language)
             return transcription

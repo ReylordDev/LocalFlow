@@ -59,7 +59,7 @@ class Controller:
 
         self.update_status("loading_voice_model")
         self.transcriber = LocalTranscriber(
-            self.mode.voice_model, self.mode.voice_language
+            self.mode,
         )
         self.transcriber.load_model()
 
@@ -89,29 +89,34 @@ class Controller:
             self.processor.unload_model()
 
         self.update_status("saving")
-        result = create_instance(
-            Result,
-            {
-                "transcription": transcription,
-                "ai_result": ai_result if self.mode.use_language_model else None,
-                "mode": self.mode,
-                "duration": self.recorder.get_duration(),
-                "processing_time": time.time() - processing_start_time,
-            },
+        result = Result(
+            transcription=transcription,
+            ai_result=ai_result if self.mode.use_language_model else None,
+            mode_id=self.mode.id,
+            duration=self.recorder.duration,
+            processing_time=time.time() - processing_start_time,
         )
-        assert isinstance(result, Result)
         self.database_manager.save_result(result)
         self.compressor.cleanup()
 
         self.update_status("result")
+        print_nested_model(
+            "result", {"result": dump_instance(result.create_instance())}
+        )
 
     def handle_toggle(self):
-        if self.status == "idle":
-            window_info = self.window_detector.get_active_window()
-            if window_info:
-                # TODO: outdated code
-                # self.formatter.set_active_window(ActiveWindowContext(**window_info))
-                pass
+        mode = self.database_manager.get_active_mode()
+        if self.status == "idle" or self.status == "result":
+            if (
+                mode.use_language_model
+                and mode.prompt
+                and mode.prompt.include_active_window
+            ):
+                window_info = self.window_detector.get_active_window()
+                if window_info:
+                    # TODO: outdated code
+                    # self.formatter.set_active_window(ActiveWindowContext(**window_info))
+                    pass
             self.recorder.start()
             self.update_status("recording")
         elif self.status == "recording":
@@ -170,37 +175,7 @@ class Controller:
             modes: list[Mode] = list(self.database_manager.get_all_modes())
             mode_instances = []
             for mode in modes:
-                if mode.prompt:
-                    prompt_dumped = mode.prompt.model_dump()
-                    if prompt_dumped and mode.prompt.examples:
-                        prompt_dumped["examples"] = [
-                            example.model_dump() for example in mode.prompt.examples
-                        ]
-                else:
-                    prompt_dumped = None
-                mode_instance = create_instance(
-                    Mode,
-                    {
-                        "name": mode.name,
-                        "id": mode.id,
-                        "default": mode.default,
-                        "active": mode.active,
-                        "voice_language": mode.voice_language,
-                        "translate_to_english": mode.translate_to_english,
-                        "use_language_model": mode.use_language_model,
-                        "record_system_audio": mode.record_system_audio,
-                        "text_replacements": [
-                            tr.model_dump() for tr in mode.text_replacements
-                        ],
-                        "voice_model": mode.voice_model.model_dump(),
-                        "language_model": mode.language_model.model_dump()
-                        if mode.language_model
-                        else None,
-                        "prompt": prompt_dumped,
-                        # "results": mode.results, # needs session implementation maybe do it later
-                    },
-                )
-                mode_instances.append(mode_instance)
+                mode_instances.append(mode.create_instance())
 
             print_nested_model(
                 "modes", {"modes": [dump_instance(m) for m in mode_instances]}

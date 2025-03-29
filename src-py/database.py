@@ -124,7 +124,6 @@ class DatabaseManager:
                 voice_model=large_v3_turbo,
                 voice_model_id=large_v3_turbo.id,
                 default=True,
-                active=missing_active,
             )
             general_prompt = Prompt(
                 system_prompt="You are a helpful assistant. Fix any grammar, spelling or punctuation mistakes in the following text.",
@@ -145,6 +144,7 @@ class DatabaseManager:
                 use_language_model=True,
                 default=True,
                 prompt=general_prompt,
+                active=missing_active,
             )
 
             if voice_only.name not in [mode.name for mode in existing_default_modes]:
@@ -156,7 +156,7 @@ class DatabaseManager:
 
             session.commit()
 
-    def get_active_mode(self):
+    def get_active_mode(self) -> Mode:
         with self.create_session() as session:
             active_mode = session.exec(
                 select(Mode)

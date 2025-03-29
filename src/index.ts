@@ -33,6 +33,16 @@ app.whenReady().then(async () => {
   await pythonService.initialize();
   windowManager.createStartupWindow();
 
+  settingsService.on(
+    SETTINGS_SERVICE_EVENTS.SETTINGS_CHANGED,
+    (settings: AppConfig) => {
+      windowManager.sendMiniWindowMessage(
+        CHANNELS.SETTINGS.SETTINGS_CHANGED,
+        settings
+      );
+    }
+  );
+
   settingsService.on(SETTINGS_SERVICE_EVENTS.SHORTCUT_PRESSED, () => {
     pythonService.toggleRecording();
   });
@@ -86,8 +96,16 @@ app.whenReady().then(async () => {
     }
   );
 
+  pythonService.on(PYTHON_SERVICE_EVENTS.RESULT, (result: string) => {
+    windowManager.sendMiniWindowMessage(CHANNELS.MINI.RESULT, result);
+  });
+
   pythonService.on(PYTHON_SERVICE_EVENTS.MODES, (modes: Mode[]) => {
     windowManager.sendMainWindowMessage(
+      CHANNELS.DATABASE.MODES.MODES_RESPONSE,
+      modes
+    );
+    windowManager.sendMiniWindowMessage(
       CHANNELS.DATABASE.MODES.MODES_RESPONSE,
       modes
     );

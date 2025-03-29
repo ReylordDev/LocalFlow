@@ -2,12 +2,19 @@
 // https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
 
 import { contextBridge, ipcRenderer, IpcRendererEvent } from "electron";
-import { CHANNELS, ControllerStatusType } from "../lib/models";
+import {
+  AppSettings,
+  CHANNEL_NAMES,
+  CHANNELS,
+  ControllerStatusType,
+  Mode,
+  Result,
+} from "../lib/models";
 
 // Expose protected methods that allow the renderer process to use
 // the ipcRenderer without exposing the entire object
 
-contextBridge.exposeInMainWorld("mini", {
+contextBridge.exposeInMainWorld(CHANNEL_NAMES.MINI, {
   requestAudioLevel: async () => {
     return ipcRenderer.send(CHANNELS.MINI.AUDIO_LEVEL_REQUEST);
   },
@@ -29,9 +36,18 @@ contextBridge.exposeInMainWorld("mini", {
       ipcRenderer.off(CHANNELS.MINI.STATUS_UPDATE, listener);
     };
   },
+  onResult(callback) {
+    const listener = (_: IpcRendererEvent, result: Result) => {
+      callback(result);
+    };
+    ipcRenderer.on(CHANNELS.MINI.RESULT, listener);
+    return () => {
+      ipcRenderer.off(CHANNELS.MINI.RESULT, listener);
+    };
+  },
 } satisfies Window["mini"]);
 
-contextBridge.exposeInMainWorld("settings", {
+contextBridge.exposeInMainWorld(CHANNEL_NAMES.SETTINGS, {
   getAll: async () => {
     return ipcRenderer.invoke(CHANNELS.SETTINGS.GET);
   },
@@ -53,4 +69,36 @@ contextBridge.exposeInMainWorld("settings", {
       applicationConfig
     );
   },
+  onSettingsChanged(callback) {
+    const listener = (_: IpcRendererEvent, settings: AppSettings) => {
+      callback(settings);
+    };
+    ipcRenderer.on(CHANNELS.SETTINGS.SETTINGS_CHANGED, listener);
+    return () => {
+      ipcRenderer.off(CHANNELS.SETTINGS.SETTINGS_CHANGED, listener);
+    };
+  },
 } satisfies Window["settings"]);
+
+contextBridge.exposeInMainWorld(CHANNEL_NAMES.DATABASE, {
+  modes: {
+    requestAll: () => {
+      return ipcRenderer.send(CHANNELS.DATABASE.MODES.MODES_REQUEST);
+    },
+    onReceiveModes: (callback) => {
+      const listener = (_: IpcRendererEvent, modes: Mode[]) => {
+        callback(modes);
+      };
+      ipcRenderer.on(CHANNELS.DATABASE.MODES.MODES_RESPONSE, listener);
+      return () => {
+        ipcRenderer.off(CHANNELS.DATABASE.MODES.MODES_RESPONSE, listener);
+      };
+    },
+    createMode: (mode) => {
+      return ipcRenderer.send(CHANNELS.DATABASE.MODES.CREATE_MODE, mode);
+    },
+    updateMode(mode) {
+      return ipcRenderer.send(CHANNELS.DATABASE.MODES.UPDATE_MODE, mode);
+    },
+  },
+} satisfies Window["database"]);
