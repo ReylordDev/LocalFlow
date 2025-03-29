@@ -244,7 +244,7 @@ interface Result extends ResultBase {
 // --------------- Frontend Models --------------- //
 
 // TODO: update with new pages
-export const pages = ["Modes", "Settings", "Audio", "Credits"] as const;
+export const pages = ["Modes", "Configuration", "Audio", "Credits"] as const;
 export type Page = (typeof pages)[number];
 
 export interface ApplicationConfig {
@@ -299,6 +299,8 @@ export const CHANNELS = {
     SET_SHORTCUT: "settings:set-shortcut",
     DISABLE_SHORTCUT: "settings:disable-shortcut",
     SET_AUDIO: "settings:set-audio",
+    SET_KEYBOARD: "settings:set-keyboard",
+    SET_APPLICATION: "settings:set-application",
   },
   URL: {
     OPEN: "url:open",
@@ -333,6 +335,8 @@ declare global {
       setShortcut: (shortcut: string) => Promise<string>;
       disableShortcut: () => void;
       setAudio: (audioConfig: AudioConfig) => void;
+      setKeyboard: (keyboardConfig: KeyboardConfig) => void;
+      setApplication: (applicationConfig: ApplicationConfig) => void;
     };
     url: {
       open: (url: string) => void;

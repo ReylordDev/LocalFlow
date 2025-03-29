@@ -44,4 +44,13 @@ contextBridge.exposeInMainWorld("settings", {
   setAudio(audioConfig) {
     return ipcRenderer.send(CHANNELS.SETTINGS.SET_AUDIO, audioConfig);
   },
+  setKeyboard(keyboardConfig) {
+    return ipcRenderer.send(CHANNELS.SETTINGS.SET_KEYBOARD, keyboardConfig);
+  },
+  setApplication(applicationConfig) {
+    return ipcRenderer.send(
+      CHANNELS.SETTINGS.SET_APPLICATION,
+      applicationConfig
+    );
+  },
 } satisfies Window["settings"]);

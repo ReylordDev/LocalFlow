@@ -1,10 +1,10 @@
 import { useState } from "react";
-import Settings from "./pages/Settings";
 import Credits from "./pages/Credits";
 import Modes from "./pages/Modes";
 import AudioPage from "./pages/Audio";
 import { AppSidebar } from "../components/app-sidebar";
 import { Page } from "../lib/models";
+import ConfigurationPage from "./pages/Configuration";
 const MainWindow = () => {
   console.log("MainWindow");
   const [page, setPage] = useState<Page>("Modes");
@@ -13,8 +13,8 @@ const MainWindow = () => {
     switch (page) {
       case "Modes":
         return <Modes />;
-      case "Settings":
-        return <Settings />;
+      case "Configuration":
+        return <ConfigurationPage />;
       case "Credits":
         return <Credits />;
       case "Audio":

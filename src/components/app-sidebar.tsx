@@ -10,7 +10,7 @@ const pageRecord: Record<
     icon: React.ReactNode;
   }
 > = {
-  Settings: {
+  Configuration: {
     icon: <Settings />,
   },
   Credits: {

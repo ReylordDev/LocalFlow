@@ -4,15 +4,17 @@ import { EventEmitter } from "events";
 import { AppConfig } from "../utils/config";
 import { globalShortcut } from "electron";
 import {
+  ApplicationConfig,
   AppSettings,
   AudioConfig,
   SETTINGS_SERVICE_EVENTS,
+  KeyboardConfig,
 } from "../../lib/models";
 
 export const DEFAULT_SETTINGS: AppSettings = {
   keyboard: {
     toggleRecordingShortcut: "Ctrl+Shift+O",
-    cancelRecordingShortcut: "Esc",
+    cancelRecordingShortcut: "Ctrl+Shift+X",
     changeModeShortcut: "Ctrl+Shift+K",
   },
   audio: {
@@ -91,6 +93,19 @@ export class SettingsService extends EventEmitter {
 
   updateAudioConfig(audioConfig: AudioConfig) {
     this.settings.audio = { ...this.settings.audio, ...audioConfig };
+    this.persistSettings();
+  }
+
+  updateKeyboardConfig(keyboardConfig: KeyboardConfig) {
+    this.settings.keyboard = { ...this.settings.keyboard, ...keyboardConfig };
+    this.persistSettings();
+  }
+
+  updateApplicationConfig(applicationConfig: ApplicationConfig) {
+    this.settings.application = {
+      ...this.settings.application,
+      ...applicationConfig,
+    };
     this.persistSettings();
   }
 
