@@ -2,6 +2,7 @@ import { useState } from "react";
 import Settings from "./pages/Settings";
 import Credits from "./pages/Credits";
 import Modes from "./pages/Modes";
+import AudioPage from "./pages/Audio";
 import { AppSidebar } from "../components/app-sidebar";
 import { Page } from "../lib/models";
 const MainWindow = () => {
@@ -16,6 +17,8 @@ const MainWindow = () => {
         return <Settings />;
       case "Credits":
         return <Credits />;
+      case "Audio":
+        return <AudioPage />;
     }
   }
 

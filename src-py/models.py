@@ -93,6 +93,7 @@ class Device(BaseModel):
     name: str
     index: int
     default_samplerate: float
+    is_default: bool = False
 
 
 class DevicesMessage(BaseModel):

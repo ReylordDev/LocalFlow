@@ -159,9 +159,16 @@ class AudioRecorder:
             for device in devices
             if device["max_input_channels"] > 0  # type: ignore
         ]
-        if self.device:
-            input_devices.remove(self.device)
-            input_devices.insert(0, self.device)
+        default_device = Device(**self.devices[sd.default.device[0]])  # type: ignore
+        if default_device.index in [device.index for device in input_devices]:
+            index = [device.index for device in input_devices].index(
+                default_device.index
+            )
+            input_devices[index].is_default = True
+        else:
+            logger.warning(
+                f"Default device {default_device.name} not found in input devices."
+            )
         return input_devices
 
     def get_device(self):

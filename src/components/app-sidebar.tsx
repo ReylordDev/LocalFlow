@@ -1,4 +1,4 @@
-import { Brain, Settings, UserRound } from "lucide-react";
+import { Brain, Settings, UserRound, Volume2 } from "lucide-react";
 import { Page, pages } from "../lib/models";
 
 import { cn } from "../lib/utils";
@@ -18,6 +18,9 @@ const pageRecord: Record<
   },
   Modes: {
     icon: <Brain />,
+  },
+  Audio: {
+    icon: <Volume2 />,
   },
 };
 

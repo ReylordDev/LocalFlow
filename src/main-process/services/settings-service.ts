@@ -3,7 +3,11 @@ import path from "path";
 import { EventEmitter } from "events";
 import { AppConfig } from "../utils/config";
 import { globalShortcut } from "electron";
-import { AppSettings, SETTINGS_SERVICE_EVENTS } from "../../lib/models";
+import {
+  AppSettings,
+  AudioConfig,
+  SETTINGS_SERVICE_EVENTS,
+} from "../../lib/models";
 
 export const DEFAULT_SETTINGS: AppSettings = {
   keyboard: {
@@ -83,6 +87,11 @@ export class SettingsService extends EventEmitter {
         this.emit(SETTINGS_SERVICE_EVENTS.SHORTCUT_PRESSED);
       }
     );
+  }
+
+  updateAudioConfig(audioConfig: AudioConfig) {
+    this.settings.audio = { ...this.settings.audio, ...audioConfig };
+    this.persistSettings();
   }
 
   cleanup() {

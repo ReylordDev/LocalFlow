@@ -38,7 +38,7 @@ const menuItemClass = "justify-between items-center flex px-4 min-h-[50px]";
 
 export default function Modes() {
   const [modes, setModes] = useState<Mode[]>([]);
-  const [index, setIndex] = useState<number>(1);
+  const [index, setIndex] = useState<number>(0);
   const [selectedMode, setSelectedMode] = useState<Mode | null>(null);
 
   useEffect(() => {

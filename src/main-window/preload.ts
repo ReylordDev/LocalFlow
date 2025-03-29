@@ -23,6 +23,9 @@ contextBridge.exposeInMainWorld(CHANNEL_NAMES.SETTINGS, {
   disableShortcut: async () => {
     return ipcRenderer.send(CHANNELS.SETTINGS.DISABLE_SHORTCUT);
   },
+  setAudio(audioConfig) {
+    return ipcRenderer.send(CHANNELS.SETTINGS.SET_AUDIO, audioConfig);
+  },
 } satisfies Window["settings"]);
 
 contextBridge.exposeInMainWorld(CHANNEL_NAMES.URL, {

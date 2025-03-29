@@ -63,6 +63,7 @@ export interface Device {
   index: number;
   name: string;
   default_samplerate: number;
+  is_default: boolean;
 }
 
 export interface DevicesMessage {
@@ -243,10 +244,10 @@ interface Result extends ResultBase {
 // --------------- Frontend Models --------------- //
 
 // TODO: update with new pages
-export const pages = ["Modes", "Settings", "Credits"] as const;
+export const pages = ["Modes", "Settings", "Audio", "Credits"] as const;
 export type Page = (typeof pages)[number];
 
-interface ApplicationConfig {
+export interface ApplicationConfig {
   launchAtStartup: boolean;
   minimizeToTray: boolean;
   closeToTray: boolean;
@@ -254,13 +255,13 @@ interface ApplicationConfig {
   autoCloseRecordingWindow: boolean;
 }
 
-interface KeyboardConfig {
+export interface KeyboardConfig {
   toggleRecordingShortcut: Electron.Accelerator; // https://www.electronjs.org/docs/latest/api/accelerator
   cancelRecordingShortcut: Electron.Accelerator;
   changeModeShortcut: Electron.Accelerator;
 }
 
-interface AudioConfig {
+export interface AudioConfig {
   device: Device | null;
   useSystemDefaultDevice: boolean;
   automaticallyIncreaseMicVolume: boolean;
@@ -268,7 +269,7 @@ interface AudioConfig {
   soundEffectsVolume: number;
 }
 
-interface OutputConfig {
+export interface OutputConfig {
   autoPasteResult: boolean;
   restoreClipboard: boolean;
 }
@@ -297,6 +298,7 @@ export const CHANNELS = {
     GET: "settings:get-all",
     SET_SHORTCUT: "settings:set-shortcut",
     DISABLE_SHORTCUT: "settings:disable-shortcut",
+    SET_AUDIO: "settings:set-audio",
   },
   URL: {
     OPEN: "url:open",
@@ -330,6 +332,7 @@ declare global {
       getAll: () => Promise<AppSettings>;
       setShortcut: (shortcut: string) => Promise<string>;
       disableShortcut: () => void;
+      setAudio: (audioConfig: AudioConfig) => void;
     };
     url: {
       open: (url: string) => void;
