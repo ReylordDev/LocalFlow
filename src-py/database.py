@@ -11,7 +11,7 @@ from models import (
     ModeCreate,
     ModeUpdate,
     Prompt,
-    PromptBase,
+    PromptCreate,
     Result,
     TextReplacement,
     TextReplacementBase,
@@ -227,18 +227,29 @@ class DatabaseManager:
             logger.info(f"Text replacement created: {text_replacement.id}")
             return text_replacement
 
-    def create_prompt(self, prompt: PromptBase):
+    def create_prompt(self, prompt: PromptCreate) -> Prompt:
         with self.create_session() as session:
             # Create the new prompt
-            prompt = Prompt(
+            new_prompt = Prompt(
                 system_prompt=prompt.system_prompt,
                 include_clipboard=prompt.include_clipboard,
                 include_active_window=prompt.include_active_window,
             )
-            session.add(prompt)
+            examples = []
+            for example_base in prompt.examples:
+                example = Example(
+                    input=example_base.input,
+                    output=example_base.output,
+                    prompt_id=new_prompt.id,
+                    prompt=new_prompt,
+                )
+                examples.append(example)
+            new_prompt.examples = examples
+            session.add_all(examples)
+            session.add(new_prompt)
             session.commit()
-            logger.info(f"Prompt created: {prompt.id}")
-            return prompt
+            logger.info(f"Prompt created: {new_prompt.id}")
+            return new_prompt
 
     def get_voice_model_by_name(self, voice_model_name: str) -> VoiceModel:
         with self.create_session() as session:
@@ -359,8 +370,35 @@ class DatabaseManager:
 if __name__ == "__main__":
     db = DatabaseManager()
     with db.create_session() as session:
-        id = UUID("25c68e1960704a859c977ddb65551d6d")
-        mode = db.get_mode(id)
-        dict = mode.model_dump()
-        json = mode.model_dump_json(indent=2)
-        logger.info(json)
+        created_mode = db.create_mode(
+            ModeCreate(
+                name="Test Mode",
+                voice_language="en",
+                voice_model_name="large-v3-turbo",
+                language_model_name="gemma3:4b",
+                use_language_model=True,
+                prompt=PromptCreate(
+                    system_prompt="You are a helpful assistant.",
+                    examples=[
+                        ExampleBase(
+                            input="Hello, how are you?",
+                            output="I'm fine, thank you!",
+                        )
+                    ],
+                ),
+                text_replacements=[
+                    TextReplacementBase(
+                        original_text="Hello",
+                        replacement_text="Hi",
+                    )
+                ],
+            )
+        )
+
+        logger.info(f"Created mode: {created_mode.id}")
+
+        mode = db.get_mode(created_mode.id)
+
+        logger.info(f"Retrieved mode: {mode.id}")
+        if mode.prompt:
+            logger.info(f"Examples: {mode.prompt.examples}")

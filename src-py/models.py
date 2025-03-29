@@ -7,7 +7,6 @@ from utils.utils import get_user_data_path
 
 
 from sqlmodel import (
-    JSON,
     Field,
     Relationship,
     SQLModel,
@@ -240,7 +239,7 @@ class Mode(ModeBase, table=True):
 class ModeCreate(ModeBase):
     voice_model_name: VoiceModelNameType
     language_model_name: str | None = None
-    prompt: Optional["PromptBase"] = None
+    prompt: Optional["PromptCreate"] = None
     text_replacements: list["TextReplacementBase"] = []
 
 
@@ -291,6 +290,10 @@ class Prompt(PromptBase, table=True):
     examples: list["Example"] = Relationship(
         back_populates="prompt", sa_relationship_kwargs={"lazy": "selectin"}
     )
+
+
+class PromptCreate(PromptBase):
+    examples: list["ExampleBase"] = []
 
 
 class ExampleBase(SQLModel):

@@ -64,7 +64,7 @@ export default function Modes() {
   // }
 
   return (
-    <div className="h-full w-full flex flex-col py-24 px-32 gap-2">
+    <div className="h-full w-full flex flex-col py-24 px-32 gap-2 overflow-y-auto">
       <div className="flex justify-between items-center">
         <div className="flex flex-col gap-1 max-w-[600px] min-h-10">
           <h1 className="font-bold text-xl">Create a Mode</h1>
@@ -131,7 +131,7 @@ const ModeDetails = ({
     mode ? mode.use_language_model : false
   );
   const [languageModelName, setLanguageModelName] = useState(
-    mode ? (mode.language_model ? mode.language_model.name : null) : null
+    mode ? mode.language_model?.name : ""
   );
   const [prompt, setPrompt] = useState<PromptBase>(mode ? mode.prompt : null); // TODO: Check the validity
   const [name, setName] = useState<string>(mode ? mode.name : "");
@@ -147,10 +147,11 @@ const ModeDetails = ({
   const [textReplacements, setTextReplacements] = useState<
     TextReplacement[] | TextReplacementBase[]
   >(mode ? mode.text_replacements : []);
-  const [textReplacement, setTextReplacement] = useState<TextReplacementBase>({
-    replacement_text: "",
-    original_text: "",
-  });
+  const [textReplacementInput, setTextReplacementInput] =
+    useState<TextReplacementBase>({
+      replacement_text: "",
+      original_text: "",
+    });
   const [showPromptDialog, setShowPromptDialog] = useState<boolean>(false);
 
   const settingsAreValid = useMemo(() => {
@@ -163,6 +164,102 @@ const ModeDetails = ({
     }
     return true;
   }, [name, voiceModelName, voiceLanguage, useAi, languageModelName]);
+
+  const unsavedChanges = useMemo(() => {
+    if (mode) {
+      // Check each condition separately and log the trigger
+      if (mode.name !== name) {
+        console.log(
+          "Changes detected: name changed from",
+          mode.name,
+          "to",
+          name
+        );
+        return true;
+      }
+      if (mode.voice_model.name !== voiceModelName) {
+        console.log(
+          "Changes detected: voice model changed from",
+          mode.voice_model.name,
+          "to",
+          voiceModelName
+        );
+        return true;
+      }
+      if (mode.voice_language !== voiceLanguage) {
+        console.log(
+          "Changes detected: voice language changed from",
+          mode.voice_language,
+          "to",
+          voiceLanguage
+        );
+        return true;
+      }
+      if (mode.translate_to_english !== translateToEnglish) {
+        console.log(
+          "Changes detected: translate to English changed from",
+          mode.translate_to_english,
+          "to",
+          translateToEnglish
+        );
+        return true;
+      }
+      if (mode.text_replacements !== textReplacements) {
+        console.log("Changes detected: text replacements changed");
+        return true;
+      }
+      if (mode.use_language_model !== useAi) {
+        console.log(
+          "Changes detected: AI usage changed from",
+          mode.use_language_model,
+          "to",
+          useAi
+        );
+        return true;
+      }
+      if (useAi) {
+        if (mode.language_model?.name !== languageModelName) {
+          console.log(
+            "Changes detected: language model changed from",
+            mode.language_model?.name,
+            "to",
+            languageModelName
+          );
+          return true;
+        }
+        if (mode.prompt?.system_prompt !== prompt?.system_prompt) {
+          console.log("Changes detected: system prompt changed");
+          return true;
+        }
+        if (mode.prompt?.include_clipboard !== prompt?.include_clipboard) {
+          console.log("Changes detected: include clipboard changed");
+          return true;
+        }
+        if (
+          mode.prompt?.include_active_window !== prompt?.include_active_window
+        ) {
+          console.log("Changes detected: include active window changed");
+          return true;
+        }
+        if (mode.prompt?.examples !== prompt?.examples) {
+          console.log("Changes detected: examples changed");
+          return true;
+        }
+      }
+      return false;
+    }
+    return false;
+  }, [
+    mode,
+    name,
+    useAi,
+    voiceModelName,
+    voiceLanguage,
+    translateToEnglish,
+    textReplacements,
+    languageModelName,
+    prompt,
+  ]);
 
   function handleSaveMode() {
     console.log("Save Mode", {
@@ -231,10 +328,15 @@ const ModeDetails = ({
         </div>
         <Button
           variant="secondary"
-          className="mr-4"
+          className={cn("mr-4", unsavedChanges && "border-rose-400 border-2")}
           disabled={!settingsAreValid}
           onClick={handleSaveMode}
         >
+          {unsavedChanges && (
+            <Badge variant="destructive" className="text-xs font-normal">
+              Unsaved changes
+            </Badge>
+          )}
           {mode ? "Save Mode" : "Create Mode"}
         </Button>
       </div>
@@ -400,10 +502,10 @@ const ModeDetails = ({
               <Input
                 className="w-full"
                 placeholder="Original"
-                value={textReplacement.original_text}
+                value={textReplacementInput.original_text}
                 onChange={(e) =>
-                  setTextReplacement({
-                    ...textReplacement,
+                  setTextReplacementInput({
+                    ...textReplacementInput,
                     original_text: e.target.value,
                   })
                 }
@@ -412,10 +514,10 @@ const ModeDetails = ({
               <Input
                 className="w-full"
                 placeholder="Replacement"
-                value={textReplacement.replacement_text}
+                value={textReplacementInput.replacement_text}
                 onChange={(e) =>
-                  setTextReplacement({
-                    ...textReplacement,
+                  setTextReplacementInput({
+                    ...textReplacementInput,
                     replacement_text: e.target.value,
                   })
                 }
@@ -424,9 +526,12 @@ const ModeDetails = ({
               <Button
                 variant="default"
                 onClick={() => {
-                  console.log("Add text replacement", textReplacement);
-                  setTextReplacements([...textReplacements, textReplacement]);
-                  setTextReplacement({
+                  console.log("Add text replacement", textReplacementInput);
+                  setTextReplacements([
+                    ...textReplacements,
+                    textReplacementInput,
+                  ]);
+                  setTextReplacementInput({
                     original_text: "",
                     replacement_text: "",
                   });
@@ -598,7 +703,7 @@ const PromptDetails = ({
                   + Add Example
                 </Button>
               </DialogTrigger>
-              <ExampleDialogContent
+              <AddExampleDialog
                 exampleInput={exampleInput}
                 setExampleInput={setExampleInput}
                 exampleOutput={exampleOutput}
@@ -614,11 +719,11 @@ const PromptDetails = ({
               <h2 className="text-lg font-semibold">Examples</h2>
               <Dialog>
                 <DialogTrigger asChild>
-                  <Button className="h-7" variant="ghost">
+                  <Button className="h-7" variant="outline">
                     + Add Example
                   </Button>
                 </DialogTrigger>
-                <ExampleDialogContent
+                <AddExampleDialog
                   exampleInput={exampleInput}
                   setExampleInput={setExampleInput}
                   exampleOutput={exampleOutput}
@@ -643,13 +748,9 @@ const PromptDetails = ({
                     </div>
                   </div>
                 </DialogTrigger>
-                <ExampleDialogContent
+                <UpdateExampleDialog
                   example={example}
                   index={index}
-                  exampleInput={exampleInput}
-                  setExampleInput={setExampleInput}
-                  exampleOutput={exampleOutput}
-                  setExampleOutput={setExampleOutput}
                   examples={examples}
                   setExamples={setExamples}
                 />
@@ -662,76 +763,34 @@ const PromptDetails = ({
   );
 };
 
-const ExampleDialogContent = ({
+const UpdateExampleDialog = ({
   example,
   index,
-  exampleInput,
-  setExampleInput,
-  exampleOutput,
-  setExampleOutput,
   examples,
   setExamples,
 }: {
-  example?: ExampleBase | null;
-  index?: number;
-  exampleInput: string;
-  setExampleInput: (input: string) => void;
-  exampleOutput: string;
-  setExampleOutput: (output: string) => void;
+  example: ExampleBase;
+  index: number;
   examples: ExampleBase[] | null;
   setExamples: (examples: ExampleBase[]) => void;
 }) => {
-  useEffect(() => {
-    if (example) {
-      setExampleInput(example.input);
-      setExampleOutput(example.output);
-    } else {
-      setExampleInput("");
-      setExampleOutput("");
-    }
-  }, [example, setExampleInput, setExampleOutput]);
-
-  const isUpdating = useMemo(() => {
-    if (example && index !== null) {
-      return true;
-    }
-    return false;
-  }, [example, index]);
-
-  console.log("Example Dialog, isUpdating", isUpdating);
-  console.log("Example Dialog, example", example);
-  console.log("Example Dialog, index", index);
+  const [exampleInput, setExampleInput] = useState<string>(example.input);
+  const [exampleOutput, setExampleOutput] = useState<string>(example.output);
 
   const handleSaveExample = () => {
-    console.log("Save Example", exampleInput, exampleOutput);
-    if (isUpdating) {
-      console.log("Updating example", index);
-      const updatedExamples = [...examples];
-      updatedExamples[index] = {
-        input: exampleInput,
-        output: exampleOutput,
-      };
-      setExamples(updatedExamples);
-    } else {
-      console.log("Adding example", exampleInput, exampleOutput);
-      setExamples([
-        ...examples,
-        {
-          input: exampleInput,
-          output: exampleOutput,
-        },
-      ]);
-    }
-    setExampleInput("");
-    setExampleOutput("");
+    console.log("Updating example", index);
+    const updatedExamples = [...examples];
+    updatedExamples[index] = {
+      input: exampleInput,
+      output: exampleOutput,
+    };
+    setExamples(updatedExamples);
   };
 
   return (
     <DialogContent className=" flex flex-col max-w-full w-[800px] h-3/4">
       <DialogHeader>
-        <DialogTitle>
-          {isUpdating ? "Update Example" : "Add Example"}
-        </DialogTitle>
+        <DialogTitle>Update Example</DialogTitle>
         <DialogDescription>
           Add an example of the voice input (as text) and the desired AI output.{" "}
         </DialogDescription>
@@ -763,7 +822,85 @@ const ExampleDialogContent = ({
         </DialogClose>
         <DialogClose asChild>
           <Button variant="default" onClick={handleSaveExample}>
-            {isUpdating ? "Update Example" : "Add Example"}
+            Update Example
+          </Button>
+        </DialogClose>
+      </DialogFooter>
+    </DialogContent>
+  );
+};
+
+const AddExampleDialog = ({
+  exampleInput,
+  setExampleInput,
+  exampleOutput,
+  setExampleOutput,
+  examples,
+  setExamples,
+}: {
+  example?: ExampleBase | null;
+  index?: number;
+  exampleInput: string;
+  setExampleInput: (input: string) => void;
+  exampleOutput: string;
+  setExampleOutput: (output: string) => void;
+  examples: ExampleBase[] | null;
+  setExamples: (examples: ExampleBase[]) => void;
+}) => {
+  useEffect(() => {
+    setExampleInput("");
+    setExampleOutput("");
+  }, []);
+
+  const handleSaveExample = () => {
+    console.log("Adding example", exampleInput, exampleOutput);
+    setExamples([
+      ...examples,
+      {
+        input: exampleInput,
+        output: exampleOutput,
+      },
+    ]);
+    setExampleInput("");
+    setExampleOutput("");
+  };
+
+  return (
+    <DialogContent className=" flex flex-col max-w-full w-[800px] h-3/4">
+      <DialogHeader>
+        <DialogTitle>Add Example</DialogTitle>
+        <DialogDescription>
+          Add an example of the voice input (as text) and the desired AI output.{" "}
+        </DialogDescription>
+      </DialogHeader>
+      <div className="flex justify-between items-start gap-3 h-full w-full">
+        <div className="flex flex-col gap-2 w-full h-full">
+          <h3 className="text-md font-semibold pl-1">Input</h3>
+          <Textarea
+            className="h-full"
+            placeholder="Enter your example input here..."
+            value={exampleInput}
+            onChange={(e) => setExampleInput(e.target.value)}
+          />
+        </div>
+        <Separator orientation="vertical" className="h-full my-2" />
+        <div className="flex flex-col gap-2 w-full h-full">
+          <h3 className="text-md font-semibold pl-1">Output</h3>
+          <Textarea
+            className="h-full"
+            placeholder="Enter your desired output here..."
+            value={exampleOutput}
+            onChange={(e) => setExampleOutput(e.target.value)}
+          />
+        </div>
+      </div>
+      <DialogFooter className="flex justify-end gap-2 mt-4">
+        <DialogClose asChild>
+          <Button variant="secondary">Cancel</Button>
+        </DialogClose>
+        <DialogClose asChild>
+          <Button variant="default" onClick={handleSaveExample}>
+            Add Example
           </Button>
         </DialogClose>
       </DialogFooter>
