@@ -60,9 +60,7 @@ const App = () => {
   return (
     <div className="bg-transparent text-white h-screen w-full font-sans select-none flex flex-col justify-end">
       <div className="w-full flex flex-col justify-end items-center bg-zinc-900 rounded-3xl border-zinc-600 border drag">
-        <div className="size-full flex justify-center items-center">
-          <MainContentDisplay status={status} />
-        </div>
+        <MainContentDisplay status={status} />
         <div className="h-24 bg-zinc-800 rounded-b-3xl w-full flex justify-between items-center border-t-zinc-500 border-t">
           <div className="pl-8">
             <StatusDisplay status={status} />
@@ -152,21 +150,28 @@ const MainContentDisplay = ({ status }: { status: ControllerStatusType }) => {
 
   switch (status) {
     case "idle":
-      return <SpeechVocalization isRecording={false} />;
+      return (
+        <div className="flex justify-center items-center h-full">
+          <SpeechVocalization isRecording={false} />
+        </div>
+      );
     case "recording":
-      return <SpeechVocalization isRecording={true} />;
+      return (
+        <div className="flex justify-center items-center h-full">
+          <SpeechVocalization isRecording={true} />
+        </div>
+      );
     case "compressing":
-      return <Loader2 className="animate-spin-slow" />;
     case "loading_voice_model":
-      return <Loader2 className="animate-spin-slow" />;
     case "transcribing":
-      return <Loader2 className="animate-spin-slow" />;
     case "loading_language_model":
-      return <Loader2 className="animate-spin-slow" />;
     case "generating_ai_result":
-      return <Loader2 className="animate-spin-slow" />;
     case "saving":
-      return <Loader2 className="animate-spin-slow" />;
+      return (
+        <div className="flex justify-center items-center h-full">
+          <Loader2 className="animate-spin-slow" />
+        </div>
+      );
     case "result":
       return (
         // <textarea
@@ -174,7 +179,7 @@ const MainContentDisplay = ({ status }: { status: ControllerStatusType }) => {
         //   className="bg-zinc-900 text-white resize-none overflow-y-auto no-drag select-text border-0 ring-0 rounded-3xl w-full text-wrapjjj p-4 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
         //   value={resultText || ""}
         // />
-        <div className="whitespace-pre text-wrap p-4 overflow-y-auto select-text no-drag">
+        <div className="whitespace-pre text-wrap px-4 py-2 overflow-y-auto select-text no-drag max-h-72 min-h-full scrollbar rounded-3xl">
           {resultText}
         </div>
       );

@@ -54,8 +54,8 @@ export class WindowManager {
   createMiniWindow() {
     const { width: screenWidth, height: screenHeight } =
       screen.getPrimaryDisplay().workAreaSize;
-    const height = 180;
-    // const height = 800;
+    // const height = 180;
+    const height = 400;
     const width = 860;
     const edgeGap = 120;
 
@@ -104,6 +104,18 @@ export class WindowManager {
   sendMiniWindowMessage(channel: string, data?: unknown) {
     if (this.miniWindow && !this.miniWindow.isDestroyed()) {
       this.miniWindow.webContents.send(channel, data);
+    }
+  }
+
+  setMiniWindowHeight(height: 180 | 386) {
+    if (this.miniWindow && !this.miniWindow.isDestroyed()) {
+      const currentSize = this.miniWindow.getContentSize();
+      const currentPosition = this.miniWindow.getPosition();
+      this.miniWindow.setContentSize(currentSize[0], height);
+      this.miniWindow.setPosition(
+        currentPosition[0],
+        currentPosition[1] - (height - currentSize[1])
+      );
     }
   }
 

@@ -97,6 +97,11 @@ app.whenReady().then(async () => {
     PYTHON_SERVICE_EVENTS.STATUS_UPDATE,
     (status: ControllerStatusType) => {
       windowManager.sendMiniWindowMessage(CHANNELS.MINI.STATUS_UPDATE, status);
+      if (status === "result") {
+        windowManager.setMiniWindowHeight(386);
+      } else {
+        windowManager.setMiniWindowHeight(180);
+      }
     }
   );
 

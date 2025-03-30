@@ -129,9 +129,17 @@ class Controller:
                 AudioLevelMessage(audio_level=0),
             )
             self.update_status("idle")
+        elif self.status == "result":
+            print_message(
+                "audio_level",
+                AudioLevelMessage(audio_level=0),
+            )
+            self.update_status("idle")
         # TODO: implement other states if needed (would need everything to be in a separate thread)
         else:
-            logger.warning("Controller is not in a valid state to cancel recording.")
+            logger.warning(
+                f"Controller is not in a valid state ({self.status}) to cancel recording"
+            )
 
     # TODO: Move each command into their own functions
     def handle_command(self, command: Command):
