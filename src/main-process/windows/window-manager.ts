@@ -54,8 +54,8 @@ export class WindowManager {
   createMiniWindow() {
     const { width: screenWidth, height: screenHeight } =
       screen.getPrimaryDisplay().workAreaSize;
-    // const height = 180;
-    const height = 800;
+    const height = 180;
+    // const height = 800;
     const width = 860;
     const edgeGap = 120;
 

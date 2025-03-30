@@ -99,6 +99,12 @@ export class PythonService extends EventEmitter {
           (message.data as ModesMessage).modes
         );
         break;
+      case "modes_update":
+        this.emit(
+          PYTHON_SERVICE_EVENTS.MODES_UPDATE,
+          (message.data as ModesMessage).modes
+        );
+        break;
       case "result":
         this.emit(
           PYTHON_SERVICE_EVENTS.RESULT,

@@ -136,6 +136,7 @@ MessageType = Literal[
     "error",
     "status",
     "modes",
+    "modes_update",
     "result",
 ]
 

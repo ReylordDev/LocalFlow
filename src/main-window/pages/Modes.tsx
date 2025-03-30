@@ -87,13 +87,8 @@ export default function Modes() {
       <Separator orientation="horizontal" />
       <div className="flex flex-col gap-4 pt-1">
         {modes.map((mode, index) => (
-          <Button
-            variant="ghost"
+          <div
             key={index}
-            onClick={() => {
-              setIndex(1);
-              setSelectedMode(mode);
-            }}
             className="flex h-full justify-between items-center border border-zinc-300 bg-zinc-50 rounded-md p-4"
           >
             <div className="flex flex-col gap-1">
@@ -112,8 +107,61 @@ export default function Modes() {
                 {mode.voice_model.name} ({languageNameMap[mode.voice_language]})
               </p>
             </div>
-            <ChevronRight />
-          </Button>
+            <div className="flex items-center gap-4">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setIndex(1);
+                  setSelectedMode(mode);
+                }}
+              >
+                Edit
+              </Button>
+              <Button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  modes.map((m) => {
+                    window.database.modes.updateMode({
+                      id: m.id,
+                      name: m.name,
+                      active: false,
+                      default: m.default,
+                      voice_model_name: m.voice_model.name,
+                      voice_language: m.voice_language,
+                      text_replacements: m.text_replacements,
+                      translate_to_english: m.translate_to_english,
+                      use_language_model: m.use_language_model,
+                      record_system_audio: m.record_system_audio,
+                    });
+                  });
+                  window.database.modes.updateMode({
+                    id: mode.id,
+                    name: mode.name,
+                    active: true,
+                    default: mode.default,
+                    voice_model_name: mode.voice_model.name,
+                    voice_language: mode.voice_language,
+                    text_replacements: mode.text_replacements,
+                    translate_to_english: mode.translate_to_english,
+                    use_language_model: mode.use_language_model,
+                    record_system_audio: mode.record_system_audio,
+                  });
+                  console.log("Toggle Mode", mode.id, !mode.active);
+                  setModes((prev) =>
+                    prev.map((m) => {
+                      if (m.id === mode.id) {
+                        return { ...m, active: true };
+                      } else {
+                        return { ...m, active: false };
+                      }
+                    })
+                  );
+                }}
+              >
+                Activate
+              </Button>
+            </div>
+          </div>
         ))}
       </div>
     </div>

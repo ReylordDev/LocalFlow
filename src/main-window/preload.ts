@@ -93,5 +93,14 @@ contextBridge.exposeInMainWorld(CHANNEL_NAMES.DATABASE, {
     updateMode(mode) {
       return ipcRenderer.send(CHANNELS.DATABASE.MODES.UPDATE_MODE, mode);
     },
+    onModesUpdate(callback) {
+      const listener = (_: IpcRendererEvent, modes: Mode[]) => {
+        callback(modes);
+      };
+      ipcRenderer.on(CHANNELS.DATABASE.MODES.MODES_UPDATE, listener);
+      return () => {
+        ipcRenderer.off(CHANNELS.DATABASE.MODES.MODES_UPDATE, listener);
+      };
+    },
   },
 } satisfies Window["database"]);

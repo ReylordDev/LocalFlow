@@ -30,6 +30,18 @@ const App = () => {
   }, []);
 
   useEffect(() => {
+    const unsubscribe = window.database.modes.onModesUpdate((modes) => {
+      console.log("Modes updated: ", modes);
+      const activeMode = modes.find((mode) => mode.active);
+      setActiveMode(activeMode || null);
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, []);
+
+  useEffect(() => {
     const unsubscribe = window.database.modes.onReceiveModes((modes) => {
       console.log("Received modes: ", modes);
       const activeMode = modes.find((mode) => mode.active);
@@ -58,7 +70,7 @@ const App = () => {
           <TimerDisplay status={status} />
           <div className="flex h-6 items-center pr-8 space-x-6">
             <div className="flex items-center gap-4">
-              {activeMode ? activeMode.name : "No active mode"}
+              {activeMode ? activeMode.name : ""}
               <ShortcutDisplay
                 shortcut={settings.keyboard.changeModeShortcut}
               />
@@ -103,7 +115,7 @@ const StatusDisplay = ({ status }: { status: ControllerStatusType }) => {
     case "transcribing":
       return <div>Transcribing audio...</div>;
     case "loading_language_model":
-      return <div>Loading languge model...</div>;
+      return <div>Loading language model...</div>;
     case "generating_ai_result":
       return <div>Formatting transcription...</div>;
     case "compressing":

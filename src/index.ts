@@ -125,6 +125,17 @@ app.whenReady().then(async () => {
     );
   });
 
+  pythonService.on(PYTHON_SERVICE_EVENTS.MODES_UPDATE, (modes: Mode[]) => {
+    // windowManager.sendMainWindowMessage(
+    //   CHANNELS.DATABASE.MODES.MODES_UPDATE,
+    //   modes
+    // );
+    windowManager.sendMiniWindowMessage(
+      CHANNELS.DATABASE.MODES.MODES_UPDATE,
+      modes
+    );
+  });
+
   registerIpcHandlers(settingsService, config, pythonService);
 });
 

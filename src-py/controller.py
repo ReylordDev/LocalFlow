@@ -177,12 +177,9 @@ class Controller:
 
         elif command.action == "get_modes":
             modes: list[Mode] = list(self.database_manager.get_all_modes())
-            mode_instances = []
-            for mode in modes:
-                mode_instances.append(mode.create_instance())
 
             print_nested_model(
-                "modes", {"modes": [dump_instance(m) for m in mode_instances]}
+                "modes", {"modes": [dump_instance(m.create_instance()) for m in modes]}
             )
 
         elif command.action == "create_mode":
@@ -198,6 +195,12 @@ class Controller:
                 return
             mode = command.data
             self.database_manager.update_mode(mode)
+
+            modes = self.database_manager.get_all_modes()
+
+            print_nested_model(
+                "modes", {"modes": [dump_instance(m.create_instance()) for m in modes]}
+            )
 
 
 @logger.catch

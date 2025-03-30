@@ -104,7 +104,8 @@ export interface Message {
     | "error"
     | "status"
     | "modes"
-    | "result";
+    | "result"
+    | "modes_update";
   data:
     | ProgressMessage
     | TranscriptionMessage
@@ -326,6 +327,7 @@ export const CHANNELS = {
     MODES: {
       MODES_REQUEST: "database:modes:getAll",
       MODES_RESPONSE: "database:modes:receiveModes",
+      MODES_UPDATE: "database:modes:update",
       CREATE_MODE: "database:modes:createMode",
       UPDATE_MODE: "database:modes:updateMode",
     },
@@ -371,6 +373,7 @@ declare global {
         onReceiveModes: (callback: (modes: Mode[]) => void) => () => void;
         createMode: (mode: ModeCreate) => void;
         updateMode: (mode: ModeUpdate) => void;
+        onModesUpdate: (callback: (modes: Mode[]) => void) => () => void;
       };
     };
   }
@@ -383,6 +386,7 @@ export const PYTHON_SERVICE_EVENTS = {
   AUDIO_LEVEL: "audio-level",
   DEVICES: "devices",
   STATUS_UPDATE: "status-update",
+  MODES_UPDATE: "modes-update",
   MODES: "modes",
   RESULT: "result",
 };
