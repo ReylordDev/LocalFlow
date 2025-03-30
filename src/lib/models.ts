@@ -47,10 +47,6 @@ export interface TranscriptionMessage {
   transcription: string;
 }
 
-export interface LanguageModelTranscriptionMessage {
-  formatted_transcription: string;
-}
-
 export interface AudioLevelMessage {
   audio_level: number;
 }
@@ -97,7 +93,6 @@ export interface Message {
   type:
     | "progress"
     | "transcription"
-    | "formatted_transcription"
     | "audio_level"
     | "exception"
     | "devices"
@@ -109,7 +104,6 @@ export interface Message {
   data:
     | ProgressMessage
     | TranscriptionMessage
-    | LanguageModelTranscriptionMessage
     | AudioLevelMessage
     | ExceptionMessage
     | DevicesMessage

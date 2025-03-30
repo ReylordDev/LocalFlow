@@ -7,7 +7,7 @@ from transcriber import LocalTranscriber
 from formatter import AIProcessor
 from utils.logging import initialize_logger
 from utils.utils import get_temp_path
-from utils.model_utils import create_instance, dump_instance
+from utils.model_utils import dump_instance
 from window_detector import WindowDetector
 from models import (
     AudioLevelMessage,
@@ -15,7 +15,6 @@ from models import (
     ControllerStatusType,
     DevicesMessage,
     ErrorMessage,
-    LanguageModelTranscriptionMessage,
     Mode,
     ModeCreate,
     ModeUpdate,
@@ -50,6 +49,7 @@ class Controller:
         print_message("status", StatusMessage(status=status))
 
     def execute_transcription_workflow(self):
+        logger.info(f"Executing transcription workflow, mode: {self.mode}")
         if self.recorder.recording:
             self.recorder.stop()
         processing_start_time = time.time()
@@ -77,15 +77,11 @@ class Controller:
             assert self.mode.language_model is not None
             assert self.mode.prompt is not None
             self.update_status("loading_language_model")
-            self.processor = AIProcessor(self.mode.language_model, self.mode.prompt)
+            self.processor = AIProcessor(self.mode)
             self.processor.load_model()
 
             self.update_status("generating_ai_result")
             ai_result = self.processor.process(transcription)
-            print_message(
-                "formatted_transcription",
-                LanguageModelTranscriptionMessage(formatted_transcription=ai_result),
-            )
             self.processor.unload_model()
 
         self.update_status("saving")
@@ -105,12 +101,12 @@ class Controller:
         )
 
     def handle_toggle(self):
-        mode = self.database_manager.get_active_mode()
+        self.mode = self.database_manager.get_active_mode()
         if self.status == "idle" or self.status == "result":
             if (
-                mode.use_language_model
-                and mode.prompt
-                and mode.prompt.include_active_window
+                self.mode.use_language_model
+                and self.mode.prompt
+                and self.mode.prompt.include_active_window
             ):
                 window_info = self.window_detector.get_active_window()
                 if window_info:

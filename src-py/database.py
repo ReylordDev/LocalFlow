@@ -108,7 +108,7 @@ class DatabaseManager:
 
     def create_default_modes(self):
         try:
-            active_mode = self.get_active_mode()
+            _ = self.get_active_mode()
             missing_active = False
         except Exception:
             missing_active = True
@@ -125,16 +125,6 @@ class DatabaseManager:
                 voice_model_id=large_v3_turbo.id,
                 default=True,
             )
-            general_prompt = Prompt(
-                system_prompt="You are a helpful assistant. Fix any grammar, spelling or punctuation mistakes in the following text.",
-            )
-            general_prompt.examples = [
-                Example(
-                    input="I am a big fan of the show.",
-                    output="I am a big fan of the show.",
-                    prompt_id=general_prompt.id,
-                )
-            ]
             general = Mode(
                 name="General",
                 voice_language="auto",
@@ -143,9 +133,20 @@ class DatabaseManager:
                 language_model_id="gemma3:4b",
                 use_language_model=True,
                 default=True,
-                prompt=general_prompt,
                 active=missing_active,
             )
+            general_prompt = Prompt(
+                system_prompt="You are a helpful assistant. Fix any grammar, spelling or punctuation mistakes in the following text.",
+                mode_id=general.id,
+            )
+            general_prompt.examples = [
+                Example(
+                    input="I am a big fan of the show.",
+                    output="I am a big fan of the show.",
+                    prompt_id=general_prompt.id,
+                )
+            ]
+            general.prompt = general_prompt
 
             if voice_only.name not in [mode.name for mode in existing_default_modes]:
                 session.add(voice_only)
@@ -169,6 +170,7 @@ class DatabaseManager:
             ).first()  # type: ignore
             if not active_mode:
                 raise Exception("No default mode found")
+            logger.info(f"Active mode: {active_mode}")
             return active_mode
 
     def get_mode(self, mode_id: UUID) -> Mode:
@@ -227,30 +229,6 @@ class DatabaseManager:
             logger.info(f"Text replacement created: {text_replacement.id}")
             return text_replacement
 
-    def create_prompt(self, prompt: PromptCreate) -> Prompt:
-        with self.create_session() as session:
-            # Create the new prompt
-            new_prompt = Prompt(
-                system_prompt=prompt.system_prompt,
-                include_clipboard=prompt.include_clipboard,
-                include_active_window=prompt.include_active_window,
-            )
-            examples = []
-            for example_base in prompt.examples:
-                example = Example(
-                    input=example_base.input,
-                    output=example_base.output,
-                    prompt_id=new_prompt.id,
-                    prompt=new_prompt,
-                )
-                examples.append(example)
-            new_prompt.examples = examples
-            session.add_all(examples)
-            session.add(new_prompt)
-            session.commit()
-            logger.info(f"Prompt created: {new_prompt.id}")
-            return new_prompt
-
     def get_voice_model_by_name(self, voice_model_name: str) -> VoiceModel:
         with self.create_session() as session:
             voice_model = session.exec(
@@ -277,7 +255,6 @@ class DatabaseManager:
         for text_replacement_base in mode.text_replacements:
             text_replacement = self.create_text_replacement(text_replacement_base)
             text_replacements.append(text_replacement)
-        prompt = self.create_prompt(mode.prompt) if mode.prompt else None
 
         with self.create_session() as session:
             # Create the new mode
@@ -287,7 +264,6 @@ class DatabaseManager:
                 voice_model=voice_model,
                 voice_model_id=voice_model.id,
                 language_model_id=mode.language_model_name,
-                prompt=prompt,
                 use_language_model=mode.use_language_model,
                 default=mode.default,
                 active=mode.active,
@@ -295,6 +271,22 @@ class DatabaseManager:
                 translate_to_english=mode.translate_to_english,
                 text_replacements=text_replacements,
             )
+            if mode.prompt:
+                new_prompt = Prompt(
+                    system_prompt=mode.prompt.system_prompt,
+                    include_clipboard=mode.prompt.include_clipboard,
+                    include_active_window=mode.prompt.include_active_window,
+                    mode_id=new_mode.id,
+                )
+                new_prompt.examples = [
+                    Example(
+                        input=example.input,
+                        output=example.output,
+                        prompt_id=new_prompt.id,
+                    )
+                    for example in mode.prompt.examples
+                ]
+                new_mode.prompt = new_prompt
             session.add(new_mode)
             session.commit()
             logger.info(f"Mode created: {new_mode.id}")
@@ -311,7 +303,6 @@ class DatabaseManager:
         for text_replacement_base in mode.text_replacements:
             text_replacement = self.create_text_replacement(text_replacement_base)
             text_replacements.append(text_replacement)
-        prompt = self.create_prompt(mode.prompt) if mode.prompt else None
         with self.create_session() as session:
             # Get the existing mode
             existing_mode = session.exec(select(Mode).where(Mode.id == mode.id)).first()
@@ -334,12 +325,28 @@ class DatabaseManager:
                 or not existing_mode.language_model
             ):
                 existing_mode.language_model = language_model
-            existing_mode.prompt = prompt
             existing_mode.default = mode.default
             existing_mode.active = mode.active
             existing_mode.record_system_audio = mode.record_system_audio
             existing_mode.translate_to_english = mode.translate_to_english
             existing_mode.text_replacements = text_replacements
+
+            if mode.prompt:
+                new_prompt = Prompt(
+                    system_prompt=mode.prompt.system_prompt,
+                    include_clipboard=mode.prompt.include_clipboard,
+                    include_active_window=mode.prompt.include_active_window,
+                    mode_id=mode.id,
+                )
+                new_prompt.examples = [
+                    Example(
+                        input=example.input,
+                        output=example.output,
+                        prompt_id=new_prompt.id,
+                    )
+                    for example in mode.prompt.examples
+                ]
+                existing_mode.prompt = new_prompt
 
             # Commit the changes to the database
             session.add(existing_mode)

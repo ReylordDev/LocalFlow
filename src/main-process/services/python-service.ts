@@ -5,7 +5,6 @@ import {
   AudioLevelMessage,
   Command,
   DevicesMessage,
-  LanguageModelTranscriptionMessage,
   Message,
   ProgressMessage,
   AppSettings,
@@ -63,13 +62,6 @@ export class PythonService extends EventEmitter {
         break;
       case "transcription":
         consoleLog("Voice Model Transcription:", message.data);
-        break;
-      case "formatted_transcription":
-        this.emit(
-          PYTHON_SERVICE_EVENTS.TRANSCRIPTION,
-          (message.data as LanguageModelTranscriptionMessage)
-            .formatted_transcription
-        );
         break;
       case "audio_level":
         this.emit(

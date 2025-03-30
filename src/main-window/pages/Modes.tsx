@@ -10,13 +10,7 @@ import {
   languageNameMap,
 } from "../../lib/models";
 import { Separator } from "../../components/ui/separator";
-import {
-  ChevronLeft,
-  ChevronRight,
-  ChevronUp,
-  Trash2,
-  Wand,
-} from "lucide-react";
+import { ChevronLeft, ChevronUp, Trash2, Wand } from "lucide-react";
 import { Badge } from "../../components/ui/badge";
 import { Switch } from "../../components/ui/switch";
 import { Combobox } from "../../components/combobox";

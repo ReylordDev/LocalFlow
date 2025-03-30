@@ -78,10 +78,6 @@ class TranscriptionMessage(BaseModel):
     transcription: str
 
 
-class LanguageModelTranscriptionMessage(BaseModel):
-    formatted_transcription: str
-
-
 class AudioLevelMessage(BaseModel):
     audio_level: float
 
@@ -129,7 +125,6 @@ class ResultMessage(BaseModel):
 MessageType = Literal[
     "progress",
     "transcription",
-    "formatted_transcription",
     "audio_level",
     "exception",
     "devices",
@@ -143,7 +138,6 @@ MessageType = Literal[
 MessageDataType = Union[
     ProgressMessage,
     TranscriptionMessage,
-    LanguageModelTranscriptionMessage,
     AudioLevelMessage,
     ExceptionMessage,
     DevicesMessage,
@@ -324,8 +318,8 @@ class PromptBase(SQLModel):
 class Prompt(PromptBase, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True)
 
-    mode_id: UUID | None = Field(foreign_key="mode.id", default=None)
-    mode: Mode | None = Relationship(back_populates="prompt")
+    mode_id: UUID = Field(foreign_key="mode.id")
+    mode: Mode = Relationship(back_populates="prompt")
 
     examples: list["Example"] = Relationship(
         back_populates="prompt", sa_relationship_kwargs={"lazy": "selectin"}

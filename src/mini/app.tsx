@@ -140,7 +140,9 @@ const MainContentDisplay = ({ status }: { status: ControllerStatusType }) => {
   useEffect(() => {
     const unsubscribe = window.mini.onResult((result) => {
       console.log("Result updated: ", result);
-      setResultText(result.transcription);
+      setResultText(
+        result.mode.use_language_model ? result.ai_result : result.transcription
+      );
     });
 
     return () => {

@@ -12,6 +12,7 @@ import {
   SETTINGS_SERVICE_EVENTS,
   ControllerStatusType,
   Mode,
+  Result,
 } from "./lib/models";
 
 // Handle setup events
@@ -78,17 +79,6 @@ app.whenReady().then(async () => {
     app.quit();
   });
 
-  pythonService.on(
-    PYTHON_SERVICE_EVENTS.TRANSCRIPTION,
-    (transcription: string) => {
-      clipboard.writeText(transcription);
-      new Notification({
-        title: "Transcription copied to clipboard",
-        body: transcription,
-      }).show();
-    }
-  );
-
   pythonService.on(PYTHON_SERVICE_EVENTS.AUDIO_LEVEL, (level: number) => {
     windowManager.sendMiniWindowMessage(
       CHANNELS.MINI.AUDIO_LEVEL_RESPONSE,
@@ -110,8 +100,16 @@ app.whenReady().then(async () => {
     }
   );
 
-  pythonService.on(PYTHON_SERVICE_EVENTS.RESULT, (result: string) => {
+  pythonService.on(PYTHON_SERVICE_EVENTS.RESULT, (result: Result) => {
     windowManager.sendMiniWindowMessage(CHANNELS.MINI.RESULT, result);
+    const text = result.mode.use_language_model
+      ? result.ai_result
+      : result.transcription;
+    clipboard.writeText(text);
+    new Notification({
+      title: "Transcription copied to clipboard",
+      body: text,
+    }).show();
   });
 
   pythonService.on(PYTHON_SERVICE_EVENTS.MODES, (modes: Mode[]) => {

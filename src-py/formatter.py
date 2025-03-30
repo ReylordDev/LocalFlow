@@ -6,9 +6,8 @@ from loguru import logger
 from models import (
     ActiveWindowContext,
     ApplicationContext,
-    LanguageModel,
+    Mode,
     OllamaOfflineException,
-    Prompt,
 )
 import ollama
 
@@ -25,9 +24,16 @@ LANGUAGES = {
 
 
 class AIProcessor:
-    def __init__(self, language_model: LanguageModel, prompt: Prompt) -> None:
-        self.language_model = language_model
-        self.prompt = prompt
+    def __init__(self, mode: Mode) -> None:
+        self.mode = mode
+        if not mode.language_model:
+            logger.error("No language model provided")
+            raise ValueError("No language model provided")
+        if not mode.prompt:
+            logger.error("No prompt provided")
+            raise ValueError("No prompt provided")
+        self.language_model = mode.language_model
+        self.prompt = mode.prompt
 
     def load_model(self, keep_alive_minutes="15"):
         ollama.generate(
@@ -73,6 +79,7 @@ class AIProcessor:
         return result
 
 
+# Old code
 class Formatter:
     def __init__(self, language: str | None = None):
         self.language = language
