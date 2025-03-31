@@ -302,6 +302,8 @@ export const CHANNEL_NAMES = {
   DEVICE: "device",
   DATABASE: "database",
   RECORDING_HISTORY: "recordingHistory",
+  CLIPBOARD: "clipboard",
+  FILE: "file",
 };
 
 export const CHANNELS = {
@@ -318,6 +320,12 @@ export const CHANNELS = {
   },
   URL: {
     OPEN: "url:open",
+  },
+  CLIPBOARD: {
+    COPY: "clipboard:copy",
+  },
+  FILE: {
+    OPEN: "file:open",
   },
   MINI: {
     AUDIO_LEVEL_REQUEST: "mini:requestAudioLevel",
@@ -392,6 +400,12 @@ declare global {
       openWindow: () => void;
       requestAll: () => void;
       onReceiveResults: (callback: (results: Result[]) => void) => () => void;
+    };
+    clipboard: {
+      copy: (text: string) => void;
+    };
+    file: {
+      open: (path: string) => void;
     };
   }
 }

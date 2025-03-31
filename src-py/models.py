@@ -386,7 +386,7 @@ class Result(ResultBase, table=True):
     @computed_field
     @property
     def location(self) -> str:
-        location = f"{get_user_data_path()}/results/{self.id}"
+        location = os.path.join(get_user_data_path(), "results", str(self.id))
         os.makedirs(location, exist_ok=True)
         return location
 
@@ -401,6 +401,7 @@ class Result(ResultBase, table=True):
                 "duration": self.duration,
                 "processing_time": self.processing_time,
                 "mode": dump_instance(self.mode.create_instance()),
+                "location": self.location,
             },
         )
         return result_instance  # type: ignore[return-value]

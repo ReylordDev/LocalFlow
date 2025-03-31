@@ -1,8 +1,14 @@
-import { Search } from "lucide-react";
+import { Copy, FolderClosed, PanelRightOpen, Search } from "lucide-react";
 import { Result } from "../lib/models";
 import { useEffect, useState } from "react";
-import { Input } from "../components/ui/input";
 import { cn } from "../lib/utils";
+import { Button } from "../components/ui/button";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "../components/ui/tabs";
 
 const HistoryWindow = () => {
   const [history, setHistory] = useState<Result[]>([]);
@@ -70,7 +76,7 @@ function Sidebar({
   console.log("Search term:", searchTerm);
 
   return (
-    <div className="w-80 shrink-0 h-screen flex flex-col">
+    <div className="w-80 shrink-0 h-screen flex flex-col border-r">
       <div className="flex items-center border rounded-md p-2 mt-4 mx-8 ml-6 shadow-sm">
         <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
         <input
@@ -111,5 +117,87 @@ function Sidebar({
 }
 
 function ResultDetails({ result }: { result: Result }) {
-  return <div className="w-full h-screen bg-red-300">Hello World</div>;
+  const [displayState, setDisplayState] = useState<
+    "transcription" | "ai_result"
+  >("transcription");
+
+  if (!result) {
+    return (
+      <div className="w-full h-screen flex items-center justify-center">
+        <p className="text-gray-500">Select a recording to view details</p>
+      </div>
+    );
+  }
+
+  console.log("ResultDetails:", result);
+
+  return (
+    <Tabs
+      defaultValue="transcription"
+      className="w-full max-w-[1120px] h-screen flex flex-col items-center"
+    >
+      <div className="flex w-full p-4 justify-between items-center">
+        <p className="select-text">
+          {new Date(result.created_at * 1000).toLocaleString()}
+        </p>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => {
+              window.clipboard.copy(
+                displayState === "transcription"
+                  ? result.transcription
+                  : result.mode.use_language_model
+                    ? result.ai_result
+                    : result.transcription
+              );
+            }}
+          >
+            <Copy />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => {
+              console.log("Opening file:", result.location);
+              window.file.open(result.location);
+            }}
+          >
+            <FolderClosed />
+          </Button>
+          <TabsList>
+            <TabsTrigger
+              onClick={() => setDisplayState("transcription")}
+              value="transcription"
+            >
+              Transcription
+            </TabsTrigger>
+            <TabsTrigger
+              disabled={!result.mode.use_language_model}
+              onClick={() => setDisplayState("ai_result")}
+              value="ai_result"
+            >
+              AI Result
+            </TabsTrigger>
+          </TabsList>
+          <Button variant="ghost" size="icon">
+            <PanelRightOpen />
+          </Button>
+        </div>
+      </div>
+      <TabsContent value="transcription" className="w-full">
+        <p className="whitespace-pre-line w-full p-4 select-text">
+          {result.transcription}
+        </p>
+      </TabsContent>
+      <TabsContent value="ai_result" className="w-full">
+        <p className="whitespace-pre-line w-full p-4 select-text">
+          {result.mode.use_language_model
+            ? result.ai_result
+            : result.transcription}
+        </p>
+      </TabsContent>
+    </Tabs>
+  );
 }

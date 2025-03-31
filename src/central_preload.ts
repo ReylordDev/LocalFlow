@@ -171,3 +171,19 @@ export const exposeRecordingHistory = () => {
     },
   } satisfies Window["recordingHistory"]);
 };
+
+export const exposeClipboard = () => {
+  contextBridge.exposeInMainWorld(CHANNEL_NAMES.CLIPBOARD, {
+    copy: (text: string) => {
+      ipcRenderer.send(CHANNELS.CLIPBOARD.COPY, text);
+    },
+  } satisfies Window["clipboard"]);
+};
+
+export const exposeFile = () => {
+  contextBridge.exposeInMainWorld(CHANNEL_NAMES.FILE, {
+    open: (location) => {
+      ipcRenderer.send(CHANNELS.FILE.OPEN, location);
+    },
+  } satisfies Window["file"]);
+};

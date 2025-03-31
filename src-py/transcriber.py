@@ -72,6 +72,7 @@ class LocalTranscriber(Transcriber):
             transcription = ""
             for segment in segments:
                 transcription += segment.text
+            transcription = transcription.strip()
             logger.info(f'Transcription: "{transcription}"')
             # self.set_language(info.language)
             return transcription

@@ -70,9 +70,13 @@ def dump_instance(
     mapper = inspect(instance.__class__)
     columns = {column.key: column for column in mapper.columns}
     relationships = {rel.key: rel for rel in mapper.relationships}
+    computed_fields = instance.model_computed_fields
 
     data = {}
     for key in columns:
+        data[key] = getattr(instance, key)
+
+    for key in computed_fields:
         data[key] = getattr(instance, key)
 
     for key, relationship in relationships.items():

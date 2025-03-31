@@ -1,8 +1,8 @@
-import { ipcMain } from "electron";
+import { ipcMain, clipboard, shell } from "electron";
 import { PythonService } from "../services/python-service";
 import { SettingsService } from "../services/settings-service";
 import { WindowManager } from "../windows/window-manager";
-import { AppConfig } from "../utils/config";
+import { AppConfig, consoleLog } from "../utils/config";
 import { registerURLHandlers } from "./url";
 import { registerDeviceHandlers } from "./device";
 import { registerSettingsHandlers } from "./settings";
@@ -56,5 +56,15 @@ export function registerIpcHandlers(
     pythonService.sendCommand({
       action: "get_results",
     });
+  });
+
+  ipcMain.on(CHANNELS.CLIPBOARD.COPY, (_, text: string) => {
+    consoleLog("Copying to clipboard:", text);
+    clipboard.writeText(text);
+  });
+
+  ipcMain.on(CHANNELS.FILE.OPEN, (_, location: string) => {
+    consoleLog("Opening file:", location);
+    shell.openPath(location);
   });
 }
