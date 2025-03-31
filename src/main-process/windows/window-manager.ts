@@ -143,7 +143,10 @@ export class WindowManager {
   };
 
   createRecordingHistoryWindow = () => {
-    if (this.recordingHistoryWindow) {
+    if (
+      this.recordingHistoryWindow &&
+      !this.recordingHistoryWindow.isDestroyed()
+    ) {
       this.recordingHistoryWindow.show();
       return;
     }

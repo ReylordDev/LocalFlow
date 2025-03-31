@@ -35,6 +35,14 @@
   bottom: 0px;
 }
 
+.bottom-0 {
+  bottom: 0px;
+}
+
+.left-0 {
+  left: 0px;
+}
+
 .left-2 {
   left: 0.5rem;
 }
@@ -87,6 +95,16 @@
   margin-bottom: 1.5rem;
 }
 
+.mx-4 {
+  margin-left: 1rem;
+  margin-right: 1rem;
+}
+
+.mx-8 {
+  margin-left: 2rem;
+  margin-right: 2rem;
+}
+
 .ml-auto {
   margin-left: auto;
 }
@@ -101,6 +119,10 @@
 
 .mt-4 {
   margin-top: 1rem;
+}
+
+.ml-6 {
+  margin-left: 1.5rem;
 }
 
 .block {
@@ -147,10 +169,6 @@
 
 .h-12 {
   height: 3rem;
-}
-
-.h-2\.5 {
-  height: 0.625rem;
 }
 
 .h-24 {
@@ -237,6 +255,10 @@
   min-height: 80px;
 }
 
+.min-h-full {
+  min-height: 100%;
+}
+
 .w-1 {
   width: 0.25rem;
 }
@@ -247,10 +269,6 @@
 
 .w-11 {
   width: 2.75rem;
-}
-
-.w-2\.5 {
-  width: 0.625rem;
 }
 
 .w-3\.5 {
@@ -297,6 +315,10 @@
   width: 100vw;
 }
 
+.w-80 {
+  width: 20rem;
+}
+
 .min-w-80 {
   min-width: 20rem;
 }
@@ -323,10 +345,6 @@
 
 .max-w-lg {
   max-width: 32rem;
-}
-
-.flex-1 {
-  flex: 1 1 0%;
 }
 
 .flex-none {
@@ -391,10 +409,6 @@
   cursor: pointer;
 }
 
-.touch-none {
-  touch-action: none;
-}
-
 .select-none {
   -webkit-user-select: none;
      -moz-user-select: none;
@@ -411,8 +425,13 @@
   resize: none;
 }
 
-.resize {
-  resize: both;
+.columns-2 {
+  -moz-columns: 2;
+       columns: 2;
+}
+
+.grid-cols-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .flex-col {
@@ -513,16 +532,16 @@
   text-wrap: wrap;
 }
 
+.text-nowrap {
+  text-wrap: nowrap;
+}
+
 .rounded {
   border-radius: 0.25rem;
 }
 
 .rounded-3xl {
   border-radius: 1.5rem;
-}
-
-.rounded-\[inherit\] {
-  border-radius: inherit;
 }
 
 .rounded-full {
@@ -556,10 +575,6 @@
 
 .border-b {
   border-bottom-width: 1px;
-}
-
-.border-l {
-  border-left-width: 1px;
 }
 
 .border-r-2 {
@@ -604,14 +619,6 @@
   border-color: rgb(82 82 91 / var(--tw-border-opacity));
 }
 
-.border-l-transparent {
-  border-left-color: transparent;
-}
-
-.border-t-transparent {
-  border-top-color: transparent;
-}
-
 .border-t-zinc-500 {
   --tw-border-opacity: 1;
   border-top-color: rgb(113 113 122 / var(--tw-border-opacity));
@@ -654,6 +661,11 @@
   background-color: rgb(255 255 255 / var(--tw-bg-opacity));
 }
 
+.bg-yellow-300 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(253 224 71 / var(--tw-bg-opacity));
+}
+
 .bg-zinc-100 {
   --tw-bg-opacity: 1;
   background-color: rgb(244 244 245 / var(--tw-bg-opacity));
@@ -693,6 +705,16 @@
   background-color: rgb(24 24 27 / var(--tw-bg-opacity));
 }
 
+.bg-blue-500 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(59 130 246 / var(--tw-bg-opacity));
+}
+
+.bg-red-300 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(252 165 165 / var(--tw-bg-opacity));
+}
+
 .bg-gradient-to-l {
   background-image: linear-gradient(to left, var(--tw-gradient-stops));
 }
@@ -729,10 +751,6 @@
 
 .p-8 {
   padding: 2rem;
-}
-
-.p-\[1px\] {
-  padding: 1px;
 }
 
 .px-1 {
@@ -958,6 +976,11 @@
   color: rgb(9 9 11 / var(--tw-text-opacity));
 }
 
+.text-zinc-400 {
+  --tw-text-opacity: 1;
+  color: rgb(161 161 170 / var(--tw-text-opacity));
+}
+
 .underline {
   text-decoration-line: underline;
 }
@@ -995,6 +1018,18 @@
 .shadow-md {
   --tw-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
   --tw-shadow-colored: 0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);
+  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+}
+
+.shadow {
+  --tw-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --tw-shadow-colored: 0 1px 3px 0 var(--tw-shadow-color), 0 1px 2px -1px var(--tw-shadow-color);
+  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+}
+
+.shadow-sm {
+  --tw-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --tw-shadow-colored: 0 1px 2px 0 var(--tw-shadow-color);
   box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
 }
 
@@ -2177,6 +2212,16 @@ Usage:
 
 .disabled\:opacity-50:disabled {
   opacity: 0.5;
+}
+
+.group:hover .group-hover\:text-white {
+  --tw-text-opacity: 1;
+  color: rgb(255 255 255 / var(--tw-text-opacity));
+}
+
+.group:hover .group-hover\:text-zinc-100 {
+  --tw-text-opacity: 1;
+  color: rgb(244 244 245 / var(--tw-text-opacity));
 }
 
 .data-\[disabled\=true\]\:pointer-events-none[data-disabled="true"] {
