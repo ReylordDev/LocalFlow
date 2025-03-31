@@ -8,6 +8,7 @@ from models import (
     ApplicationContext,
     Mode,
     OllamaOfflineException,
+    Prompt,
 )
 import ollama
 
@@ -56,27 +57,73 @@ class AIProcessor:
             logger.info("No transcription provided")
             return ""
 
-        logger.info(f"System Prompt: {self.prompt.system_prompt}")
+        complete_system_prompt = generate_prompt(self.prompt)
+
+        logger.info(f"System Prompt: {complete_system_prompt}")
         logger.info(f"Prompt: {transcription}")
 
-        response = ollama.generate(
+        generate_response = ollama.generate(
             model=self.language_model.name,
-            system=self.prompt.system_prompt,
+            system=complete_system_prompt,
             prompt=transcription,
             keep_alive="1m",
         )
 
-        result: str = response["response"]
-        prompt_tokens = response["prompt_eval_count"]
-        response_tokens = response["eval_count"]
-        total_duration = response["total_duration"] / 10**9
+        result = generate_response.response
+        prompt_tokens = generate_response.prompt_eval_count
+        response_tokens = generate_response.eval_count
+        if generate_response.total_duration:
+            total_duration = generate_response.total_duration / 10**9
+        else:
+            total_duration = 0
+
+        result = post_process_result(result)
+
         logger.info(result)
-        logger.info(
-            f"Tokens: Prompt: {prompt_tokens}, Response: {response_tokens}, Total: {prompt_tokens + response_tokens}"
-        )
+        if prompt_tokens and response_tokens:
+            logger.info(
+                f"Tokens: Prompt: {prompt_tokens}, Response: {response_tokens}, Total: {prompt_tokens + response_tokens}"
+            )
         logger.info(f"Total duration: {total_duration:.2f} seconds")
 
         return result
+
+
+def post_process_result(result: str) -> str:
+    return result.strip('"').strip()
+
+
+def generate_prompt(prompt: Prompt) -> str:
+    """Generates the prompt for the language model.
+
+    Args:
+        prompt (Prompt): The prompt object containing the system prompt and examples.
+
+    Returns:
+        str: The generated prompt.
+    """
+    joiner = "\n\n"
+    prompt_items = [prompt.system_prompt]
+
+    if len(prompt.examples) > 0:
+        examples = "\n".join(
+            [
+                f'EXAMPLE {i + 1}:\n# "{example.input}"\n"{example.output}"'
+                for i, example in enumerate(prompt.examples)
+            ]
+        )
+        prompt_items.append(examples)
+
+    if prompt.include_clipboard:
+        # TODO: Implement clipboard functionality
+        pass
+
+    if prompt.include_active_window:
+        # TODO: Implement active window functionality
+        pass
+
+    prompt_items.append("# INPUT:")
+    return joiner.join(prompt_items)
 
 
 # Old code

@@ -332,21 +332,40 @@ class DatabaseManager:
             existing_mode.text_replacements = text_replacements
 
             if mode.prompt:
-                new_prompt = Prompt(
-                    system_prompt=mode.prompt.system_prompt,
-                    include_clipboard=mode.prompt.include_clipboard,
-                    include_active_window=mode.prompt.include_active_window,
-                    mode_id=mode.id,
-                )
-                new_prompt.examples = [
-                    Example(
-                        input=example.input,
-                        output=example.output,
-                        prompt_id=new_prompt.id,
+                if existing_mode.prompt:
+                    existing_mode.prompt.system_prompt = mode.prompt.system_prompt
+                    existing_mode.prompt.include_clipboard = (
+                        mode.prompt.include_clipboard
                     )
-                    for example in mode.prompt.examples
-                ]
-                existing_mode.prompt = new_prompt
+                    existing_mode.prompt.include_active_window = (
+                        mode.prompt.include_active_window
+                    )
+                    for existing_example in existing_mode.prompt.examples:
+                        session.delete(existing_example)
+                    existing_mode.prompt.examples = [
+                        Example(
+                            input=example.input,
+                            output=example.output,
+                            prompt_id=existing_mode.prompt.id,
+                        )
+                        for example in mode.prompt.examples
+                    ]
+                else:
+                    new_prompt = Prompt(
+                        system_prompt=mode.prompt.system_prompt,
+                        include_clipboard=mode.prompt.include_clipboard,
+                        include_active_window=mode.prompt.include_active_window,
+                        mode_id=mode.id,
+                    )
+                    new_prompt.examples = [
+                        Example(
+                            input=example.input,
+                            output=example.output,
+                            prompt_id=new_prompt.id,
+                        )
+                        for example in mode.prompt.examples
+                    ]
+                    existing_mode.prompt = new_prompt
 
             # Commit the changes to the database
             session.add(existing_mode)
@@ -376,36 +395,47 @@ class DatabaseManager:
 
 if __name__ == "__main__":
     db = DatabaseManager()
-    with db.create_session() as session:
-        created_mode = db.create_mode(
-            ModeCreate(
-                name="Test Mode",
-                voice_language="en",
-                voice_model_name="large-v3-turbo",
-                language_model_name="gemma3:4b",
-                use_language_model=True,
-                prompt=PromptCreate(
-                    system_prompt="You are a helpful assistant.",
-                    examples=[
-                        ExampleBase(
-                            input="Hello, how are you?",
-                            output="I'm fine, thank you!",
-                        )
-                    ],
-                ),
-                text_replacements=[
-                    TextReplacementBase(
-                        original_text="Hello",
-                        replacement_text="Hi",
-                    )
+    original_mode = db.get_mode(UUID("cd0c2ec2061d4cd6a0520f0d5bb1fb04"))
+    updated_mode = db.update_mode(
+        ModeUpdate(
+            name=original_mode.name,
+            voice_language=original_mode.voice_language,
+            voice_model_name=original_mode.voice_model.name,
+            id=original_mode.id,
+            language_model_name=original_mode.language_model.name
+            if original_mode.language_model
+            else None,
+            active=original_mode.active,
+            default=original_mode.default,
+            use_language_model=original_mode.use_language_model,
+            record_system_audio=original_mode.record_system_audio,
+            translate_to_english=original_mode.translate_to_english,
+            prompt=PromptCreate(
+                system_prompt=original_mode.prompt.system_prompt
+                if original_mode.prompt
+                else "",
+                examples=[
+                    ExampleBase(
+                        input="What the capital of France?",
+                        output="The capital of France is Paris.",
+                    ),
+                    ExampleBase(
+                        input="What the capital of Germany?",
+                        output="The capital of France is Berlin.",
+                    ),
                 ],
-            )
+            ),
+            text_replacements=[
+                TextReplacementBase(
+                    original_text="Hello",
+                    replacement_text="Hi",
+                )
+            ],
         )
+    )
 
-        logger.info(f"Created mode: {created_mode.id}")
+    mode = db.get_mode(updated_mode.id)
 
-        mode = db.get_mode(created_mode.id)
-
-        logger.info(f"Retrieved mode: {mode.id}")
-        if mode.prompt:
-            logger.info(f"Examples: {mode.prompt.examples}")
+    logger.info(f"Retrieved mode: {mode.id}")
+    if mode.prompt:
+        logger.info(f"Examples: {mode.prompt.examples}")

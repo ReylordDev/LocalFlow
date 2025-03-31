@@ -54,8 +54,7 @@ export class WindowManager {
   createMiniWindow() {
     const { width: screenWidth, height: screenHeight } =
       screen.getPrimaryDisplay().workAreaSize;
-    // const height = 180;
-    const height = 400;
+    const height = 180;
     const width = 860;
     const edgeGap = 120;
 
@@ -95,7 +94,7 @@ export class WindowManager {
 
   hideMiniWindow() {
     if (this.miniWindow && !this.miniWindow.isDestroyed()) {
-      this.sendMiniWindowMessage(CHANNELS.MINI.STATUS_UPDATE, "default");
+      this.sendMiniWindowMessage(CHANNELS.MINI.STATUS_UPDATE, "idle");
       // TEMPORARY for deveopment
       // this.miniWindow.hide();
     }

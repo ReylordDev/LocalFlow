@@ -122,6 +122,8 @@ export default function Modes() {
                       default: m.default,
                       voice_model_name: m.voice_model.name,
                       voice_language: m.voice_language,
+                      language_model_name: m.language_model?.name,
+                      prompt: m.prompt,
                       text_replacements: m.text_replacements,
                       translate_to_english: m.translate_to_english,
                       use_language_model: m.use_language_model,
@@ -139,6 +141,8 @@ export default function Modes() {
                     translate_to_english: mode.translate_to_english,
                     use_language_model: mode.use_language_model,
                     record_system_audio: mode.record_system_audio,
+                    language_model_name: mode.language_model?.name,
+                    prompt: mode.prompt,
                   });
                   console.log("Toggle Mode", mode.id, !mode.active);
                   setModes((prev) =>
@@ -319,7 +323,7 @@ const ModeDetails = ({
       window.database.modes.updateMode({
         id: mode.id,
         name,
-        active: false,
+        active: mode.active,
         default: false,
         record_system_audio: false,
         use_language_model: useAi,
