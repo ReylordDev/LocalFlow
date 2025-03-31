@@ -206,6 +206,13 @@ class Controller:
                 "modes", {"modes": [dump_instance(m.create_instance()) for m in modes]}
             )
 
+        elif command.action == "get_results":
+            results = self.database_manager.get_all_results()
+            print_nested_model(
+                "results",
+                {"results": [dump_instance(r.create_instance()) for r in results]},
+            )
+
 
 @logger.catch
 def main():
@@ -229,7 +236,8 @@ def debug():
     # TODO: Check that ollama is running
     controller = Controller()
 
-    controller.handle_command(Command(action="get_modes"))
+    # controller.handle_command(Command(action="get_modes"))
+    controller.handle_command(Command(action="get_results"))
 
     # mode_id = controller.database_manager.get_mode_by_name("General").id
     # controller.handle_command(

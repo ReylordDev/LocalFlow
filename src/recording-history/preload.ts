@@ -1,1 +1,3 @@
-import {} from "../central_preload";
+import { exposeRecordingHistory } from "../central_preload";
+
+exposeRecordingHistory();

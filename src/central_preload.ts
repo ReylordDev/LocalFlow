@@ -157,5 +157,17 @@ export const exposeRecordingHistory = () => {
     openWindow: () => {
       ipcRenderer.send(CHANNELS.RECORDING_HISTORY.OPEN_WINDOW);
     },
+    requestAll() {
+      return ipcRenderer.send(CHANNELS.RECORDING_HISTORY.RESULTS_REQUEST);
+    },
+    onReceiveResults(callback) {
+      const listener = (_: IpcRendererEvent, results: Result[]) => {
+        callback(results);
+      };
+      ipcRenderer.on(CHANNELS.RECORDING_HISTORY.RESULTS_RESPONSE, listener);
+      return () => {
+        ipcRenderer.off(CHANNELS.RECORDING_HISTORY.RESULTS_RESPONSE, listener);
+      };
+    },
   } satisfies Window["recordingHistory"]);
 };

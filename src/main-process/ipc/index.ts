@@ -51,4 +51,10 @@ export function registerIpcHandlers(
   ipcMain.on(CHANNELS.RECORDING_HISTORY.OPEN_WINDOW, () => {
     windowManager.createRecordingHistoryWindow();
   });
+
+  ipcMain.on(CHANNELS.RECORDING_HISTORY.RESULTS_REQUEST, () => {
+    pythonService.sendCommand({
+      action: "get_results",
+    });
+  });
 }

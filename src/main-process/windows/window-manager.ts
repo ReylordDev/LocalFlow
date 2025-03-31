@@ -78,7 +78,6 @@ export class WindowManager {
       webPreferences: {
         preload: MINI_PRELOAD_WEBPACK_ENTRY,
       },
-      // Problem: click through issue, can we dynamically resize the window instead?
     });
     // TEMP for development
     // miniWindow.hide();
@@ -158,6 +157,15 @@ export class WindowManager {
     recordingHistoryWindow.loadURL(RECORDING_HISTORY_WEBPACK_ENTRY);
     this.recordingHistoryWindow = recordingHistoryWindow;
   };
+
+  sendRecordingHistoryWindowMessage(channel: string, data?: unknown) {
+    if (
+      this.recordingHistoryWindow &&
+      !this.recordingHistoryWindow.isDestroyed()
+    ) {
+      this.recordingHistoryWindow.webContents.send(channel, data);
+    }
+  }
 
   cleanup() {
     if (this.mainWindow && !this.mainWindow.isDestroyed()) {

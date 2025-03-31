@@ -27,6 +27,7 @@ ActionType = Literal[
     "get_modes",
     "create_mode",
     "update_mode",
+    "get_results",
 ]
 StepType = Union[
     ActionType,
@@ -122,6 +123,10 @@ class ResultMessage(BaseModel):
     result: "Result"
 
 
+class ResultsMessage(BaseModel):
+    results: list["Result"]
+
+
 MessageType = Literal[
     "progress",
     "transcription",
@@ -133,6 +138,7 @@ MessageType = Literal[
     "modes",
     "modes_update",
     "result",
+    "results",
 ]
 
 MessageDataType = Union[
@@ -145,6 +151,7 @@ MessageDataType = Union[
     StatusMessage,
     ModesMessage,
     ResultMessage,
+    ResultsMessage,
     dict,
 ]
 

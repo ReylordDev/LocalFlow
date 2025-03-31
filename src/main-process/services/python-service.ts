@@ -14,6 +14,7 @@ import {
   ControllerStatusType,
   ModesMessage,
   ResultMessage,
+  ResultsMessage,
 } from "../../lib/models";
 import path from "path";
 import { SettingsService } from "./settings-service";
@@ -101,6 +102,12 @@ export class PythonService extends EventEmitter {
         this.emit(
           PYTHON_SERVICE_EVENTS.RESULT,
           (message.data as ResultMessage).result
+        );
+        break;
+      case "results":
+        this.emit(
+          PYTHON_SERVICE_EVENTS.RESULTS,
+          (message.data as ResultsMessage).results
         );
         break;
       default:

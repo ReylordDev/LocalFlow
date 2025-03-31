@@ -138,6 +138,12 @@ app.whenReady().then(async () => {
       modes
     );
   });
+  pythonService.on(PYTHON_SERVICE_EVENTS.RESULTS, (results: Result[]) => {
+    windowManager.sendRecordingHistoryWindowMessage(
+      CHANNELS.RECORDING_HISTORY.RESULTS_RESPONSE,
+      results
+    );
+  });
 
   registerIpcHandlers(settingsService, config, pythonService, windowManager);
 });

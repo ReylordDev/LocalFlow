@@ -392,6 +392,11 @@ class DatabaseManager:
             logger.info(f"Result saved: {result.id}")
         return result
 
+    def get_all_results(self):
+        with self.create_session() as session:
+            results = session.exec(select(Result)).all()
+            return results
+
 
 if __name__ == "__main__":
     db = DatabaseManager()

@@ -13,7 +13,8 @@ type Action =
   | "set_device"
   | "get_modes"
   | "create_mode"
-  | "update_mode";
+  | "update_mode"
+  | "get_results";
 
 // --------------- Electron to Python IPC Models --------------- //
 
@@ -89,6 +90,9 @@ export interface ResultMessage {
   result: Result;
 }
 
+export interface ResultsMessage {
+  results: Result[];
+}
 export interface Message {
   type:
     | "progress"
@@ -100,6 +104,7 @@ export interface Message {
     | "status"
     | "modes"
     | "result"
+    | "results"
     | "modes_update";
   data:
     | ProgressMessage
@@ -110,7 +115,8 @@ export interface Message {
     | ErrorMessage
     | StatusMessage
     | ModesMessage
-    | ResultMessage;
+    | ResultMessage
+    | ResultsMessage;
 }
 
 // --------------- Database Models --------------- //
@@ -335,6 +341,8 @@ export const CHANNELS = {
   },
   RECORDING_HISTORY: {
     OPEN_WINDOW: "recordingHistory:open-window",
+    RESULTS_REQUEST: "recordingHistory:requestAll",
+    RESULTS_RESPONSE: "recordingHistory:receiveResults",
   },
 };
 
@@ -382,6 +390,8 @@ declare global {
     };
     recordingHistory: {
       openWindow: () => void;
+      requestAll: () => void;
+      onReceiveResults: (callback: (results: Result[]) => void) => () => void;
     };
   }
 }
@@ -396,6 +406,7 @@ export const PYTHON_SERVICE_EVENTS = {
   MODES_UPDATE: "modes-update",
   MODES: "modes",
   RESULT: "result",
+  RESULTS: "results",
 };
 
 export const SETTINGS_SERVICE_EVENTS = {
