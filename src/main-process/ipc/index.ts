@@ -1,6 +1,7 @@
 import { ipcMain } from "electron";
 import { PythonService } from "../services/python-service";
 import { SettingsService } from "../services/settings-service";
+import { WindowManager } from "../windows/window-manager";
 import { AppConfig } from "../utils/config";
 import { registerURLHandlers } from "./url";
 import { registerDeviceHandlers } from "./device";
@@ -10,7 +11,8 @@ import { CHANNELS, ModeCreate, ModeUpdate } from "../../lib/models";
 export function registerIpcHandlers(
   settingsService: SettingsService,
   config: AppConfig,
-  pythonService: PythonService
+  pythonService: PythonService,
+  windowManager: WindowManager
 ) {
   registerSettingsHandlers(settingsService, pythonService);
   registerURLHandlers();
@@ -44,5 +46,9 @@ export function registerIpcHandlers(
       action: "update_mode",
       data: mode,
     });
+  });
+
+  ipcMain.on(CHANNELS.RECORDING_HISTORY.OPEN_WINDOW, () => {
+    windowManager.createRecordingHistoryWindow();
   });
 }

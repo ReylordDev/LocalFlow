@@ -2,105 +2,25 @@
 // https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
 
 import {
-  Device,
-  CHANNELS,
-  Mode,
-  CHANNEL_NAMES,
-  AppSettings,
-} from "../lib/models";
-import { contextBridge, ipcRenderer, IpcRendererEvent } from "electron";
+  exposeController,
+  exposeSettings,
+  exposeUrl,
+  exposeDevice,
+  exposeDatabase,
+  exposeRecordingHistory,
+} from "../central_preload";
 
 // Expose protected methods that allow the renderer process to use
 // the ipcRenderer without exposing the entire object
 
-contextBridge.exposeInMainWorld(CHANNEL_NAMES.CONTROLLER, {
-  toggleRecording: () => {
-    ipcRenderer.send(CHANNELS.CONTROLLER.TOGGLE_RECORDING);
-  },
-} satisfies Window["controller"]);
+exposeController();
 
-contextBridge.exposeInMainWorld(CHANNEL_NAMES.SETTINGS, {
-  getAll: async () => {
-    return ipcRenderer.invoke(CHANNELS.SETTINGS.GET);
-  },
-  disableShortcut: async (shortcut) => {
-    return ipcRenderer.send(CHANNELS.SETTINGS.DISABLE_SHORTCUT, shortcut);
-  },
-  setAudio(audioConfig) {
-    return ipcRenderer.send(CHANNELS.SETTINGS.SET_AUDIO, audioConfig);
-  },
-  setKeyboard(keyboardConfig) {
-    return ipcRenderer.send(CHANNELS.SETTINGS.SET_KEYBOARD, keyboardConfig);
-  },
-  setApplication(applicationConfig) {
-    return ipcRenderer.send(
-      CHANNELS.SETTINGS.SET_APPLICATION,
-      applicationConfig
-    );
-  },
-  onSettingsChanged(callback) {
-    const listener = (_: IpcRendererEvent, settings: AppSettings) => {
-      callback(settings);
-    };
-    ipcRenderer.on(CHANNELS.SETTINGS.SETTINGS_CHANGED, listener);
-    return () => {
-      ipcRenderer.off(CHANNELS.SETTINGS.SETTINGS_CHANGED, listener);
-    };
-  },
-} satisfies Window["settings"]);
+exposeSettings();
 
-contextBridge.exposeInMainWorld(CHANNEL_NAMES.URL, {
-  open: (url) => {
-    ipcRenderer.send(CHANNELS.URL.OPEN, url);
-  },
-} satisfies Window["url"]);
+exposeUrl();
 
-contextBridge.exposeInMainWorld(CHANNEL_NAMES.DEVICE, {
-  requestAll: () => {
-    return ipcRenderer.send(CHANNELS.DEVICE.DEVICES_REQUEST);
-  },
-  onReceiveDevices: (callback) => {
-    const listener = (_: IpcRendererEvent, devices: Device[]) => {
-      callback(devices);
-    };
-    ipcRenderer.on(CHANNELS.DEVICE.DEVICES_RESPONSE, listener);
-    return () => {
-      ipcRenderer.off(CHANNELS.DEVICE.DEVICES_RESPONSE, listener);
-    };
-  },
-  set: (device) => {
-    return ipcRenderer.send(CHANNELS.DEVICE.SET, device);
-  },
-} satisfies Window["device"]);
+exposeDevice();
 
-contextBridge.exposeInMainWorld(CHANNEL_NAMES.DATABASE, {
-  modes: {
-    requestAll: () => {
-      return ipcRenderer.send(CHANNELS.DATABASE.MODES.MODES_REQUEST);
-    },
-    onReceiveModes: (callback) => {
-      const listener = (_: IpcRendererEvent, modes: Mode[]) => {
-        callback(modes);
-      };
-      ipcRenderer.on(CHANNELS.DATABASE.MODES.MODES_RESPONSE, listener);
-      return () => {
-        ipcRenderer.off(CHANNELS.DATABASE.MODES.MODES_RESPONSE, listener);
-      };
-    },
-    createMode: (mode) => {
-      return ipcRenderer.send(CHANNELS.DATABASE.MODES.CREATE_MODE, mode);
-    },
-    updateMode(mode) {
-      return ipcRenderer.send(CHANNELS.DATABASE.MODES.UPDATE_MODE, mode);
-    },
-    onModesUpdate(callback) {
-      const listener = (_: IpcRendererEvent, modes: Mode[]) => {
-        callback(modes);
-      };
-      ipcRenderer.on(CHANNELS.DATABASE.MODES.MODES_UPDATE, listener);
-      return () => {
-        ipcRenderer.off(CHANNELS.DATABASE.MODES.MODES_UPDATE, listener);
-      };
-    },
-  },
-} satisfies Window["database"]);
+exposeDatabase();
+
+exposeRecordingHistory(); // Maybe this is bad to expose completely here but we'll see.

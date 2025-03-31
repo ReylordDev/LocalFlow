@@ -6,6 +6,8 @@ declare const MAIN_WINDOW_WEBPACK_ENTRY: string;
 declare const MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY: string;
 declare const MINI_WEBPACK_ENTRY: string;
 declare const MINI_PRELOAD_WEBPACK_ENTRY: string;
+declare const RECORDING_HISTORY_WEBPACK_ENTRY: string;
+declare const RECORDING_HISTORY_PRELOAD_WEBPACK_ENTRY: string;
 declare const STARTUP_WEBPACK_ENTRY: string;
 declare const STARTUP_PRELOAD_WEBPACK_ENTRY: string;
 
@@ -13,6 +15,7 @@ export class WindowManager {
   private mainWindow: BrowserWindow;
   private miniWindow: BrowserWindow;
   private startupWindow: BrowserWindow;
+  private recordingHistoryWindow: BrowserWindow | null = null;
 
   constructor(private config: AppConfig) {}
 
@@ -138,6 +141,22 @@ export class WindowManager {
     if (this.startupWindow && !this.startupWindow.isDestroyed()) {
       this.startupWindow.hide();
     }
+  };
+
+  createRecordingHistoryWindow = () => {
+    if (this.recordingHistoryWindow) {
+      this.recordingHistoryWindow.show();
+      return;
+    }
+    const recordingHistoryWindow = new BrowserWindow({
+      height: 1024,
+      width: 1440,
+      webPreferences: {
+        preload: RECORDING_HISTORY_PRELOAD_WEBPACK_ENTRY,
+      },
+    });
+    recordingHistoryWindow.loadURL(RECORDING_HISTORY_WEBPACK_ENTRY);
+    this.recordingHistoryWindow = recordingHistoryWindow;
   };
 
   cleanup() {

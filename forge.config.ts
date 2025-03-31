@@ -14,7 +14,6 @@ import { rendererConfig } from "./webpack.renderer.config";
 
 import { execSync } from "child_process";
 import path from "path";
-import fs from "fs-extra";
 
 const config: ForgeConfig = {
   packagerConfig: {
@@ -58,6 +57,14 @@ const config: ForgeConfig = {
             name: "mini",
             preload: {
               js: "./src/mini/preload.ts",
+            },
+          },
+          {
+            html: "./src/recording-history/index.html",
+            js: "./src/recording-history/renderer.ts",
+            name: "recording_history",
+            preload: {
+              js: "./src/recording-history/preload.ts",
             },
           },
           {

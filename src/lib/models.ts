@@ -245,7 +245,13 @@ export interface Result extends ResultBase {
 // --------------- Frontend Models --------------- //
 
 // TODO: update with new pages
-export const pages = ["Modes", "Configuration", "Audio", "Credits"] as const;
+export const pages = [
+  "Modes",
+  "Configuration",
+  "Audio",
+  "Credits",
+  "Recording History",
+] as const;
 export type Page = (typeof pages)[number];
 
 export interface ApplicationConfig {
@@ -289,6 +295,7 @@ export const CHANNEL_NAMES = {
   MINI: "mini",
   DEVICE: "device",
   DATABASE: "database",
+  RECORDING_HISTORY: "recordingHistory",
 };
 
 export const CHANNELS = {
@@ -325,6 +332,9 @@ export const CHANNELS = {
       CREATE_MODE: "database:modes:createMode",
       UPDATE_MODE: "database:modes:updateMode",
     },
+  },
+  RECORDING_HISTORY: {
+    OPEN_WINDOW: "recordingHistory:open-window",
   },
 };
 
@@ -369,6 +379,9 @@ declare global {
         updateMode: (mode: ModeUpdate) => void;
         onModesUpdate: (callback: (modes: Mode[]) => void) => () => void;
       };
+    };
+    recordingHistory: {
+      openWindow: () => void;
     };
   }
 }

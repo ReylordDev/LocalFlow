@@ -139,7 +139,7 @@ app.whenReady().then(async () => {
     );
   });
 
-  registerIpcHandlers(settingsService, config, pythonService);
+  registerIpcHandlers(settingsService, config, pythonService, windowManager);
 });
 
 // Quit app
