@@ -399,6 +399,79 @@ const ModeDetails = ({
       </div>
       <div className="flex flex-col gap-6 px-8 py-8 bg-zinc-50 overflow-y-auto h-full">
         <div className="flex flex-col gap-2">
+          <h2 className="text-lg font-semibold">Details</h2>
+          <div className="flex flex-col gap-2 bg-white border border-zinc-200 rounded-md p-2">
+            <div className={cn(menuItemClass)}>
+              <h3 className="text-md font-semibold">Name</h3>
+              <Input
+                className={cn("max-w-[300px]", name && "text-lg font-medium")}
+                placeholder="Mode name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+            </div>
+          </div>
+        </div>
+        <div className="flex flex-col gap-2">
+          <h2 className="text-lg font-semibold">Voice model</h2>
+          <div className="flex flex-col gap-2 bg-white border border-zinc-200 rounded-md p-2">
+            <div className={cn(menuItemClass)}>
+              <h3 className="text-md font-semibold">Model</h3>
+              <Combobox
+                items={[
+                  {
+                    value: "large-v3-turbo",
+                    label: "Whisper Large V3 Turbo",
+                  },
+                ]}
+                initialMessage="Select a model..."
+                noMatchesMessage="No models found"
+                searchPlaceholder="Search for a model"
+                value={voiceModelName}
+                setValue={setVoiceModelName}
+              />
+            </div>
+            <Separator orientation="horizontal" />
+            <div className={cn(menuItemClass)}>
+              <h3 className="text-md font-semibold">Language</h3>
+              <Combobox
+                items={[
+                  {
+                    value: "auto",
+                    label: "Automatic",
+                  },
+                  {
+                    value: "en",
+                    label: "English",
+                  },
+                  {
+                    value: "es",
+                    label: "Spanish",
+                  },
+                  {
+                    value: "fr",
+                    label: "French",
+                  },
+                ]}
+                value={voiceLanguage}
+                setValue={setVoiceLanguage}
+                initialMessage="Select a language..."
+                noMatchesMessage="No languages found"
+                searchPlaceholder="Search for a language"
+              />
+            </div>
+            <Separator orientation="horizontal" />
+            <div className={cn(menuItemClass)}>
+              <h3 className="text-md font-semibold">Translate to English</h3>
+              <Switch
+                disabled={voiceLanguage === "en"}
+                checked={translateToEnglish}
+                onCheckedChange={(checked) => setTranslateToEnglish(checked)}
+              />
+            </div>
+          </div>
+        </div>
+        <div className="flex flex-col gap-2">
           <h2 className="text-lg font-semibold">Language model</h2>
           <div className="flex flex-col gap-2 bg-white border border-zinc-200 rounded-md p-2">
             <div className={cn(menuItemClass)}>
@@ -476,79 +549,6 @@ const ModeDetails = ({
                   hidePromptDialog={() => setShowPromptDialog(false)}
                 />
               )}
-            </div>
-          </div>
-        </div>
-        <div className="flex flex-col gap-2">
-          <h2 className="text-lg font-semibold">Details</h2>
-          <div className="flex flex-col gap-2 bg-white border border-zinc-200 rounded-md p-2">
-            <div className={cn(menuItemClass)}>
-              <h3 className="text-md font-semibold">Name</h3>
-              <Input
-                className={cn("max-w-[300px]", name && "text-lg font-medium")}
-                placeholder="Mode name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-              />
-            </div>
-          </div>
-        </div>
-        <div className="flex flex-col gap-2">
-          <h2 className="text-lg font-semibold">Voice model</h2>
-          <div className="flex flex-col gap-2 bg-white border border-zinc-200 rounded-md p-2">
-            <div className={cn(menuItemClass)}>
-              <h3 className="text-md font-semibold">Model</h3>
-              <Combobox
-                items={[
-                  {
-                    value: "large-v3-turbo",
-                    label: "Whisper Large V3 Turbo",
-                  },
-                ]}
-                initialMessage="Select a model..."
-                noMatchesMessage="No models found"
-                searchPlaceholder="Search for a model"
-                value={voiceModelName}
-                setValue={setVoiceModelName}
-              />
-            </div>
-            <Separator orientation="horizontal" />
-            <div className={cn(menuItemClass)}>
-              <h3 className="text-md font-semibold">Language</h3>
-              <Combobox
-                items={[
-                  {
-                    value: "auto",
-                    label: "Automatic",
-                  },
-                  {
-                    value: "en",
-                    label: "English",
-                  },
-                  {
-                    value: "es",
-                    label: "Spanish",
-                  },
-                  {
-                    value: "fr",
-                    label: "French",
-                  },
-                ]}
-                value={voiceLanguage}
-                setValue={setVoiceLanguage}
-                initialMessage="Select a language..."
-                noMatchesMessage="No languages found"
-                searchPlaceholder="Search for a language"
-              />
-            </div>
-            <Separator orientation="horizontal" />
-            <div className={cn(menuItemClass)}>
-              <h3 className="text-md font-semibold">Translate to English</h3>
-              <Switch
-                disabled={voiceLanguage === "en"}
-                checked={translateToEnglish}
-                onCheckedChange={(checked) => setTranslateToEnglish(checked)}
-              />
             </div>
           </div>
         </div>
