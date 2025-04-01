@@ -43,7 +43,7 @@ const SpeechVocalization = ({ isRecording }: { isRecording: boolean }) => {
           <div
             key={i}
             className={cn(
-              "bg-zinc-100 w-1 rounded-full transition-all duration-300",
+              "bg-zinc-800 w-1 rounded-full transition-all duration-300",
               audioLevel > 1 ? "ease-in-out" : "animate-none"
             )}
             style={{

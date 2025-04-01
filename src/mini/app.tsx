@@ -6,7 +6,7 @@ import { ControllerStatusType, Mode } from "../lib/models";
 import { Separator } from "../components/ui/separator";
 import { useSettings } from "../lib/hooks";
 import { ShortcutDisplay } from "../components/shortcut";
-import { formatTimer } from "../lib/utils";
+import { cn, formatTimer } from "../lib/utils";
 
 const App = () => {
   const [status, setStatus] = useState<ControllerStatusType>("idle");
@@ -58,11 +58,11 @@ const App = () => {
   }
 
   return (
-    <div className="bg-transparent text-white h-screen w-full font-sans select-none flex flex-col justify-end">
-      <div className="w-full flex flex-col justify-end items-center bg-zinc-900 rounded-3xl border-zinc-600 border drag">
+    <div className="bg-transparent h-screen w-full font-sans select-none flex flex-col justify-end">
+      <div className="w-full flex flex-col justify-end items-center bg-zinc-50 rounded-3xl border-zinc-500 border drag">
         <MainContentDisplay status={status} />
-        <div className="h-24 bg-zinc-800 rounded-b-3xl w-full flex justify-between items-center border-t-zinc-500 border-t">
-          <div className="pl-8">
+        <div className="h-14 shrink-0 bg-zinc-100 text-zinc-600 rounded-b-3xl w-full flex justify-between items-center border-t-zinc-200 border-t">
+          <div className="pl-8 ">
             <StatusDisplay status={status} />
           </div>
           <TimerDisplay status={status} />
@@ -151,13 +151,13 @@ const MainContentDisplay = ({ status }: { status: ControllerStatusType }) => {
   switch (status) {
     case "idle":
       return (
-        <div className="flex justify-center items-center h-full">
+        <div className="flex justify-center items-center min-h-28">
           <SpeechVocalization isRecording={false} />
         </div>
       );
     case "recording":
       return (
-        <div className="flex justify-center items-center h-full">
+        <div className="flex justify-center items-center min-h-28">
           <SpeechVocalization isRecording={true} />
         </div>
       );
@@ -168,7 +168,7 @@ const MainContentDisplay = ({ status }: { status: ControllerStatusType }) => {
     case "generating_ai_result":
     case "saving":
       return (
-        <div className="flex justify-center items-center h-full">
+        <div className="flex justify-center items-center min-h-28">
           <Loader2 className="animate-spin-slow" />
         </div>
       );
@@ -179,8 +179,15 @@ const MainContentDisplay = ({ status }: { status: ControllerStatusType }) => {
         //   className="bg-zinc-900 text-white resize-none overflow-y-auto no-drag select-text border-0 ring-0 rounded-3xl w-full text-wrapjjj p-4 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
         //   value={resultText || ""}
         // />
-        <div className="whitespace-pre text-wrap px-4 py-2 overflow-y-auto select-text no-drag max-h-72 min-h-full scrollbar rounded-3xl">
-          {resultText}
+        <div className="flex flex-col justify-center w-full px-4 py-2 select-text no-drag max-h-[328px] min-h-28 rounded-t-3xl">
+          <p
+            className={cn(
+              "whitespace-pre-wrap overflow-y-auto scrollbar",
+              resultText?.trim().length > 200 ? "text-left" : "text-center"
+            )}
+          >
+            {resultText?.trim()}
+          </p>
         </div>
       );
     default:
@@ -213,8 +220,6 @@ const TimerDisplay = ({ status }: { status: ControllerStatusType }) => {
   }
 
   return (
-    <div className="flex justify-center text-white items-center">
-      {formatTimer(timer)}
-    </div>
+    <div className="flex justify-center items-center">{formatTimer(timer)}</div>
   );
 };
