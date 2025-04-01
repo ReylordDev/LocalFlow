@@ -121,14 +121,12 @@ class DatabaseManager:
             voice_only = Mode(
                 name="Voice Only",
                 voice_language="en",
-                voice_model=large_v3_turbo,
                 voice_model_id=large_v3_turbo.id,
                 default=True,
             )
             general = Mode(
                 name="General",
                 voice_language="auto",
-                voice_model=large_v3_turbo,
                 voice_model_id=large_v3_turbo.id,
                 language_model_id="gemma3:4b",
                 use_language_model=True,
@@ -373,6 +371,19 @@ class DatabaseManager:
             session.refresh(existing_mode)
             logger.info(f"Mode updated: {existing_mode.id}")
             return existing_mode
+
+    def delete_mode(self, mode_id: UUID):
+        with self.create_session() as session:
+            # Get the mode to delete
+            mode = session.exec(select(Mode).where(Mode.id == mode_id)).first()
+            if not mode:
+                logger.warning(f"Mode not found: {mode_id}")
+                raise Exception(f"Mode not found: {mode_id}")
+
+            # Delete the mode
+            session.delete(mode)
+            session.commit()
+            logger.info(f"Mode deleted: {mode.id}")
 
     def save_result(self, result: Result):
         # Copy the temp files to the results folder

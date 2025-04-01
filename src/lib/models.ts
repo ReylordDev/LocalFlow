@@ -14,6 +14,7 @@ type Action =
   | "get_modes"
   | "create_mode"
   | "update_mode"
+  | "delete_mode"
   | "get_results";
 
 // --------------- Electron to Python IPC Models --------------- //
@@ -28,7 +29,7 @@ interface SelectDeviceCommand {
 
 export interface Command {
   action: Action;
-  data?: SelectModeCommand | SelectDeviceCommand | ModeCreate;
+  data?: SelectModeCommand | SelectDeviceCommand | ModeCreate | ModeUpdate;
 }
 
 // --------------- Python to Electron IPC Models --------------- //
@@ -346,6 +347,7 @@ export const CHANNELS = {
       MODES_UPDATE: "database:modes:update",
       CREATE_MODE: "database:modes:createMode",
       UPDATE_MODE: "database:modes:updateMode",
+      DELETE_MODE: "database:modes:deleteMode",
     },
   },
   RECORDING_HISTORY: {
@@ -395,6 +397,7 @@ declare global {
         onReceiveModes: (callback: (modes: Mode[]) => void) => () => void;
         createMode: (mode: ModeCreate) => void;
         updateMode: (mode: ModeUpdate) => void;
+        deleteMode: (modeId: UUID) => void;
         onModesUpdate: (callback: (modes: Mode[]) => void) => () => void;
       };
     };

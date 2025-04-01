@@ -7,6 +7,7 @@ import { registerURLHandlers } from "./url";
 import { registerDeviceHandlers } from "./device";
 import { registerSettingsHandlers } from "./settings";
 import { CHANNELS, ModeCreate, ModeUpdate } from "../../lib/models";
+import { UUID } from "crypto";
 
 export function registerIpcHandlers(
   settingsService: SettingsService,
@@ -45,6 +46,15 @@ export function registerIpcHandlers(
     pythonService.sendCommand({
       action: "update_mode",
       data: mode,
+    });
+  });
+
+  ipcMain.on(CHANNELS.DATABASE.MODES.DELETE_MODE, (_, modeId: UUID) => {
+    pythonService.sendCommand({
+      action: "delete_mode",
+      data: {
+        mode_id: modeId,
+      },
     });
   });
 

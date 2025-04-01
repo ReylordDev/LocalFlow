@@ -27,6 +27,7 @@ ActionType = Literal[
     "get_modes",
     "create_mode",
     "update_mode",
+    "delete_mode",
     "get_results",
 ]
 StepType = Union[
@@ -224,7 +225,9 @@ class ModeBase(SQLModel):
 class Mode(ModeBase, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     text_replacements: list["TextReplacement"] = Relationship(
-        back_populates="mode", sa_relationship_kwargs={"lazy": "selectin"}
+        back_populates="mode",
+        sa_relationship_kwargs={"lazy": "selectin"},
+        cascade_delete=True,
     )
 
     voice_model: "VoiceModel" = Relationship(
@@ -240,7 +243,9 @@ class Mode(ModeBase, table=True):
     )
 
     prompt: Optional["Prompt"] = Relationship(
-        back_populates="mode", sa_relationship_kwargs={"lazy": "selectin"}
+        back_populates="mode",
+        sa_relationship_kwargs={"lazy": "selectin"},
+        cascade_delete=True,
     )
 
     results: list["Result"] = Relationship(back_populates="mode")
@@ -329,7 +334,9 @@ class Prompt(PromptBase, table=True):
     mode: Mode = Relationship(back_populates="prompt")
 
     examples: list["Example"] = Relationship(
-        back_populates="prompt", sa_relationship_kwargs={"lazy": "selectin"}
+        back_populates="prompt",
+        sa_relationship_kwargs={"lazy": "selectin"},
+        cascade_delete=True,
     )
 
 

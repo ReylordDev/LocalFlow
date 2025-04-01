@@ -206,6 +206,20 @@ class Controller:
                 "modes", {"modes": [dump_instance(m.create_instance()) for m in modes]}
             )
 
+        elif command.action == "delete_mode":
+            if not isinstance(command.data, SelectModeCommand):
+                print_message("error", ErrorMessage(error="Invalid command data"))
+                return
+            mode_id = command.data.mode_id
+            self.database_manager.delete_mode(mode_id)
+
+            # not sure if this is necessary
+            modes = self.database_manager.get_all_modes()
+
+            print_nested_model(
+                "modes", {"modes": [dump_instance(m.create_instance()) for m in modes]}
+            )
+
         elif command.action == "get_results":
             results = self.database_manager.get_all_results()
             print_nested_model(
@@ -236,20 +250,7 @@ def debug():
     # TODO: Check that ollama is running
     controller = Controller()
 
-    # controller.handle_command(Command(action="get_modes"))
-    controller.handle_command(Command(action="get_results"))
-
-    # mode_id = controller.database_manager.get_mode_by_name("General").id
-    # controller.handle_command(
-    #     Command(
-    #         action="select_mode",
-    #         data=SelectModeCommand(mode_id=mode_id),
-    #     )
-    # )
-    # controller.handle_command(Command(action="toggle"))
-    # print("Recording started")
-    # input("Press Enter to stop recording...")
-    # controller.handle_command(Command(action="toggle"))
+    mode_id = controller.database_manager.get_mode_by_name("General").id
 
 
 if __name__ == "__main__":
