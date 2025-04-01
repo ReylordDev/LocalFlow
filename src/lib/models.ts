@@ -316,6 +316,7 @@ export const CHANNELS = {
     SET_AUDIO: "settings:set-audio",
     SET_KEYBOARD: "settings:set-keyboard",
     SET_APPLICATION: "settings:set-application",
+    SET_OUTPUT: "settings:set-output",
     SETTINGS_CHANGED: "settings:changed",
   },
   URL: {
@@ -365,6 +366,7 @@ declare global {
       setAudio: (audioConfig: AudioConfig) => void;
       setKeyboard: (keyboardConfig: KeyboardConfig) => void;
       setApplication: (applicationConfig: ApplicationConfig) => void;
+      setOutput: (outputConfig: OutputConfig) => void;
       onSettingsChanged: (
         callback: (settings: AppSettings) => void
       ) => () => void;

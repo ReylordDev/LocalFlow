@@ -52,6 +52,9 @@ export const exposeSettings = () => {
         ipcRenderer.off(CHANNELS.SETTINGS.SETTINGS_CHANGED, listener);
       };
     },
+    setOutput(outputConfig) {
+      return ipcRenderer.send(CHANNELS.SETTINGS.SET_OUTPUT, outputConfig);
+    },
   } satisfies Window["settings"]);
 };
 

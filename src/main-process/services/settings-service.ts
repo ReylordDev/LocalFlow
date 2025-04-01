@@ -9,6 +9,7 @@ import {
   AudioConfig,
   SETTINGS_SERVICE_EVENTS,
   KeyboardConfig,
+  OutputConfig,
 } from "../../lib/models";
 
 export const DEFAULT_SETTINGS: AppSettings = {
@@ -126,6 +127,11 @@ export class SettingsService extends EventEmitter {
       ...this.settings.application,
       ...applicationConfig,
     };
+    this.persistSettings();
+  }
+
+  updateOutputConfig(outputConfig: OutputConfig) {
+    this.settings.output = { ...this.settings.output, ...outputConfig };
     this.persistSettings();
   }
 

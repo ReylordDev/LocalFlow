@@ -6,6 +6,7 @@ import {
   AudioConfig,
   CHANNELS,
   KeyboardConfig,
+  OutputConfig,
 } from "../../lib/models";
 
 export function registerSettingsHandlers(
@@ -37,4 +38,8 @@ export function registerSettingsHandlers(
       settingsService.updateApplicationConfig(applicationConfig);
     }
   );
+
+  ipcMain.on(CHANNELS.SETTINGS.SET_OUTPUT, (_, outputConfig: OutputConfig) => {
+    settingsService.updateOutputConfig(outputConfig);
+  });
 }

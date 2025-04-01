@@ -18,6 +18,9 @@ export default function ConfigurationPage() {
   const [autoCloseRecordingWindow, setAutoCloseRecordingWindow] =
     useState(false);
 
+  const [autoPasteResult, setAutoPasteResult] = useState(false);
+  const [restoreClipboard, setRestoreClipboard] = useState(false);
+
   useEffect(() => {
     window.settings.getAll().then((settings) => {
       console.log("Settings: ", settings);
@@ -30,6 +33,9 @@ export default function ConfigurationPage() {
       setAutoCloseRecordingWindow(
         settings.application.autoCloseRecordingWindow
       );
+
+      setAutoPasteResult(settings.output.autoPasteResult);
+      setRestoreClipboard(settings.output.restoreClipboard);
     });
   }, []);
 
@@ -47,6 +53,11 @@ export default function ConfigurationPage() {
       enableRecordingWindow,
       autoCloseRecordingWindow,
     });
+
+    window.settings.setOutput({
+      autoPasteResult,
+      restoreClipboard,
+    });
   };
 
   useEffect(() => {
@@ -58,6 +69,8 @@ export default function ConfigurationPage() {
     launchAtStartup,
     enableRecordingWindow,
     autoCloseRecordingWindow,
+    autoPasteResult,
+    restoreClipboard,
   ]);
 
   return (
@@ -135,6 +148,34 @@ export default function ConfigurationPage() {
                 checked={autoCloseRecordingWindow}
                 onCheckedChange={(checked) => {
                   setAutoCloseRecordingWindow(checked);
+                }}
+              />
+            </div>
+          </div>
+        </div>
+        <div className="flex flex-col gap-2">
+          <h2 className="text-lg font-semibold">Output</h2>
+          <div className="flex flex-col gap-2 bg-white border border-zinc-200 rounded-md p-2">
+            <div className={cn(menuItemClass)}>
+              <h3 className="text-md font-semibold">
+                Automatically Paste Result
+              </h3>
+              <Switch
+                checked={autoPasteResult}
+                onCheckedChange={(checked) => {
+                  setAutoPasteResult(checked);
+                }}
+              />
+            </div>
+            <Separator orientation="horizontal" />
+            <div className={cn(menuItemClass)}>
+              <h3 className="text-md font-semibold">
+                Restore Clipboard after Paste
+              </h3>
+              <Switch
+                checked={restoreClipboard}
+                onCheckedChange={(checked) => {
+                  setRestoreClipboard(checked);
                 }}
               />
             </div>
