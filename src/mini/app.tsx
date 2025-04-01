@@ -7,11 +7,14 @@ import { Separator } from "../components/ui/separator";
 import { useSettings } from "../lib/hooks";
 import { ShortcutDisplay } from "../components/shortcut";
 import { cn, formatTimer } from "../lib/utils";
+import { RadioGroup, RadioGroupItem } from "../components/ui/radio-group";
 
 const App = () => {
   const [status, setStatus] = useState<ControllerStatusType>("idle");
   const settings = useSettings();
   const [activeMode, setActiveMode] = useState<Mode | null>(null);
+  const [modes, setModes] = useState<Mode[]>([]);
+  const [modePickerOpen, setModePickerOpen] = useState(false);
 
   useEffect(() => {
     const unsubscribe = window.mini.onStatusUpdate((status) => {
@@ -29,11 +32,16 @@ const App = () => {
     window.database.modes.requestAll();
   }, []);
 
+  const handleReceiveModes = (modes: Mode[]) => {
+    const activeMode = modes.find((mode) => mode.active);
+    setActiveMode(activeMode || null);
+    setModes(modes);
+  };
+
   useEffect(() => {
     const unsubscribe = window.database.modes.onModesUpdate((modes) => {
       console.log("Modes updated: ", modes);
-      const activeMode = modes.find((mode) => mode.active);
-      setActiveMode(activeMode || null);
+      handleReceiveModes(modes);
     });
 
     return () => {
@@ -44,8 +52,7 @@ const App = () => {
   useEffect(() => {
     const unsubscribe = window.database.modes.onReceiveModes((modes) => {
       console.log("Received modes: ", modes);
-      const activeMode = modes.find((mode) => mode.active);
-      setActiveMode(activeMode || null);
+      handleReceiveModes(modes);
     });
 
     return () => {
@@ -60,34 +67,62 @@ const App = () => {
   return (
     <div className="bg-transparent h-screen w-full font-sans select-none flex flex-col justify-end">
       <div className="w-full flex flex-col justify-end items-center bg-zinc-50 rounded-3xl border-zinc-500 border drag">
-        <MainContentDisplay status={status} />
+        {!modePickerOpen ? (
+          <MainContentDisplay status={status} />
+        ) : (
+          <ModePicker
+            modes={modes}
+            setActiveMode={setActiveMode}
+            setModePickerOpen={setModePickerOpen}
+          />
+        )}
         <div className="h-14 shrink-0 bg-zinc-100 text-zinc-600 rounded-b-3xl w-full flex justify-between items-center border-t-zinc-200 border-t">
           <div className="pl-8 ">
             <StatusDisplay status={status} />
           </div>
           <TimerDisplay status={status} />
-          <div className="flex h-6 items-center pr-8 space-x-6">
-            <div className="flex items-center gap-4">
-              {activeMode ? activeMode.name : ""}
-              <ShortcutDisplay
-                shortcut={settings.keyboard.changeModeShortcut}
-              />
+          {!modePickerOpen ? (
+            <div className="flex h-6 items-center pr-8 space-x-6">
+              <div className="flex items-center gap-4">
+                {activeMode ? activeMode.name : ""}
+                <ShortcutDisplay
+                  shortcut={settings.keyboard.changeModeShortcut}
+                />
+              </div>
+              <Separator orientation="vertical" decorative />
+              <div className="flex items-center gap-4">
+                {status === "idle" || status === "result" ? "Start" : "Stop"}
+                <ShortcutDisplay
+                  shortcut={settings.keyboard.toggleRecordingShortcut}
+                />
+              </div>
+              <Separator orientation="vertical" decorative />
+              <div className="flex items-center gap-4">
+                Cancel
+                <ShortcutDisplay
+                  shortcut={settings.keyboard.cancelRecordingShortcut}
+                />
+              </div>
             </div>
-            <Separator orientation="vertical" decorative />
-            <div className="flex items-center gap-4">
-              {status === "idle" || status === "result" ? "Start" : "Stop"}
-              <ShortcutDisplay
-                shortcut={settings.keyboard.toggleRecordingShortcut}
-              />
+          ) : (
+            <div className="flex h-6 items-center pr-8 space-x-6">
+              <div className="flex items-center gap-4">
+                Navigate
+                <ShortcutDisplay shortcut={"Up"} />
+                <ShortcutDisplay shortcut={"Down"} />
+              </div>
+              <Separator orientation="vertical" decorative />
+              <div className="flex items-center gap-4">
+                Select Mode
+                <ShortcutDisplay shortcut={"Enter"} />
+              </div>
+              <Separator orientation="vertical" decorative />
+              <div className="flex items-center gap-4">
+                Cancel
+                <ShortcutDisplay shortcut={"Esc"} />
+              </div>
             </div>
-            <Separator orientation="vertical" decorative />
-            <div className="flex items-center gap-4">
-              Cancel
-              <ShortcutDisplay
-                shortcut={settings.keyboard.cancelRecordingShortcut}
-              />
-            </div>
-          </div>
+          )}
         </div>
       </div>
     </div>
@@ -221,5 +256,45 @@ const TimerDisplay = ({ status }: { status: ControllerStatusType }) => {
 
   return (
     <div className="flex justify-center items-center">{formatTimer(timer)}</div>
+  );
+};
+
+const ModePicker = ({
+  modes,
+  setActiveMode,
+  setModePickerOpen,
+}: {
+  modes: Mode[];
+  setActiveMode: (mode: Mode) => void;
+  setModePickerOpen: (open: boolean) => void;
+}) => {
+  return (
+    <div className="flex justify-center items-center min-h-28 w-full no-drag">
+      <RadioGroup
+        className="flex flex-col items-center gap-2 w-full px-4"
+        onValueChange={(value) => {
+          const selectedMode = modes.find((mode) => mode.id === value);
+          if (selectedMode) {
+            // TODO
+          }
+        }}
+      >
+        {modes.map((mode, index) => (
+          <div
+            key={mode.id}
+            className="flex justify-between items-center w-full px-4 py-2 hover:bg-zinc-300 rounded-xl"
+          >
+            <label
+              htmlFor={index.toString()}
+              className="flex items-center gap-2 w-full"
+            >
+              <ShortcutDisplay shortcut={`Shift+${index + 1}`} />
+              <span>{mode.name}</span>
+            </label>
+            <RadioGroupItem id={index.toString()} value={mode.id} />
+          </div>
+        ))}
+      </RadioGroup>
+    </div>
   );
 };
