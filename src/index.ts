@@ -57,8 +57,9 @@ app.whenReady().then(async () => {
   settingsService.on(
     SETTINGS_SERVICE_EVENTS.SHORTCUT_PRESSED.CHANGE_MODE,
     () => {
-      consoleLog("Change mode shortcut pressed");
-      // TODO: Implement change mode functionality
+      windowManager.sendMiniWindowMessage(
+        CHANNELS.MINI.CHANGE_MODE_SHORTCUT_PRESSED,
+      );
     },
   );
 

@@ -155,6 +155,15 @@ export const exposeMini = () => {
         ipcRenderer.off(CHANNELS.MINI.RESULT, listener);
       };
     },
+    onChangeModeShortcutPressed(callback) {
+      const listener = (_: IpcRendererEvent) => {
+        callback();
+      };
+      ipcRenderer.on(CHANNELS.MINI.CHANGE_MODE_SHORTCUT_PRESSED, listener);
+      return () => {
+        ipcRenderer.off(CHANNELS.MINI.CHANGE_MODE_SHORTCUT_PRESSED, listener);
+      };
+    },
   } satisfies Window["mini"]);
 };
 

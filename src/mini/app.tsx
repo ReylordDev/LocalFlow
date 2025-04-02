@@ -60,6 +60,16 @@ const App = () => {
     };
   }, []);
 
+  useEffect(() => {
+    const unsubscribe = window.mini.onChangeModeShortcutPressed(() => {
+      console.log("Change mode shortcut pressed");
+      setModePickerOpen((prev) => !prev);
+    });
+    return () => {
+      unsubscribe();
+    };
+  }, []);
+
   if (!settings) {
     return null; // or a loading state
   }
@@ -98,7 +108,7 @@ const App = () => {
               </div>
               <Separator orientation="vertical" decorative />
               <div className="flex items-center gap-4">
-                Cancel
+                {status === "result" ? "Reset" : "Cancel"}
                 <ShortcutDisplay
                   shortcut={settings.keyboard.cancelRecordingShortcut}
                 />
@@ -119,7 +129,9 @@ const App = () => {
               <Separator orientation="vertical" decorative />
               <div className="flex items-center gap-4">
                 Cancel
-                <ShortcutDisplay shortcut={"Esc"} />
+                <ShortcutDisplay
+                  shortcut={settings.keyboard.changeModeShortcut}
+                />
               </div>
             </div>
           )}
@@ -273,11 +285,24 @@ const ModePicker = ({
   return (
     <div className="no-drag flex min-h-28 w-full items-center justify-center">
       <RadioGroup
+        defaultValue={modes.find((mode) => mode.active)?.id}
         className="flex w-full flex-col items-center gap-2 px-4"
         onValueChange={(value) => {
           const selectedMode = modes.find((mode) => mode.id === value);
           if (selectedMode) {
-            // TODO
+            modes
+              .filter((mode) => mode.id !== selectedMode.id && mode.active)
+              .forEach((mode) => {
+                window.database.modes.updateMode({
+                  id: mode.id,
+                  active: false,
+                });
+              });
+            window.database.modes.updateMode({
+              id: selectedMode.id,
+              active: true,
+            });
+            setActiveMode(selectedMode);
           }
         }}
       >

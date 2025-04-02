@@ -337,6 +337,7 @@ export const CHANNELS = {
     AUDIO_LEVEL_RESPONSE: "mini:audio-level",
     STATUS_UPDATE: "mini:status-update",
     RESULT: "mini:result",
+    CHANGE_MODE_SHORTCUT_PRESSED: "mini:change-mode-shortcut-pressed",
   },
   DEVICE: {
     DEVICES_REQUEST: "device:requestAll",
@@ -388,6 +389,7 @@ declare global {
         callback: (status: ControllerStatusType) => void,
       ) => () => void;
       onResult: (callback: (result: Result) => void) => () => void;
+      onChangeModeShortcutPressed: (callback: () => void) => () => void;
     };
     device: {
       requestAll: () => void;
