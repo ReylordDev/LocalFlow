@@ -31,7 +31,7 @@ const HistoryWindow = () => {
   }
 
   return (
-    <div className="h-screen flex select-none">
+    <div className="flex h-screen select-none">
       <Sidebar history={history} selectResult={selectResult} />
       <ResultDetails result={selectedResult} />
     </div>
@@ -65,8 +65,8 @@ function Sidebar({
           result.mode.use_language_model
             ? result.ai_result.toLowerCase().includes(value) ||
               result.transcription.toLowerCase().includes(value)
-            : result.transcription.toLowerCase().includes(value)
-        )
+            : result.transcription.toLowerCase().includes(value),
+        ),
       );
     }
   };
@@ -76,12 +76,12 @@ function Sidebar({
   console.log("Search term:", searchTerm);
 
   return (
-    <div className="w-80 shrink-0 h-screen flex flex-col border-r">
-      <div className="flex items-center border rounded-md p-2 mt-4 mx-8 ml-6 shadow-sm">
+    <div className="flex h-screen w-80 shrink-0 flex-col border-r">
+      <div className="mx-8 ml-6 mt-4 flex items-center rounded-md border p-2 shadow-sm">
         <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
         <input
           className={cn(
-            "h-4 rounded-md border-0 py-3 text-sm outline-none placeholder:text-zinc-500 w-full"
+            "h-4 w-full rounded-md border-0 py-3 text-sm outline-none placeholder:text-zinc-500",
           )}
           type="text"
           placeholder="Search..."
@@ -89,19 +89,19 @@ function Sidebar({
           onChange={handleSearch}
         />
       </div>
-      <div className="flex flex-col gap-2 p-2 overflow-y-auto h-screen">
+      <div className="flex h-screen flex-col gap-2 overflow-y-auto p-2">
         {filteredHistory.map((result) => (
           <div
             key={result.id}
             onClick={() => selectResult(result)}
-            className="rounded-md px-4 hover:bg-sky-600 hover:text-white group"
+            className="group rounded-md px-4 hover:bg-sky-600 hover:text-white"
           >
             <h3 className="text-md truncate">
               {result.mode.use_language_model
                 ? result.ai_result
                 : result.transcription}
             </h3>
-            <div className="justify-between items-center flex">
+            <div className="flex items-center justify-between">
               <p className="text-sm text-zinc-500 group-hover:text-zinc-100">
                 {new Date(result.created_at * 1000).toLocaleString()}
               </p>
@@ -123,7 +123,7 @@ function ResultDetails({ result }: { result: Result }) {
 
   if (!result) {
     return (
-      <div className="w-full h-screen flex items-center justify-center">
+      <div className="flex h-screen w-full items-center justify-center">
         <p className="text-gray-500">Select a recording to view details</p>
       </div>
     );
@@ -134,9 +134,9 @@ function ResultDetails({ result }: { result: Result }) {
   return (
     <Tabs
       defaultValue="transcription"
-      className="w-full max-w-[1120px] h-screen flex flex-col items-center"
+      className="flex h-screen w-full max-w-[1120px] flex-col items-center"
     >
-      <div className="flex w-full p-4 justify-between items-center">
+      <div className="flex w-full items-center justify-between p-4">
         <p className="select-text">
           {new Date(result.created_at * 1000).toLocaleString()}
         </p>
@@ -150,7 +150,7 @@ function ResultDetails({ result }: { result: Result }) {
                   ? result.transcription
                   : result.mode.use_language_model
                     ? result.ai_result
-                    : result.transcription
+                    : result.transcription,
               );
             }}
           >
@@ -187,12 +187,12 @@ function ResultDetails({ result }: { result: Result }) {
         </div>
       </div>
       <TabsContent value="transcription" className="w-full">
-        <p className="whitespace-pre-line w-full p-4 select-text">
+        <p className="w-full select-text whitespace-pre-line p-4">
           {result.transcription}
         </p>
       </TabsContent>
       <TabsContent value="ai_result" className="w-full">
-        <p className="whitespace-pre-line w-full p-4 select-text">
+        <p className="w-full select-text whitespace-pre-line p-4">
           {result.mode.use_language_model
             ? result.ai_result
             : result.transcription}

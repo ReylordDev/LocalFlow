@@ -3,7 +3,7 @@ import HistoryWindow from "./HistoryWindow";
 
 const App = () => {
   return (
-    <div className="font-sans  bg-background">
+    <div className="bg-background font-sans">
       <HistoryWindow />
     </div>
   );

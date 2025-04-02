@@ -59,18 +59,18 @@ export function AppSidebar({
     }
   };
   return (
-    <div className="flex flex-col min-w-80 border-r-2 border-gray-200 ">
-      <h1 className="text-3xl font-bold justify-center flex p-8 select-none">
+    <div className="flex min-w-80 flex-col border-r-2 border-gray-200">
+      <h1 className="flex select-none justify-center p-8 text-3xl font-bold">
         LocalFlow
       </h1>
-      <div className="px-4 gap-2 flex flex-col">
+      <div className="flex flex-col gap-2 px-4">
         {pages.map((identifier, index) => (
           <Button
             variant="ghost"
             className={cn(
-              "flex justify-start text-lg items-center gap-4 rounded-md p-2 hover:bg-gray-200",
+              "flex items-center justify-start gap-4 rounded-md p-2 text-lg hover:bg-gray-200",
               currentPage === identifier &&
-                "bg-sky-600 text-white hover:bg-sky-600 hover:text-white"
+                "bg-sky-600 text-white hover:bg-sky-600 hover:text-white",
             )}
             onClick={() =>
               handleSidebarClick(identifier, sidebarRecord[identifier])

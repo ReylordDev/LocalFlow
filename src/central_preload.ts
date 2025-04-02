@@ -40,7 +40,7 @@ export const exposeSettings = () => {
     setApplication(applicationConfig) {
       return ipcRenderer.send(
         CHANNELS.SETTINGS.SET_APPLICATION,
-        applicationConfig
+        applicationConfig,
       );
     },
     onSettingsChanged(callback) {

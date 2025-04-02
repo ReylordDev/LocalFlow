@@ -28,7 +28,7 @@ export default function AudioPage() {
     window.settings.getAll().then((settings) => {
       console.log("Settings: ", settings);
       setSelectedDeviceIndex(
-        settings.audio.device ? settings.audio.device.index.toString() : null
+        settings.audio.device ? settings.audio.device.index.toString() : null,
       );
       setUseSystemDefaultDevice(settings.audio.useSystemDefaultDevice);
       setBoostAudio(settings.audio.automaticallyIncreaseMicVolume);
@@ -37,7 +37,7 @@ export default function AudioPage() {
 
   const handleSettingsChange = () => {
     const selectedDevice = devices.find(
-      (device) => device.index.toString() === selectedDeviceIndex
+      (device) => device.index.toString() === selectedDeviceIndex,
     );
     window.settings.setAudio({
       device: selectedDevice,
@@ -53,16 +53,16 @@ export default function AudioPage() {
   }, [selectedDeviceIndex, useSystemDefaultDevice, boostAudio]);
 
   return (
-    <div className="h-full w-full flex flex-col ">
-      <div className="flex justify-between items-center px-4 bg-gradient-to-l from-sky-300 to-sky-600 text-white border-b border-zinc-200">
+    <div className="flex h-full w-full flex-col">
+      <div className="flex items-center justify-between border-b border-zinc-200 bg-gradient-to-l from-sky-300 to-sky-600 px-4 text-white">
         <div className="flex items-center gap-4">
-          <h1 className="font-bold text-2xl py-5">Audio</h1>
+          <h1 className="py-5 text-2xl font-bold">Audio</h1>
         </div>
       </div>
-      <div className="flex flex-col gap-4 px-8 py-8 bg-zinc-50 overflow-y-auto h-full">
+      <div className="flex h-full flex-col gap-4 overflow-y-auto bg-zinc-50 px-8 py-8">
         <div className="flex flex-col gap-2">
           <h2 className="text-lg font-semibold">Input Device</h2>
-          <div className="flex flex-col gap-2 bg-white border border-zinc-200 rounded-md p-2">
+          <div className="flex flex-col gap-2 rounded-md border border-zinc-200 bg-white p-2">
             <div className={cn(menuItemClass)}>
               <h3 className="text-md font-semibold">Input Device</h3>
               <Combobox
@@ -91,7 +91,7 @@ export default function AudioPage() {
                     setSelectedDeviceIndex(
                       devices
                         .filter((device) => device.is_default)[0]
-                        .index.toString()
+                        .index.toString(),
                     );
                   }
                 }}

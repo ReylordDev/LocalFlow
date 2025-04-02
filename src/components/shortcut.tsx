@@ -1,6 +1,6 @@
 export const ShortcutDisplay = ({ shortcut }: { shortcut: string }) => {
   return (
-    <div className="bg-zinc-200 rounded-sm py-1 px-[2px] flex gap-0 items-center text-xs font-semibold">
+    <div className="flex items-center gap-0 rounded-sm bg-zinc-200 px-[2px] py-1 text-xs font-semibold">
       {shortcut.split("+").map((key, index) => {
         switch (key) {
           case "Control":

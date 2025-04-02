@@ -56,7 +56,7 @@ export default function Modes() {
       (modes: Mode[]) => {
         console.log("Received Modes", modes);
         setModes(modes);
-      }
+      },
     );
     return () => unsubscribe();
   }, [index]);
@@ -70,10 +70,10 @@ export default function Modes() {
   // }
 
   return (
-    <div className="h-full w-full flex flex-col py-24 px-32 gap-2 overflow-y-auto">
-      <div className="flex justify-between items-center">
-        <div className="flex flex-col gap-1 max-w-[600px] min-h-10">
-          <h1 className="font-bold text-xl">Create a Mode</h1>
+    <div className="flex h-full w-full flex-col gap-2 overflow-y-auto px-32 py-24">
+      <div className="flex items-center justify-between">
+        <div className="flex min-h-10 max-w-[600px] flex-col gap-1">
+          <h1 className="text-xl font-bold">Create a Mode</h1>
           <p className="font-medium">
             Create Modes for Email, Meetings, Notes, Documents, Messaging and
             more.
@@ -95,7 +95,7 @@ export default function Modes() {
         {modes.map((mode, index) => (
           <div
             key={index}
-            className="flex h-full justify-between items-center border border-zinc-300 bg-zinc-50 rounded-md p-4"
+            className="flex h-full items-center justify-between rounded-md border border-zinc-300 bg-zinc-50 p-4"
           >
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-3">
@@ -103,7 +103,7 @@ export default function Modes() {
                 {mode.active && (
                   <Badge
                     variant="default"
-                    className="text-xs font-normal bg-zinc-500 hover:bg-zinc-500"
+                    className="bg-zinc-500 text-xs font-normal hover:bg-zinc-500"
                   >
                     Active
                   </Badge>
@@ -144,7 +144,7 @@ export default function Modes() {
                       } else {
                         return { ...m, active: false };
                       }
-                    })
+                    }),
                   );
                 }}
               >
@@ -166,21 +166,21 @@ const ModeDetails = ({
   setIndex: (index: number) => void;
 }) => {
   const [useAi, setUseAi] = useState<boolean>(
-    mode ? mode.use_language_model : false
+    mode ? mode.use_language_model : false,
   );
   const [languageModelName, setLanguageModelName] = useState(
-    mode ? mode.language_model?.name : ""
+    mode ? mode.language_model?.name : "",
   );
   const [prompt, setPrompt] = useState<PromptBase>(mode ? mode.prompt : null); // TODO: Check the validity
   const [name, setName] = useState<string>(mode ? mode.name : "");
   const [voiceModelName, setVoiceModelName] = useState<string>(
-    mode ? mode.voice_model.name : ""
+    mode ? mode.voice_model.name : "",
   );
   const [voiceLanguage, setVoiceLanguage] = useState<string>(
-    mode ? mode.voice_language : "auto"
+    mode ? mode.voice_language : "auto",
   );
   const [translateToEnglish, setTranslateToEnglish] = useState<boolean>(
-    mode ? mode.translate_to_english : false
+    mode ? mode.translate_to_english : false,
   );
   const [textReplacements, setTextReplacements] = useState<
     TextReplacement[] | TextReplacementBase[]
@@ -354,8 +354,8 @@ const ModeDetails = ({
   console.log("ModeDetails", mode);
 
   return (
-    <div className="h-full w-full flex flex-col ">
-      <div className="flex justify-between items-center px-4 bg-gradient-to-l from-sky-300 to-sky-600 text-white border-b border-zinc-200">
+    <div className="flex h-full w-full flex-col">
+      <div className="flex items-center justify-between border-b border-zinc-200 bg-gradient-to-l from-sky-300 to-sky-600 px-4 text-white">
         <div className="flex items-center gap-4">
           <Button
             variant="ghost"
@@ -365,9 +365,9 @@ const ModeDetails = ({
               setIndex(0);
             }}
           >
-            <ChevronLeft className="size-8 " />
+            <ChevronLeft className="size-8" />
           </Button>
-          <h1 className="font-bold text-2xl py-5">
+          <h1 className="py-5 text-2xl font-bold">
             {mode?.name || "Create a new Mode"}
           </h1>
         </div>
@@ -375,7 +375,7 @@ const ModeDetails = ({
           variant="secondary"
           className={cn(
             "mr-4",
-            unsavedChanges.length > 0 && "border-rose-400 border-2"
+            unsavedChanges.length > 0 && "border-2 border-rose-400",
           )}
           disabled={!settingsAreValid}
           onClick={handleSaveMode}
@@ -388,10 +388,10 @@ const ModeDetails = ({
           {mode ? "Save Mode" : "Create Mode"}
         </Button>
       </div>
-      <div className="flex flex-col gap-6 px-8 py-8 bg-zinc-50 overflow-y-auto h-full">
+      <div className="flex h-full flex-col gap-6 overflow-y-auto bg-zinc-50 px-8 py-8">
         <div className="flex flex-col gap-2">
           <h2 className="text-lg font-semibold">Details</h2>
-          <div className="flex flex-col gap-2 bg-white border border-zinc-200 rounded-md p-2">
+          <div className="flex flex-col gap-2 rounded-md border border-zinc-200 bg-white p-2">
             <div className={cn(menuItemClass)}>
               <h3 className="text-md font-semibold">Name</h3>
               <Input
@@ -405,7 +405,7 @@ const ModeDetails = ({
         </div>
         <div className="flex flex-col gap-2">
           <h2 className="text-lg font-semibold">Voice model</h2>
-          <div className="flex flex-col gap-2 bg-white border border-zinc-200 rounded-md p-2">
+          <div className="flex flex-col gap-2 rounded-md border border-zinc-200 bg-white p-2">
             <div className={cn(menuItemClass)}>
               <h3 className="text-md font-semibold">Model</h3>
               <Combobox
@@ -472,9 +472,9 @@ const ModeDetails = ({
         </div>
         <div className="flex flex-col gap-2">
           <h2 className="text-lg font-semibold">Language model</h2>
-          <div className="flex flex-col gap-2 bg-white border border-zinc-200 rounded-md p-2">
+          <div className="flex flex-col gap-2 rounded-md border border-zinc-200 bg-white p-2">
             <div className={cn(menuItemClass)}>
-              <div className="flex gap-3 items-center">
+              <div className="flex items-center gap-3">
                 <Wand size={24} />
                 <div className="flex flex-col gap-1">
                   <h3 className="text-md font-semibold">Enable AI</h3>
@@ -525,9 +525,9 @@ const ModeDetails = ({
             </div>
             <Separator orientation="horizontal" />
             <div className={cn(menuItemClass, !useAi && "opacity-50")}>
-              <div className="flex flex-col gap-1 shrink w-3/4 sm:max-w-[300px] md:max-w-[400px] lg:max-w-[500px] xl:max-w-full">
+              <div className="flex w-3/4 shrink flex-col gap-1 sm:max-w-[300px] md:max-w-[400px] lg:max-w-[500px] xl:max-w-full">
                 <h3 className="text-md font-semibold">Prompt</h3>
-                <p className="text-gray-500 truncate">
+                <p className="truncate text-gray-500">
                   {prompt ? prompt.system_prompt : "No prompt selected."}
                 </p>
               </div>
@@ -553,7 +553,7 @@ const ModeDetails = ({
         </div>
         <div className="flex flex-col gap-2">
           <h2 className="text-lg font-semibold">Text Replacements</h2>
-          <div className="flex flex-col gap-2 bg-white border border-zinc-200 rounded-md p-2">
+          <div className="flex flex-col gap-2 rounded-md border border-zinc-200 bg-white p-2">
             <div className={cn(menuItemClass, "gap-4")}>
               <Input
                 className="w-full"
@@ -600,7 +600,7 @@ const ModeDetails = ({
             {/* List the text replacements */}
             <div>
               {textReplacements.length === 0 ? (
-                <p className="text-sm font-medium text-gray-500 px-3 pl-5 py-2">
+                <p className="px-3 py-2 pl-5 text-sm font-medium text-gray-500">
                   No text replacements added.
                 </p>
               ) : (
@@ -620,7 +620,7 @@ const ModeDetails = ({
                         onClick={() => {
                           console.log("Remove text replacement", index);
                           setTextReplacements((prev) =>
-                            prev.filter((_, i) => i !== index)
+                            prev.filter((_, i) => i !== index),
                           );
                         }}
                       >
@@ -635,7 +635,7 @@ const ModeDetails = ({
           {mode && !mode?.default && (
             <div className="flex flex-col gap-2">
               <h2 className="text-lg font-semibold">Danger Zone</h2>
-              <div className="flex flex-col gap-2 bg-white border border-zinc-200 rounded-md p-2">
+              <div className="flex flex-col gap-2 rounded-md border border-zinc-200 bg-white p-2">
                 <div className={cn(menuItemClass)}>
                   <h3 className="text-md font-semibold">Delete Mode</h3>
                   <AlertDialog>
@@ -691,16 +691,16 @@ const PromptDetails = ({
   hidePromptDialog: () => void;
 }) => {
   const [systemPrompt, setSystemPrompt] = useState<string>(
-    prompt ? prompt.system_prompt : ""
+    prompt ? prompt.system_prompt : "",
   );
   const [includeClipboard, setIncludeClipboard] = useState<boolean>(
-    prompt ? prompt.include_clipboard : false
+    prompt ? prompt.include_clipboard : false,
   );
   const [includeActiveWindow, setIncludeActiveWindow] = useState<boolean>(
-    prompt ? prompt.include_active_window : false
+    prompt ? prompt.include_active_window : false,
   );
   const [examples, setExamples] = useState<ExampleBase[]>(
-    prompt ? prompt.examples : []
+    prompt ? prompt.examples : [],
   );
   const [exampleInput, setExampleInput] = useState<string>("");
   const [exampleOutput, setExampleOutput] = useState<string>("");
@@ -720,8 +720,8 @@ const PromptDetails = ({
   console.log("System Prompt", systemPrompt);
 
   return (
-    <div className="inset-y-0 left-80 right-0 flex flex-col fixed z-50">
-      <div className="flex justify-between items-center px-4 bg-gradient-to-l from-sky-300 to-sky-600 text-white border-b border-zinc-200">
+    <div className="fixed inset-y-0 left-80 right-0 z-50 flex flex-col">
+      <div className="flex items-center justify-between border-b border-zinc-200 bg-gradient-to-l from-sky-300 to-sky-600 px-4 text-white">
         <div className="flex items-center gap-4">
           <Button
             variant="ghost"
@@ -732,14 +732,14 @@ const PromptDetails = ({
               hidePromptDialog();
             }}
           >
-            <ChevronLeft className="size-8 " />
+            <ChevronLeft className="size-8" />
           </Button>
-          <h1 className="font-bold text-2xl py-5">
+          <h1 className="py-5 text-2xl font-bold">
             {prompt ? "Prompt" : "Create a new Prompt"}
           </h1>
         </div>
       </div>
-      <div className="flex flex-col gap-4 px-8 py-8 bg-zinc-50 overflow-y-auto h-full">
+      <div className="flex h-full flex-col gap-4 overflow-y-auto bg-zinc-50 px-8 py-8">
         <div className="flex flex-col gap-2">
           <h2 className="text-lg font-semibold">Prompt</h2>
           <Textarea
@@ -751,7 +751,7 @@ const PromptDetails = ({
         </div>
         <div className="flex flex-col gap-2">
           <h2 className="text-lg font-semibold">Additional Context</h2>
-          <div className="flex flex-col gap-2 bg-white border border-zinc-200 rounded-md p-2">
+          <div className="flex flex-col gap-2 rounded-md border border-zinc-200 bg-white p-2">
             <div className={cn(menuItemClass)}>
               <div className="flex flex-col gap-1">
                 <h3 className="text-md font-semibold">Use copied text</h3>
@@ -781,7 +781,7 @@ const PromptDetails = ({
           </div>
         </div>
         {!examples || examples.length === 0 ? (
-          <div className="bg-zinc-100 gap-4 rounded-md flex flex-col justify-center items-center p-4">
+          <div className="flex flex-col items-center justify-center gap-4 rounded-md bg-zinc-100 p-4">
             <Wand size={64} />
             <h2 className="text-lg font-semibold">
               Use Examples to enhance AI output
@@ -835,15 +835,15 @@ const PromptDetails = ({
             {examples.map((example, index) => (
               <Dialog key={index}>
                 <DialogTrigger>
-                  <div className="flex flex-col gap-2 bg-white border border-zinc-200 rounded-md p-2 hover:bg-zinc-100">
+                  <div className="flex flex-col gap-2 rounded-md border border-zinc-200 bg-white p-2 hover:bg-zinc-100">
                     <div className={cn(menuItemClass)}>
-                      <div className="flex gap-2 items-center">
+                      <div className="flex items-center gap-2">
                         <h3 className="text-md font-semibold">
                           Example {index + 1}
                         </h3>
                         <p className="text-sm font-medium">{example.output}</p>
                       </div>
-                      <ChevronUp className="size-8 " />
+                      <ChevronUp className="size-8" />
                     </div>
                   </div>
                 </DialogTrigger>
@@ -887,16 +887,16 @@ const UpdateExampleDialog = ({
   };
 
   return (
-    <DialogContent className=" flex flex-col max-w-full w-[800px] h-3/4">
+    <DialogContent className="flex h-3/4 w-[800px] max-w-full flex-col">
       <DialogHeader>
         <DialogTitle>Update Example</DialogTitle>
         <DialogDescription>
           Add an example of the voice input (as text) and the desired AI output.{" "}
         </DialogDescription>
       </DialogHeader>
-      <div className="flex justify-between items-start gap-3 h-full w-full">
-        <div className="flex flex-col gap-2 w-full h-full">
-          <h3 className="text-md font-semibold pl-1">Input</h3>
+      <div className="flex h-full w-full items-start justify-between gap-3">
+        <div className="flex h-full w-full flex-col gap-2">
+          <h3 className="text-md pl-1 font-semibold">Input</h3>
           <Textarea
             className="h-full"
             placeholder="Enter your example input here..."
@@ -904,9 +904,9 @@ const UpdateExampleDialog = ({
             onChange={(e) => setExampleInput(e.target.value)}
           />
         </div>
-        <Separator orientation="vertical" className="h-full my-2" />
-        <div className="flex flex-col gap-2 w-full h-full">
-          <h3 className="text-md font-semibold pl-1">Output</h3>
+        <Separator orientation="vertical" className="my-2 h-full" />
+        <div className="flex h-full w-full flex-col gap-2">
+          <h3 className="text-md pl-1 font-semibold">Output</h3>
           <Textarea
             className="h-full"
             placeholder="Enter your desired output here..."
@@ -915,7 +915,7 @@ const UpdateExampleDialog = ({
           />
         </div>
       </div>
-      <DialogFooter className="flex justify-end gap-2 mt-4">
+      <DialogFooter className="mt-4 flex justify-end gap-2">
         <DialogClose asChild>
           <Button variant="secondary">Cancel</Button>
         </DialogClose>
@@ -965,16 +965,16 @@ const AddExampleDialog = ({
   };
 
   return (
-    <DialogContent className=" flex flex-col max-w-full w-[800px] h-3/4">
+    <DialogContent className="flex h-3/4 w-[800px] max-w-full flex-col">
       <DialogHeader>
         <DialogTitle>Add Example</DialogTitle>
         <DialogDescription>
           Add an example of the voice input (as text) and the desired AI output.{" "}
         </DialogDescription>
       </DialogHeader>
-      <div className="flex justify-between items-start gap-3 h-full w-full">
-        <div className="flex flex-col gap-2 w-full h-full">
-          <h3 className="text-md font-semibold pl-1">Input</h3>
+      <div className="flex h-full w-full items-start justify-between gap-3">
+        <div className="flex h-full w-full flex-col gap-2">
+          <h3 className="text-md pl-1 font-semibold">Input</h3>
           <Textarea
             className="h-full"
             placeholder="Enter your example input here..."
@@ -982,9 +982,9 @@ const AddExampleDialog = ({
             onChange={(e) => setExampleInput(e.target.value)}
           />
         </div>
-        <Separator orientation="vertical" className="h-full my-2" />
-        <div className="flex flex-col gap-2 w-full h-full">
-          <h3 className="text-md font-semibold pl-1">Output</h3>
+        <Separator orientation="vertical" className="my-2 h-full" />
+        <div className="flex h-full w-full flex-col gap-2">
+          <h3 className="text-md pl-1 font-semibold">Output</h3>
           <Textarea
             className="h-full"
             placeholder="Enter your desired output here..."
@@ -993,7 +993,7 @@ const AddExampleDialog = ({
           />
         </div>
       </div>
-      <DialogFooter className="flex justify-end gap-2 mt-4">
+      <DialogFooter className="mt-4 flex justify-end gap-2">
         <DialogClose asChild>
           <Button variant="secondary">Cancel</Button>
         </DialogClose>

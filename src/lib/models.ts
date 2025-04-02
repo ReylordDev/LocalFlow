@@ -373,7 +373,7 @@ declare global {
       setApplication: (applicationConfig: ApplicationConfig) => void;
       setOutput: (outputConfig: OutputConfig) => void;
       onSettingsChanged: (
-        callback: (settings: AppSettings) => void
+        callback: (settings: AppSettings) => void,
       ) => () => void;
     };
     url: {
@@ -382,10 +382,10 @@ declare global {
     mini: {
       requestAudioLevel: () => void;
       onReceiveAudioLevel: (
-        callback: (audioLevel: number) => void
+        callback: (audioLevel: number) => void,
       ) => () => void;
       onStatusUpdate: (
-        callback: (status: ControllerStatusType) => void
+        callback: (status: ControllerStatusType) => void,
       ) => () => void;
       onResult: (callback: (result: Result) => void) => () => void;
     };

@@ -81,32 +81,32 @@ export class SettingsService extends EventEmitter {
     if (this.settings.keyboard.toggleRecordingShortcut) {
       consoleLog(
         "Registering toggle recording shortcut:",
-        this.settings.keyboard.toggleRecordingShortcut
+        this.settings.keyboard.toggleRecordingShortcut,
       );
       globalShortcut.register(
         this.settings.keyboard.toggleRecordingShortcut,
-        () => this.emit(SETTINGS_SERVICE_EVENTS.SHORTCUT_PRESSED.TOGGLE)
+        () => this.emit(SETTINGS_SERVICE_EVENTS.SHORTCUT_PRESSED.TOGGLE),
       );
     }
 
     if (this.settings.keyboard.cancelRecordingShortcut) {
       consoleLog(
         "Registering cancel recording shortcut:",
-        this.settings.keyboard.cancelRecordingShortcut
+        this.settings.keyboard.cancelRecordingShortcut,
       );
       globalShortcut.register(
         this.settings.keyboard.cancelRecordingShortcut,
-        () => this.emit(SETTINGS_SERVICE_EVENTS.SHORTCUT_PRESSED.CANCEL)
+        () => this.emit(SETTINGS_SERVICE_EVENTS.SHORTCUT_PRESSED.CANCEL),
       );
     }
 
     if (this.settings.keyboard.changeModeShortcut) {
       consoleLog(
         "Registering change mode shortcut:",
-        this.settings.keyboard.changeModeShortcut
+        this.settings.keyboard.changeModeShortcut,
       );
       globalShortcut.register(this.settings.keyboard.changeModeShortcut, () =>
-        this.emit(SETTINGS_SERVICE_EVENTS.SHORTCUT_PRESSED.CHANGE_MODE)
+        this.emit(SETTINGS_SERVICE_EVENTS.SHORTCUT_PRESSED.CHANGE_MODE),
       );
     }
   }

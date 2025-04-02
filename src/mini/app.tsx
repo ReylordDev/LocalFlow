@@ -65,8 +65,8 @@ const App = () => {
   }
 
   return (
-    <div className="bg-transparent h-screen w-full font-sans select-none flex flex-col justify-end">
-      <div className="w-full flex flex-col justify-end items-center bg-zinc-50 rounded-3xl border-zinc-500 border drag">
+    <div className="flex h-screen w-full select-none flex-col justify-end bg-transparent font-sans">
+      <div className="drag flex w-full flex-col items-center justify-end rounded-3xl border border-zinc-500 bg-zinc-50">
         {!modePickerOpen ? (
           <MainContentDisplay status={status} />
         ) : (
@@ -76,13 +76,13 @@ const App = () => {
             setModePickerOpen={setModePickerOpen}
           />
         )}
-        <div className="h-14 shrink-0 bg-zinc-100 text-zinc-600 rounded-b-3xl w-full flex justify-between items-center border-t-zinc-200 border-t">
-          <div className="pl-8 ">
+        <div className="flex h-14 w-full shrink-0 items-center justify-between rounded-b-3xl border-t border-t-zinc-200 bg-zinc-100 text-zinc-600">
+          <div className="pl-8">
             <StatusDisplay status={status} />
           </div>
           <TimerDisplay status={status} />
           {!modePickerOpen ? (
-            <div className="flex h-6 items-center pr-8 space-x-6">
+            <div className="flex h-6 items-center space-x-6 pr-8">
               <div className="flex items-center gap-4">
                 {activeMode ? activeMode.name : ""}
                 <ShortcutDisplay
@@ -105,7 +105,7 @@ const App = () => {
               </div>
             </div>
           ) : (
-            <div className="flex h-6 items-center pr-8 space-x-6">
+            <div className="flex h-6 items-center space-x-6 pr-8">
               <div className="flex items-center gap-4">
                 Navigate
                 <ShortcutDisplay shortcut={"Up"} />
@@ -139,7 +139,7 @@ const StatusDisplay = ({ status }: { status: ControllerStatusType }) => {
     case "recording":
       return (
         <div className="flex items-center gap-2">
-          <span className="rounded-full bg-rose-500 size-4 flex items-center justify-center animate-pulse"></span>
+          <span className="flex size-4 animate-pulse items-center justify-center rounded-full bg-rose-500"></span>
           Recording
         </div>
       );
@@ -158,7 +158,7 @@ const StatusDisplay = ({ status }: { status: ControllerStatusType }) => {
     case "result":
       return (
         <div className="flex items-center gap-2">
-          <span className="rounded-full bg-lime-500 size-4 flex items-center justify-center"></span>
+          <span className="flex size-4 items-center justify-center rounded-full bg-lime-500"></span>
           Done
         </div>
       );
@@ -174,7 +174,9 @@ const MainContentDisplay = ({ status }: { status: ControllerStatusType }) => {
     const unsubscribe = window.mini.onResult((result) => {
       console.log("Result updated: ", result);
       setResultText(
-        result.mode.use_language_model ? result.ai_result : result.transcription
+        result.mode.use_language_model
+          ? result.ai_result
+          : result.transcription,
       );
     });
 
@@ -186,13 +188,13 @@ const MainContentDisplay = ({ status }: { status: ControllerStatusType }) => {
   switch (status) {
     case "idle":
       return (
-        <div className="flex justify-center items-center min-h-28">
+        <div className="flex min-h-28 items-center justify-center">
           <SpeechVocalization isRecording={false} />
         </div>
       );
     case "recording":
       return (
-        <div className="flex justify-center items-center min-h-28">
+        <div className="flex min-h-28 items-center justify-center">
           <SpeechVocalization isRecording={true} />
         </div>
       );
@@ -203,7 +205,7 @@ const MainContentDisplay = ({ status }: { status: ControllerStatusType }) => {
     case "generating_ai_result":
     case "saving":
       return (
-        <div className="flex justify-center items-center min-h-28">
+        <div className="flex min-h-28 items-center justify-center">
           <Loader2 className="animate-spin-slow" />
         </div>
       );
@@ -214,11 +216,11 @@ const MainContentDisplay = ({ status }: { status: ControllerStatusType }) => {
         //   className="bg-zinc-900 text-white resize-none overflow-y-auto no-drag select-text border-0 ring-0 rounded-3xl w-full text-wrapjjj p-4 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
         //   value={resultText || ""}
         // />
-        <div className="flex flex-col justify-center w-full px-4 py-2 select-text no-drag max-h-[328px] min-h-28 rounded-t-3xl">
+        <div className="no-drag flex max-h-[328px] min-h-28 w-full select-text flex-col justify-center rounded-t-3xl px-4 py-2">
           <p
             className={cn(
-              "whitespace-pre-wrap overflow-y-auto scrollbar",
-              resultText?.trim().length > 200 ? "text-left" : "text-center"
+              "scrollbar overflow-y-auto whitespace-pre-wrap",
+              resultText?.trim().length > 200 ? "text-left" : "text-center",
             )}
           >
             {resultText?.trim()}
@@ -255,7 +257,7 @@ const TimerDisplay = ({ status }: { status: ControllerStatusType }) => {
   }
 
   return (
-    <div className="flex justify-center items-center">{formatTimer(timer)}</div>
+    <div className="flex items-center justify-center">{formatTimer(timer)}</div>
   );
 };
 
@@ -269,9 +271,9 @@ const ModePicker = ({
   setModePickerOpen: (open: boolean) => void;
 }) => {
   return (
-    <div className="flex justify-center items-center min-h-28 w-full no-drag">
+    <div className="no-drag flex min-h-28 w-full items-center justify-center">
       <RadioGroup
-        className="flex flex-col items-center gap-2 w-full px-4"
+        className="flex w-full flex-col items-center gap-2 px-4"
         onValueChange={(value) => {
           const selectedMode = modes.find((mode) => mode.id === value);
           if (selectedMode) {
@@ -282,11 +284,11 @@ const ModePicker = ({
         {modes.map((mode, index) => (
           <div
             key={mode.id}
-            className="flex justify-between items-center w-full px-4 py-2 hover:bg-zinc-300 rounded-xl"
+            className="flex w-full items-center justify-between rounded-xl px-4 py-2 hover:bg-zinc-300"
           >
             <label
               htmlFor={index.toString()}
-              className="flex items-center gap-2 w-full"
+              className="flex w-full items-center gap-2"
             >
               <ShortcutDisplay shortcut={`Shift+${index + 1}`} />
               <span>{mode.name}</span>

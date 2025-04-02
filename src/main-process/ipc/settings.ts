@@ -11,7 +11,7 @@ import {
 
 export function registerSettingsHandlers(
   settingsService: SettingsService,
-  pythonService: PythonService
+  pythonService: PythonService,
 ) {
   ipcMain.handle(CHANNELS.SETTINGS.GET, () => {
     return settingsService.currentSettings;
@@ -29,14 +29,14 @@ export function registerSettingsHandlers(
     CHANNELS.SETTINGS.SET_KEYBOARD,
     (_, keyboardConfig: KeyboardConfig) => {
       settingsService.updateKeyboardConfig(keyboardConfig);
-    }
+    },
   );
 
   ipcMain.on(
     CHANNELS.SETTINGS.SET_APPLICATION,
     (_, applicationConfig: ApplicationConfig) => {
       settingsService.updateApplicationConfig(applicationConfig);
-    }
+    },
   );
 
   ipcMain.on(CHANNELS.SETTINGS.SET_OUTPUT, (_, outputConfig: OutputConfig) => {

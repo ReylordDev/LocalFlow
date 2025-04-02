@@ -37,14 +37,14 @@ const SpeechVocalization = ({ isRecording }: { isRecording: boolean }) => {
   console.log("Audio level", audioLevel);
 
   return (
-    <div className={cn("flex gap-2 h-10 rounded-full p-1 px-4 justify-center")}>
-      <div className="flex justify-center items-center gap-1 ">
+    <div className={cn("flex h-10 justify-center gap-2 rounded-full p-1 px-4")}>
+      <div className="flex items-center justify-center gap-1">
         {randomFactors.map((factor, i) => (
           <div
             key={i}
             className={cn(
-              "bg-zinc-800 w-1 rounded-full transition-all duration-300",
-              audioLevel > 1 ? "ease-in-out" : "animate-none"
+              "w-1 rounded-full bg-zinc-800 transition-all duration-300",
+              audioLevel > 1 ? "ease-in-out" : "animate-none",
             )}
             style={{
               animationDuration: `${0.5 + Math.random() * 0.1}s`,

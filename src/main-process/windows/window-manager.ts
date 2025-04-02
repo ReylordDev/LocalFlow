@@ -115,7 +115,7 @@ export class WindowManager {
       this.miniWindow.setContentSize(currentSize[0], height);
       this.miniWindow.setPosition(
         currentPosition[0],
-        currentPosition[1] - (height - currentSize[1])
+        currentPosition[1] - (height - currentSize[1]),
       );
     }
   }

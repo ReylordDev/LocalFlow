@@ -25,12 +25,12 @@ export class PythonService extends EventEmitter {
 
   constructor(
     private config: AppConfig,
-    private settingsService: SettingsService
+    private settingsService: SettingsService,
   ) {
     super();
     this.settingsService.on(
       "settings-changed",
-      this.handleSettingsChange.bind(this)
+      this.handleSettingsChange.bind(this),
     );
   }
 
@@ -67,20 +67,20 @@ export class PythonService extends EventEmitter {
       case "audio_level":
         this.emit(
           PYTHON_SERVICE_EVENTS.AUDIO_LEVEL,
-          (message.data as AudioLevelMessage).audio_level
+          (message.data as AudioLevelMessage).audio_level,
         );
         break;
       case "devices":
         this.emit(
           PYTHON_SERVICE_EVENTS.DEVICES,
-          (message.data as DevicesMessage).devices
+          (message.data as DevicesMessage).devices,
         );
         break;
       case "error":
         consoleLog("Error:", message.data);
         this.emit(
           PYTHON_SERVICE_EVENTS.ERROR,
-          (message.data as unknown as ErrorMessage).error
+          (message.data as unknown as ErrorMessage).error,
         );
         break;
       case "exception":
@@ -89,25 +89,25 @@ export class PythonService extends EventEmitter {
       case "modes":
         this.emit(
           PYTHON_SERVICE_EVENTS.MODES,
-          (message.data as ModesMessage).modes
+          (message.data as ModesMessage).modes,
         );
         break;
       case "modes_update":
         this.emit(
           PYTHON_SERVICE_EVENTS.MODES_UPDATE,
-          (message.data as ModesMessage).modes
+          (message.data as ModesMessage).modes,
         );
         break;
       case "result":
         this.emit(
           PYTHON_SERVICE_EVENTS.RESULT,
-          (message.data as ResultMessage).result
+          (message.data as ResultMessage).result,
         );
         break;
       case "results":
         this.emit(
           PYTHON_SERVICE_EVENTS.RESULTS,
-          (message.data as ResultsMessage).results
+          (message.data as ResultsMessage).results,
         );
         break;
       default:

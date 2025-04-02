@@ -13,7 +13,7 @@ export function registerIpcHandlers(
   settingsService: SettingsService,
   config: AppConfig,
   pythonService: PythonService,
-  windowManager: WindowManager
+  windowManager: WindowManager,
 ) {
   registerSettingsHandlers(settingsService, pythonService);
   registerURLHandlers();

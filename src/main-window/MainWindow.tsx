@@ -23,9 +23,9 @@ const MainWindow = () => {
   }
 
   return (
-    <div className="flex justify-start h-screen w-screen select-none">
+    <div className="flex h-screen w-screen select-none justify-start">
       <AppSidebar currentPage={page} setPage={setPage} />
-      <div className="bg-white w-full">{renderPage(page)}</div>
+      <div className="w-full bg-white">{renderPage(page)}</div>
     </div>
   );
 };

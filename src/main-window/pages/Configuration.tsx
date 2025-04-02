@@ -31,7 +31,7 @@ export default function ConfigurationPage() {
       setLaunchAtStartup(settings.application.launchAtStartup);
       setEnableRecordingWindow(settings.application.enableRecordingWindow);
       setAutoCloseRecordingWindow(
-        settings.application.autoCloseRecordingWindow
+        settings.application.autoCloseRecordingWindow,
       );
 
       setAutoPasteResult(settings.output.autoPasteResult);
@@ -74,16 +74,16 @@ export default function ConfigurationPage() {
   ]);
 
   return (
-    <div className="h-full w-full flex flex-col ">
-      <div className="flex justify-between items-center px-4 bg-gradient-to-l from-sky-300 to-sky-600 text-white border-b border-zinc-200">
+    <div className="flex h-full w-full flex-col">
+      <div className="flex items-center justify-between border-b border-zinc-200 bg-gradient-to-l from-sky-300 to-sky-600 px-4 text-white">
         <div className="flex items-center gap-4">
-          <h1 className="font-bold text-2xl py-5">Configuration</h1>
+          <h1 className="py-5 text-2xl font-bold">Configuration</h1>
         </div>
       </div>
-      <div className="flex flex-col gap-4 px-8 py-8 bg-zinc-50 overflow-y-auto h-full">
+      <div className="flex h-full flex-col gap-4 overflow-y-auto bg-zinc-50 px-8 py-8">
         <div className="flex flex-col gap-2">
           <h2 className="text-lg font-semibold">Keyboard</h2>
-          <div className="flex flex-col gap-2 bg-white border border-zinc-200 rounded-md p-2">
+          <div className="flex flex-col gap-2 rounded-md border border-zinc-200 bg-white p-2">
             <div className={cn(menuItemClass)}>
               <h3 className="text-md font-semibold">
                 Toggle Recording Shortcut
@@ -119,7 +119,7 @@ export default function ConfigurationPage() {
         </div>
         <div className="flex flex-col gap-2">
           <h2 className="text-lg font-semibold">Application</h2>
-          <div className="flex flex-col gap-2 bg-white border border-zinc-200 rounded-md p-2">
+          <div className="flex flex-col gap-2 rounded-md border border-zinc-200 bg-white p-2">
             <div className={cn(menuItemClass)}>
               <h3 className="text-md font-semibold">Launch on Login</h3>
               <Switch
@@ -155,7 +155,7 @@ export default function ConfigurationPage() {
         </div>
         <div className="flex flex-col gap-2">
           <h2 className="text-lg font-semibold">Output</h2>
-          <div className="flex flex-col gap-2 bg-white border border-zinc-200 rounded-md p-2">
+          <div className="flex flex-col gap-2 rounded-md border border-zinc-200 bg-white p-2">
             <div className={cn(menuItemClass)}>
               <h3 className="text-md font-semibold">
                 Automatically Paste Result
@@ -244,8 +244,8 @@ function ShortcutRecorder({
         }
       }}
       className={cn(
-        "text-lg w-[180px] font-medium rounded",
-        recording && "border-orange-500 border-2"
+        "w-[180px] rounded text-lg font-medium",
+        recording && "border-2 border-orange-500",
       )}
     >
       {recording

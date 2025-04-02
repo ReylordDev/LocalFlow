@@ -27,7 +27,7 @@ const trayManager = new TrayManager(
   config,
   windowManager,
   pythonService,
-  settingsService
+  settingsService,
 );
 
 app.whenReady().then(async () => {
@@ -39,9 +39,9 @@ app.whenReady().then(async () => {
     (settings: AppConfig) => {
       windowManager.sendMiniWindowMessage(
         CHANNELS.SETTINGS.SETTINGS_CHANGED,
-        settings
+        settings,
       );
-    }
+    },
   );
 
   settingsService.on(SETTINGS_SERVICE_EVENTS.SHORTCUT_PRESSED.TOGGLE, () => {
@@ -59,7 +59,7 @@ app.whenReady().then(async () => {
     () => {
       consoleLog("Change mode shortcut pressed");
       // TODO: Implement change mode functionality
-    }
+    },
   );
 
   pythonService.on(PYTHON_SERVICE_EVENTS.MODELS_READY, () => {
@@ -82,14 +82,14 @@ app.whenReady().then(async () => {
   pythonService.on(PYTHON_SERVICE_EVENTS.AUDIO_LEVEL, (level: number) => {
     windowManager.sendMiniWindowMessage(
       CHANNELS.MINI.AUDIO_LEVEL_RESPONSE,
-      level
+      level,
     );
   });
 
   pythonService.on(PYTHON_SERVICE_EVENTS.DEVICES, (devices: Device[]) => {
     windowManager.sendMainWindowMessage(
       CHANNELS.DEVICE.DEVICES_RESPONSE,
-      devices
+      devices,
     );
   });
 
@@ -102,7 +102,7 @@ app.whenReady().then(async () => {
       } else {
         windowManager.setMiniWindowHeight(180);
       }
-    }
+    },
   );
 
   pythonService.on(PYTHON_SERVICE_EVENTS.RESULT, (result: Result) => {
@@ -120,11 +120,11 @@ app.whenReady().then(async () => {
   pythonService.on(PYTHON_SERVICE_EVENTS.MODES, (modes: Mode[]) => {
     windowManager.sendMainWindowMessage(
       CHANNELS.DATABASE.MODES.MODES_RESPONSE,
-      modes
+      modes,
     );
     windowManager.sendMiniWindowMessage(
       CHANNELS.DATABASE.MODES.MODES_RESPONSE,
-      modes
+      modes,
     );
   });
 
@@ -135,13 +135,13 @@ app.whenReady().then(async () => {
     // );
     windowManager.sendMiniWindowMessage(
       CHANNELS.DATABASE.MODES.MODES_UPDATE,
-      modes
+      modes,
     );
   });
   pythonService.on(PYTHON_SERVICE_EVENTS.RESULTS, (results: Result[]) => {
     windowManager.sendRecordingHistoryWindowMessage(
       CHANNELS.RECORDING_HISTORY.RESULTS_RESPONSE,
-      results
+      results,
     );
   });
 

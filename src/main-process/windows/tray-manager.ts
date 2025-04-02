@@ -12,7 +12,7 @@ export class TrayManager {
     private config: AppConfig,
     private windowManager: WindowManager,
     private pythonService: PythonService,
-    private settingsService: SettingsService
+    private settingsService: SettingsService,
   ) {}
 
   initialize() {
@@ -31,11 +31,11 @@ export class TrayManager {
     let icon: NativeImage;
     if (this.config.isPackaged) {
       icon = nativeImage.createFromPath(
-        path.join(process.resourcesPath, "assets/icons", image)
+        path.join(process.resourcesPath, "assets/icons", image),
       );
     } else {
       icon = nativeImage.createFromPath(
-        path.join(this.config.rootDir, "assets/icons", image)
+        path.join(this.config.rootDir, "assets/icons", image),
       );
     }
     this.tray = new Tray(icon);
