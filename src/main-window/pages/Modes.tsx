@@ -39,6 +39,13 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "../../components/ui/alert-dialog";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuTrigger,
+} from "../../components/ui/context-menu";
 
 const menuItemClass = "justify-between items-center flex px-4 min-h-[50px]";
 
@@ -239,7 +246,6 @@ const ModeDetails = ({
   const unsavedChanges = useMemo(() => {
     const changedParameters: (keyof ModeUpdate)[] = [];
     if (mode) {
-      // Check each condition separately and log the trigger
       if (mode.name !== name) {
         changedParameters.push("name");
       }
@@ -716,8 +722,20 @@ const PromptDetails = ({
     });
   };
 
+  const handleDeleteExample = (index: number) => {
+    console.log("Delete example", index);
+    setExamples((prev) => prev.filter((_, i) => i !== index));
+  };
+  const handleDuplicateExample = (example: ExampleBase, index: number) => {
+    console.log("Duplicate example", index, example);
+    setExamples((prev) => {
+      const newExamples = [...prev];
+      newExamples.splice(index, 0, example);
+      return newExamples;
+    });
+  };
+
   console.log("PromptDetails", prompt);
-  console.log("System Prompt", systemPrompt);
 
   return (
     <div className="fixed inset-y-0 left-80 right-0 z-50 flex flex-col">
@@ -833,27 +851,50 @@ const PromptDetails = ({
               </Dialog>
             </div>
             {examples.map((example, index) => (
-              <Dialog key={index}>
-                <DialogTrigger>
-                  <div className="flex flex-col gap-2 rounded-md border border-zinc-200 bg-white p-2 hover:bg-zinc-100">
-                    <div className={cn(menuItemClass)}>
-                      <div className="flex items-center gap-2">
-                        <h3 className="text-md font-semibold">
-                          Example {index + 1}
-                        </h3>
-                        <p className="text-sm font-medium">{example.output}</p>
+              <ContextMenu key={index}>
+                <ContextMenuTrigger className="w-full">
+                  <Dialog>
+                    <DialogTrigger className="w-full">
+                      <div className="flex flex-col gap-2 rounded-md border border-zinc-200 bg-white p-2 hover:bg-zinc-100">
+                        <div className={cn(menuItemClass)}>
+                          <div className="flex items-center gap-2">
+                            <h3 className="text-md font-semibold">
+                              Example {index + 1}
+                            </h3>
+                            <p className="text-sm font-medium">
+                              {example.output}
+                            </p>
+                          </div>
+                          <ChevronUp className="size-8" />
+                        </div>
                       </div>
-                      <ChevronUp className="size-8" />
-                    </div>
-                  </div>
-                </DialogTrigger>
-                <UpdateExampleDialog
-                  example={example}
-                  index={index}
-                  examples={examples}
-                  setExamples={setExamples}
-                />
-              </Dialog>
+                    </DialogTrigger>
+                    <UpdateExampleDialog
+                      example={example}
+                      index={index}
+                      examples={examples}
+                      setExamples={setExamples}
+                    />
+                  </Dialog>
+                </ContextMenuTrigger>
+                <ContextMenuContent>
+                  <ContextMenuItem
+                    onClick={() => {
+                      handleDeleteExample(index);
+                    }}
+                  >
+                    Delete
+                  </ContextMenuItem>
+                  <ContextMenuSeparator />
+                  <ContextMenuItem
+                    onClick={() => {
+                      handleDuplicateExample(example, index);
+                    }}
+                  >
+                    Duplicate
+                  </ContextMenuItem>
+                </ContextMenuContent>
+              </ContextMenu>
             ))}
           </div>
         )}

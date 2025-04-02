@@ -170,6 +170,10 @@
   height: 3.5rem;
 }
 
+.h-2 {
+  height: 0.5rem;
+}
+
 .h-2\.5 {
   height: 0.625rem;
 }
@@ -234,6 +238,10 @@
   max-height: 24rem;
 }
 
+.max-h-\[--radix-context-menu-content-available-height\] {
+  max-height: var(--radix-context-menu-content-available-height);
+}
+
 .max-h-\[300px\] {
   max-height: 300px;
 }
@@ -268,6 +276,10 @@
 
 .w-11 {
   width: 2.75rem;
+}
+
+.w-2 {
+  width: 0.5rem;
 }
 
 .w-2\.5 {
@@ -368,6 +380,10 @@
 
 .caption-bottom {
   caption-side: bottom;
+}
+
+.origin-\[--radix-context-menu-content-transform-origin\] {
+  transform-origin: var(--radix-context-menu-content-transform-origin);
 }
 
 .origin-\[--radix-popover-content-transform-origin\] {
@@ -2316,6 +2332,11 @@ Usage:
   color: rgb(113 113 122 / var(--tw-text-opacity));
 }
 
+.data-\[state\=open\]\:text-zinc-900[data-state="open"] {
+  --tw-text-opacity: 1;
+  color: rgb(24 24 27 / var(--tw-text-opacity));
+}
+
 .data-\[disabled\=true\]\:opacity-50[data-disabled="true"] {
   opacity: 0.5;
 }
@@ -2554,6 +2575,11 @@ Usage:
 .dark\:data-\[state\=open\]\:text-zinc-400[data-state="open"]:where(class, class *) {
   --tw-text-opacity: 1;
   color: rgb(161 161 170 / var(--tw-text-opacity));
+}
+
+.dark\:data-\[state\=open\]\:text-zinc-50[data-state="open"]:where(class, class *) {
+  --tw-text-opacity: 1;
+  color: rgb(250 250 250 / var(--tw-text-opacity));
 }
 
 .\[\&\:has\(\[role\=checkbox\]\)\]\:pr-0:has([role=checkbox]) {
