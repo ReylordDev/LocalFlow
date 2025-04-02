@@ -10,6 +10,7 @@ from utils.utils import get_temp_path
 from utils.model_utils import dump_instance
 from window_detector import WindowDetector
 from models import (
+    AddExampleCommand,
     AudioLevelMessage,
     Command,
     ControllerStatusType,
@@ -23,8 +24,8 @@ from models import (
     Result,
     SelectDeviceCommand,
     SelectModeCommand,
+    SelectResultCommand,
     StatusMessage,
-    TextReplacementBase,
     TranscriptionMessage,
 )
 from utils.ipc import print_message, print_nested_model, print_progress
@@ -229,6 +230,27 @@ class Controller:
                 "results",
                 {"results": [dump_instance(r.create_instance()) for r in results]},
             )
+
+        elif command.action == "delete_result":
+            if not isinstance(command.data, SelectResultCommand):
+                print_message("error", ErrorMessage(error="Invalid command data"))
+                return
+            result_id = command.data.result_id
+            self.database_manager.delete_result(result_id)
+
+            # not sure if this is necessary
+            results = self.database_manager.get_all_results()
+            print_nested_model(
+                "results",
+                {"results": [dump_instance(r.create_instance()) for r in results]},
+            )
+
+        elif command.action == "add_example":
+            if not isinstance(command.data, AddExampleCommand):
+                print_message("error", ErrorMessage(error="Invalid command data"))
+                return
+            payload = command.data
+            self.database_manager.add_example(payload.prompt_id, payload.example)
 
 
 @logger.catch

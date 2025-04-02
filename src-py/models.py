@@ -29,6 +29,8 @@ ActionType = Literal[
     "update_mode",
     "delete_mode",
     "get_results",
+    "delete_result",
+    "add_example",
 ]
 StepType = Union[
     ActionType,
@@ -48,14 +50,30 @@ class SelectModeCommand(BaseModel):
     mode_id: UUID
 
 
+class SelectResultCommand(BaseModel):
+    result_id: UUID
+
+
 class SelectDeviceCommand(BaseModel):
     index: int
+
+
+class AddExampleCommand(BaseModel):
+    prompt_id: UUID
+    example: "ExampleBase"
 
 
 class Command(BaseModel):
     action: ActionType
     data: Optional[
-        Union[SelectModeCommand, SelectDeviceCommand, "ModeUpdate", "ModeCreate"]
+        Union[
+            SelectModeCommand,
+            SelectDeviceCommand,
+            SelectResultCommand,
+            AddExampleCommand,
+            "ModeUpdate",
+            "ModeCreate",
+        ]
     ] = None
 
 
@@ -393,6 +411,10 @@ class ResultBase(SQLModel):
     ai_result: str | None
     duration: float
     processing_time: float
+
+    model_config = ConfigDict(
+        from_attributes=True,
+    )  # type: ignore
 
 
 class Result(ResultBase, table=True):

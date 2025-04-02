@@ -6,7 +6,12 @@ import { AppConfig, consoleLog } from "../utils/config";
 import { registerURLHandlers } from "./url";
 import { registerDeviceHandlers } from "./device";
 import { registerSettingsHandlers } from "./settings";
-import { CHANNELS, ModeCreate, ModeUpdate } from "../../lib/models";
+import {
+  CHANNELS,
+  ExampleBase,
+  ModeCreate,
+  ModeUpdate,
+} from "../../lib/models";
 import { UUID } from "crypto";
 
 export function registerIpcHandlers(
@@ -57,6 +62,28 @@ export function registerIpcHandlers(
       },
     });
   });
+
+  ipcMain.on(CHANNELS.DATABASE.RESULTS.DELETE_RESULT, (_, resultId: UUID) => {
+    pythonService.sendCommand({
+      action: "delete_result",
+      data: {
+        result_id: resultId,
+      },
+    });
+  });
+
+  ipcMain.on(
+    CHANNELS.DATABASE.EXAMPLES.ADD_EXAMPLE,
+    (_, promptId: UUID, example: ExampleBase) => {
+      pythonService.sendCommand({
+        action: "add_example",
+        data: {
+          prompt_id: promptId,
+          example,
+        },
+      });
+    },
+  );
 
   ipcMain.on(CHANNELS.RECORDING_HISTORY.OPEN_WINDOW, () => {
     windowManager.createRecordingHistoryWindow();

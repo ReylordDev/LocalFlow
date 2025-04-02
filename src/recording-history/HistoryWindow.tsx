@@ -1,5 +1,5 @@
 import { Copy, FolderClosed, PanelRightOpen, Search } from "lucide-react";
-import { Result } from "../lib/models";
+import { ExampleBase, Result } from "../lib/models";
 import { useEffect, useState } from "react";
 import { cn } from "../lib/utils";
 import { Button } from "../components/ui/button";
@@ -9,6 +9,14 @@ import {
   TabsList,
   TabsTrigger,
 } from "../components/ui/tabs";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuTrigger,
+} from "../components/ui/context-menu";
+import { UUID } from "crypto";
 
 const HistoryWindow = () => {
   const [history, setHistory] = useState<Result[]>([]);
@@ -26,13 +34,13 @@ const HistoryWindow = () => {
     };
   }, []);
 
-  function selectResult(result: Result) {
-    setSelectedResult(result);
-  }
-
   return (
     <div className="flex h-screen select-none">
-      <Sidebar history={history} selectResult={selectResult} />
+      <Sidebar
+        history={history}
+        selectedResult={selectedResult}
+        setSelectedResult={setSelectedResult}
+      />
       <ResultDetails result={selectedResult} />
     </div>
   );
@@ -42,10 +50,12 @@ export default HistoryWindow;
 
 function Sidebar({
   history,
-  selectResult,
+  selectedResult,
+  setSelectedResult,
 }: {
   history: Result[];
-  selectResult: (result: Result) => void;
+  selectedResult: Result | null;
+  setSelectedResult: (result: Result) => void;
 }) {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [filteredHistory, setFilteredHistory] = useState<Result[]>(history);
@@ -71,6 +81,27 @@ function Sidebar({
     }
   };
 
+  const handleDelete = (resultId: UUID) => {
+    window.database.results.deleteResult(resultId);
+    if (selectedResult?.id === resultId) {
+      setSelectedResult(null);
+    }
+  };
+
+  const handleAddExample = (result: Result) => {
+    console.log("Adding result as example:", result);
+    if (!result.mode.use_language_model || !result.mode.prompt) {
+      console.log("Result Mode does not use a prompt.");
+      return;
+    }
+    const example: ExampleBase = {
+      input: result.transcription,
+      output: result.ai_result || "",
+    };
+    window.database.examples.addExample(result.mode.prompt.id, example);
+    // perhaps show a toast or notification here
+  };
+
   console.log("History:", history);
   console.log("Filtered history:", filteredHistory);
   console.log("Search term:", searchTerm);
@@ -91,25 +122,45 @@ function Sidebar({
       </div>
       <div className="flex h-screen flex-col gap-2 overflow-y-auto p-2">
         {filteredHistory.map((result) => (
-          <div
-            key={result.id}
-            onClick={() => selectResult(result)}
-            className="group rounded-md px-4 hover:bg-sky-600 hover:text-white"
-          >
-            <h3 className="text-md truncate">
-              {result.mode.use_language_model
-                ? result.ai_result
-                : result.transcription}
-            </h3>
-            <div className="flex items-center justify-between">
-              <p className="text-sm text-zinc-500 group-hover:text-zinc-100">
-                {new Date(result.created_at * 1000).toLocaleString()}
-              </p>
-              <p className="text-sm text-zinc-500 group-hover:text-zinc-100">
-                {result.duration.toFixed(0)}s
-              </p>
-            </div>
-          </div>
+          <ContextMenu key={result.id}>
+            <ContextMenuTrigger>
+              <div
+                onClick={() => setSelectedResult(result)}
+                className="group rounded-md px-4 hover:bg-sky-600 hover:text-white"
+              >
+                <h3 className="text-md truncate">
+                  {result.mode.use_language_model
+                    ? result.ai_result
+                    : result.transcription}
+                </h3>
+                <div className="flex items-center justify-between">
+                  <p className="text-sm text-zinc-500 group-hover:text-zinc-100">
+                    {new Date(result.created_at * 1000).toLocaleString()}
+                  </p>
+                  <p className="text-sm text-zinc-500 group-hover:text-zinc-100">
+                    {result.duration.toFixed(0)}s
+                  </p>
+                </div>
+              </div>
+            </ContextMenuTrigger>
+            <ContextMenuContent>
+              <ContextMenuItem
+                onClick={() => {
+                  handleDelete(result.id);
+                }}
+              >
+                Delete
+              </ContextMenuItem>
+              <ContextMenuSeparator />
+              <ContextMenuItem
+                onClick={() => {
+                  handleAddExample(result);
+                }}
+              >
+                Add as example
+              </ContextMenuItem>
+            </ContextMenuContent>
+          </ContextMenu>
         ))}
       </div>
     </div>

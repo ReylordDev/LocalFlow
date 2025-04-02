@@ -448,10 +448,42 @@ class DatabaseManager:
             logger.info(f"Result saved: {result.id}")
         return result
 
+    def delete_result(self, result_id: UUID):
+        with self.create_session() as session:
+            # Get the result to delete
+            result = session.exec(select(Result).where(Result.id == result_id)).first()
+            if not result:
+                logger.warning(f"Result not found: {result_id}")
+                raise Exception(f"Result not found: {result_id}")
+
+            # Delete the result
+            session.delete(result)
+            session.commit()
+            logger.info(f"Result deleted: {result.id}")
+
     def get_all_results(self):
         with self.create_session() as session:
             results = session.exec(select(Result)).all()
             return results
+
+    def add_example(self, prompt_id: UUID, example: ExampleBase):
+        with self.create_session() as session:
+            # Get the prompt to add the example to
+            prompt = session.exec(select(Prompt).where(Prompt.id == prompt_id)).first()
+            if not prompt:
+                logger.warning(f"Prompt not found: {prompt_id}")
+                raise Exception(f"Prompt not found: {prompt_id}")
+
+            # Create the new example
+            new_example = Example(
+                input=example.input,
+                output=example.output,
+                prompt_id=prompt.id,
+            )
+            session.add(new_example)
+            session.commit()
+            logger.info(f"Example added: {new_example.id}")
+            return new_example
 
 
 if __name__ == "__main__":

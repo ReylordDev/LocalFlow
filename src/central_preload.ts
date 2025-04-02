@@ -120,6 +120,23 @@ export const exposeDatabase = () => {
         };
       },
     },
+    results: {
+      deleteResult(resultId) {
+        return ipcRenderer.send(
+          CHANNELS.DATABASE.RESULTS.DELETE_RESULT,
+          resultId,
+        );
+      },
+    },
+    examples: {
+      addExample(promptId, example) {
+        return ipcRenderer.send(
+          CHANNELS.DATABASE.EXAMPLES.ADD_EXAMPLE,
+          promptId,
+          example,
+        );
+      },
+    },
   } satisfies Window["database"]);
 };
 

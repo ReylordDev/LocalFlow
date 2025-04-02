@@ -857,15 +857,15 @@ const PromptDetails = ({
                     <DialogTrigger className="w-full">
                       <div className="flex flex-col gap-2 rounded-md border border-zinc-200 bg-white p-2 hover:bg-zinc-100">
                         <div className={cn(menuItemClass)}>
-                          <div className="flex items-center gap-2">
-                            <h3 className="text-md font-semibold">
+                          <div className="flex w-full items-center gap-2">
+                            <h3 className="text-md shrink-0 font-semibold">
                               Example {index + 1}
                             </h3>
-                            <p className="text-sm font-medium">
+                            <p className="truncate text-sm font-medium">
                               {example.output}
                             </p>
                           </div>
-                          <ChevronUp className="size-8" />
+                          <ChevronUp className="size-8 w-full" />
                         </div>
                       </div>
                     </DialogTrigger>
@@ -932,7 +932,8 @@ const UpdateExampleDialog = ({
       <DialogHeader>
         <DialogTitle>Update Example</DialogTitle>
         <DialogDescription>
-          Add an example of the voice input (as text) and the desired AI output.{" "}
+          Add an example of the voice input (as text) and the desired AI
+          output.{" "}
         </DialogDescription>
       </DialogHeader>
       <div className="flex h-full w-full items-start justify-between gap-3">
@@ -1010,7 +1011,8 @@ const AddExampleDialog = ({
       <DialogHeader>
         <DialogTitle>Add Example</DialogTitle>
         <DialogDescription>
-          Add an example of the voice input (as text) and the desired AI output.{" "}
+          Add an example of the voice input (as text) and the desired AI
+          output.{" "}
         </DialogDescription>
       </DialogHeader>
       <div className="flex h-full w-full items-start justify-between gap-3">

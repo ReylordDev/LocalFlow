@@ -15,7 +15,9 @@ type Action =
   | "create_mode"
   | "update_mode"
   | "delete_mode"
-  | "get_results";
+  | "get_results"
+  | "delete_result"
+  | "add_example";
 
 // --------------- Electron to Python IPC Models --------------- //
 
@@ -23,13 +25,28 @@ interface SelectModeCommand {
   mode_id: UUID;
 }
 
+interface SelectResultCommand {
+  result_id: UUID;
+}
+
 interface SelectDeviceCommand {
   index: number;
 }
 
+interface AddExampleCommand {
+  prompt_id: UUID;
+  example: ExampleBase;
+}
+
 export interface Command {
   action: Action;
-  data?: SelectModeCommand | SelectDeviceCommand | ModeCreate | ModeUpdate;
+  data?:
+    | SelectModeCommand
+    | SelectDeviceCommand
+    | SelectResultCommand
+    | ModeCreate
+    | ModeUpdate
+    | AddExampleCommand;
 }
 
 // --------------- Python to Electron IPC Models --------------- //
@@ -208,7 +225,7 @@ export interface PromptBase {
 }
 
 export interface Prompt extends PromptBase {
-  id: string;
+  id: UUID;
   // mode_id?: UUID;
   mode?: Mode;
   examples: Example[];
@@ -353,6 +370,12 @@ export const CHANNELS = {
       UPDATE_MODE: "database:modes:updateMode",
       DELETE_MODE: "database:modes:deleteMode",
     },
+    RESULTS: {
+      DELETE_RESULT: "database:results:deleteResult",
+    },
+    EXAMPLES: {
+      ADD_EXAMPLE: "database:examples:addExample",
+    },
   },
   RECORDING_HISTORY: {
     OPEN_WINDOW: "recordingHistory:open-window",
@@ -404,6 +427,13 @@ declare global {
         updateMode: (mode: ModeUpdate) => void;
         deleteMode: (modeId: UUID) => void;
         onModesUpdate: (callback: (modes: Mode[]) => void) => () => void;
+      };
+      results: {
+        deleteResult: (resultId: UUID) => void;
+      };
+      examples: {
+        // Or use modeId? Should work the same
+        addExample: (promptId: UUID, example: ExampleBase) => void;
       };
     };
     recordingHistory: {
