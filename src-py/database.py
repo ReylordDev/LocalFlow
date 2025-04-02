@@ -11,7 +11,7 @@ from models import (
     ModeCreate,
     ModeUpdate,
     Prompt,
-    PromptCreate,
+    PromptUpdate,
     Result,
     TextReplacement,
     TextReplacementBase,
@@ -290,87 +290,132 @@ class DatabaseManager:
             logger.info(f"Mode created: {new_mode.id}")
             return new_mode
 
-    def update_mode(self, mode: ModeUpdate):
-        voice_model = self.get_voice_model_by_name(mode.voice_model_name)
-        language_model = (
-            self.get_language_model_by_name(mode.language_model_name)
-            if mode.language_model_name
-            else None
-        )
-        text_replacements = []
-        for text_replacement_base in mode.text_replacements:
-            text_replacement = self.create_text_replacement(text_replacement_base)
-            text_replacements.append(text_replacement)
+    def update_mode(self, mode_update: ModeUpdate):
         with self.create_session() as session:
-            # Get the existing mode
-            existing_mode = session.exec(select(Mode).where(Mode.id == mode.id)).first()
-            if not existing_mode:
-                logger.warning(f"Mode not found: {mode.id}")
-                raise Exception(f"Mode not found: {mode.id}")
+            mode = session.exec(select(Mode).where(Mode.id == mode_update.id)).first()
+            if not mode:
+                logger.warning(f"Mode not found: {mode_update.id}")
+                raise Exception(f"Mode not found: {mode_update.id}")
 
             # Update the mode attributes
-            existing_mode.name = mode.name
-            existing_mode.voice_language = mode.voice_language
-            if existing_mode.voice_model.id != voice_model.id:
-                existing_mode.voice_model = voice_model
-            existing_mode.use_language_model = mode.use_language_model
-            if (
-                language_model
-                and (
-                    existing_mode.language_model
-                    and existing_mode.language_model.name != language_model.name
-                )
-                or not existing_mode.language_model
-            ):
-                existing_mode.language_model = language_model
-            existing_mode.default = mode.default
-            existing_mode.active = mode.active
-            existing_mode.record_system_audio = mode.record_system_audio
-            existing_mode.translate_to_english = mode.translate_to_english
-            existing_mode.text_replacements = text_replacements
+            for key in mode_update.model_fields_set:
+                if key == "id":
+                    continue
+                if key not in mode.model_fields.keys() or key == "text_replacements":
+                    continue
+                logger.debug(f"Updating mode attribute: {key}")
+                setattr(mode, key, getattr(mode_update, key))
 
-            if mode.prompt:
-                if existing_mode.prompt:
-                    existing_mode.prompt.system_prompt = mode.prompt.system_prompt
-                    existing_mode.prompt.include_clipboard = (
-                        mode.prompt.include_clipboard
-                    )
-                    existing_mode.prompt.include_active_window = (
-                        mode.prompt.include_active_window
-                    )
-                    for existing_example in existing_mode.prompt.examples:
-                        session.delete(existing_example)
-                    existing_mode.prompt.examples = [
-                        Example(
-                            input=example.input,
-                            output=example.output,
-                            prompt_id=existing_mode.prompt.id,
+            if "text_replacements" in mode_update.model_fields_set:
+                # Clear existing text replacements
+                for existing_text_replacement in mode.text_replacements:
+                    session.delete(existing_text_replacement)
+                if mode_update.text_replacements:
+                    # Create new text replacements
+                    for text_replacement_base in mode_update.text_replacements:
+                        text_replacement = self.create_text_replacement(
+                            text_replacement_base
                         )
-                        for example in mode.prompt.examples
-                    ]
+                        mode.text_replacements.append(text_replacement)
+                    logger.debug(
+                        f"Text replacements updated: {len(mode.text_replacements)}"
+                    )
                 else:
-                    new_prompt = Prompt(
-                        system_prompt=mode.prompt.system_prompt,
-                        include_clipboard=mode.prompt.include_clipboard,
-                        include_active_window=mode.prompt.include_active_window,
-                        mode_id=mode.id,
-                    )
-                    new_prompt.examples = [
-                        Example(
-                            input=example.input,
-                            output=example.output,
-                            prompt_id=new_prompt.id,
-                        )
-                        for example in mode.prompt.examples
-                    ]
-                    existing_mode.prompt = new_prompt
+                    logger.debug("Text replacements emptied")
+                    mode.text_replacements = []
 
-            # Commit the changes to the database
-            session.add(existing_mode)
+            if "voice_model_name" in mode_update.model_fields_set:
+                if not mode_update.voice_model_name:
+                    logger.warning("Voice model name is set empty")
+                    raise Exception("Voice model name is set but empty")
+                voice_model = self.get_voice_model_by_name(mode_update.voice_model_name)
+                mode.voice_model = voice_model
+                logger.debug(f"Voice model set to {mode.voice_model.name}")
+
+            if "language_model_name" in mode_update.model_fields_set:
+                if not mode_update.language_model_name:
+                    logger.debug("Removed language model")
+                    mode.language_model = None
+                else:
+                    language_model = self.get_language_model_by_name(
+                        mode_update.language_model_name
+                    )
+                    logger.debug(f"Language model set to {language_model.name}")
+                    mode.language_model = language_model
+
+            if "prompt" in mode_update.model_fields_set:
+                if not mode_update.prompt:
+                    logger.debug("Removed prompt")
+                    mode.prompt = None
+                elif mode.prompt:
+                    # Update existing prompt
+                    for key in mode_update.prompt.model_fields_set:
+                        if (
+                            key not in mode_update.prompt.model_fields.keys()
+                            or key == "examples"
+                        ):
+                            continue
+                        logger.debug(f"Updating prompt attribute: {key}")
+                        setattr(mode.prompt, key, getattr(mode_update.prompt, key))
+
+                    if "examples" in mode_update.prompt.model_fields_set:
+                        # Clear existing examples
+                        for existing_example in mode.prompt.examples:
+                            session.delete(existing_example)
+                        if not mode_update.prompt.examples:
+                            logger.debug("Examples emptied")
+                            mode.prompt.examples = []
+                        else:
+                            # Create new examples
+                            mode.prompt.examples = [
+                                Example(
+                                    input=example.input,
+                                    output=example.output,
+                                    prompt_id=mode.prompt.id,
+                                )
+                                for example in mode_update.prompt.examples
+                            ]
+                            logger.debug(
+                                f"Examples updated: {len(mode.prompt.examples)}"
+                            )
+                elif not mode.prompt:
+                    # Create new prompt
+                    new_prompt = Prompt(
+                        mode_id=mode.id,
+                        system_prompt=mode_update.prompt.system_prompt
+                        if mode_update.prompt.system_prompt
+                        else "",
+                    )
+                    for key in mode_update.prompt.model_fields_set:
+                        if key == "id" or key == "system_prompt":
+                            continue
+                        if key not in mode_update.prompt.model_fields.keys():
+                            logger.warning(
+                                f"Prompt attribute not found in mode_update: {key}"
+                            )
+                            continue
+                        logger.debug(f"Updating prompt attribute: {key}")
+                        setattr(new_prompt, key, getattr(mode_update.prompt, key))
+
+                    if mode_update.prompt.examples:
+                        new_prompt.examples = [
+                            Example(
+                                input=example.input,
+                                output=example.output,
+                                prompt_id=new_prompt.id,
+                            )
+                            for example in mode_update.prompt.examples
+                        ]
+                    else:
+                        new_prompt.examples = []
+                    mode.prompt = new_prompt
+                    logger.debug("New Prompt created")
+
+            session.add(mode)
             session.commit()
-            session.refresh(existing_mode)
-            logger.info(f"Mode updated: {existing_mode.id}")
-            return existing_mode
+            session.refresh(mode)
+            logger.info(f"Mode updated: {mode.id}")
+            return mode
 
     def delete_mode(self, mode_id: UUID):
         with self.create_session() as session:
@@ -426,7 +471,7 @@ if __name__ == "__main__":
             use_language_model=original_mode.use_language_model,
             record_system_audio=original_mode.record_system_audio,
             translate_to_english=original_mode.translate_to_english,
-            prompt=PromptCreate(
+            prompt=PromptUpdate(
                 system_prompt=original_mode.prompt.system_prompt
                 if original_mode.prompt
                 else "",

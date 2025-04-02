@@ -4,6 +4,7 @@ import {
   ExampleBase,
   LanguageType,
   Mode,
+  ModeUpdate,
   PromptBase,
   TextReplacement,
   TextReplacementBase,
@@ -128,32 +129,12 @@ export default function Modes() {
                   modes.map((m) => {
                     window.database.modes.updateMode({
                       id: m.id,
-                      name: m.name,
                       active: false,
-                      default: m.default,
-                      voice_model_name: m.voice_model.name,
-                      voice_language: m.voice_language,
-                      language_model_name: m.language_model?.name,
-                      prompt: m.prompt,
-                      text_replacements: m.text_replacements,
-                      translate_to_english: m.translate_to_english,
-                      use_language_model: m.use_language_model,
-                      record_system_audio: m.record_system_audio,
                     });
                   });
                   window.database.modes.updateMode({
                     id: mode.id,
-                    name: mode.name,
                     active: true,
-                    default: mode.default,
-                    voice_model_name: mode.voice_model.name,
-                    voice_language: mode.voice_language,
-                    text_replacements: mode.text_replacements,
-                    translate_to_english: mode.translate_to_english,
-                    use_language_model: mode.use_language_model,
-                    record_system_audio: mode.record_system_audio,
-                    language_model_name: mode.language_model?.name,
-                    prompt: mode.prompt,
                   });
                   console.log("Toggle Mode", mode.id, !mode.active);
                   setModes((prev) =>
@@ -209,11 +190,44 @@ const ModeDetails = ({
       replacement_text: "",
       original_text: "",
     });
+
+  const modelState = useMemo(() => {
+    const modelState: Record<keyof ModeUpdate, unknown> = {
+      name,
+      active: false,
+      default: false,
+      record_system_audio: false,
+      id: mode?.id,
+      voice_model_name: voiceModelName,
+      voice_language: voiceLanguage,
+      translate_to_english: translateToEnglish,
+      text_replacements: textReplacements,
+      use_language_model: useAi,
+      language_model_name: languageModelName,
+      prompt: {
+        system_prompt: prompt?.system_prompt,
+        include_clipboard: prompt?.include_clipboard,
+        include_active_window: prompt?.include_active_window,
+        examples: prompt?.examples,
+      },
+    };
+    return modelState;
+  }, [
+    name,
+    voiceModelName,
+    voiceLanguage,
+    translateToEnglish,
+    textReplacements,
+    useAi,
+    languageModelName,
+    prompt,
+  ]);
+
   const [showPromptDialog, setShowPromptDialog] = useState<boolean>(false);
 
   const settingsAreValid = useMemo(() => {
     if (name.length === 0) return false;
-    if (voiceModelName.length === 0) return false;
+    if (!voiceModelName || voiceModelName.length === 0) return false;
     // TODO: validate voice language input
 
     if (useAi) {
@@ -223,89 +237,52 @@ const ModeDetails = ({
   }, [name, voiceModelName, voiceLanguage, useAi, languageModelName]);
 
   const unsavedChanges = useMemo(() => {
+    const changedParameters: (keyof ModeUpdate)[] = [];
     if (mode) {
       // Check each condition separately and log the trigger
       if (mode.name !== name) {
-        console.log(
-          "Changes detected: name changed from",
-          mode.name,
-          "to",
-          name
-        );
-        return true;
+        changedParameters.push("name");
       }
       if (mode.voice_model.name !== voiceModelName) {
-        console.log(
-          "Changes detected: voice model changed from",
-          mode.voice_model.name,
-          "to",
-          voiceModelName
-        );
-        return true;
+        changedParameters.push("voice_model_name");
       }
       if (mode.voice_language !== voiceLanguage) {
-        console.log(
-          "Changes detected: voice language changed from",
-          mode.voice_language,
-          "to",
-          voiceLanguage
-        );
-        return true;
+        changedParameters.push("voice_language");
       }
       if (mode.translate_to_english !== translateToEnglish) {
-        console.log(
-          "Changes detected: translate to English changed from",
-          mode.translate_to_english,
-          "to",
-          translateToEnglish
-        );
-        return true;
+        changedParameters.push("translate_to_english");
       }
       if (mode.text_replacements !== textReplacements) {
-        console.log("Changes detected: text replacements changed");
-        return true;
+        changedParameters.push("text_replacements");
       }
       if (mode.use_language_model !== useAi) {
-        console.log(
-          "Changes detected: AI usage changed from",
-          mode.use_language_model,
-          "to",
-          useAi
-        );
-        return true;
+        changedParameters.push("use_language_model");
       }
       if (useAi) {
         if (mode.language_model?.name !== languageModelName) {
-          console.log(
-            "Changes detected: language model changed from",
-            mode.language_model?.name,
-            "to",
-            languageModelName
-          );
-          return true;
+          changedParameters.push("language_model_name");
         }
+        const promptParameters: string[] = [];
         if (mode.prompt?.system_prompt !== prompt?.system_prompt) {
-          console.log("Changes detected: system prompt changed");
-          return true;
+          promptParameters.push("system_prompt");
         }
         if (mode.prompt?.include_clipboard !== prompt?.include_clipboard) {
-          console.log("Changes detected: include clipboard changed");
-          return true;
+          promptParameters.push("include_clipboard");
         }
         if (
           mode.prompt?.include_active_window !== prompt?.include_active_window
         ) {
-          console.log("Changes detected: include active window changed");
-          return true;
+          promptParameters.push("include_active_window");
         }
         if (mode.prompt?.examples !== prompt?.examples) {
-          console.log("Changes detected: examples changed");
-          return true;
+          promptParameters.push("examples");
+        }
+        if (promptParameters.length > 0) {
+          changedParameters.push("prompt");
         }
       }
-      return false;
     }
-    return false;
+    return changedParameters;
   }, [
     mode,
     name,
@@ -331,20 +308,18 @@ const ModeDetails = ({
       return;
     }
     if (mode) {
-      window.database.modes.updateMode({
-        id: mode.id,
-        name,
-        active: mode.active,
-        default: false,
-        record_system_audio: false,
-        use_language_model: useAi,
-        text_replacements: textReplacements,
-        voice_model_name: voiceModelName,
-        voice_language: voiceLanguage as LanguageType,
-        translate_to_english: translateToEnglish,
-        language_model_name: languageModelName,
-        prompt: prompt,
+      const modeBuilder = createModeUpdate();
+
+      // TODO: handle the prompt better because currently it is adding the whole object
+      unsavedChanges.forEach((key) => {
+        if (key in modelState) {
+          modeBuilder.addProperty(key, modelState[key]);
+        }
       });
+
+      const modeUpdate = modeBuilder.build();
+      window.database.modes.updateMode(modeUpdate);
+      console.log("Updated Mode", modeUpdate);
     } else {
       window.database.modes.createMode({
         name,
@@ -362,6 +337,19 @@ const ModeDetails = ({
     }
     setIndex(0);
   }
+
+  const createModeUpdate = () => {
+    const modeUpdate: ModeUpdate = { id: mode?.id };
+
+    const addProperty = (key: keyof ModeUpdate, value: unknown) => {
+      (modeUpdate[key] as typeof value) = value;
+      return addProperty; // Return the function for chaining
+    };
+
+    const build = () => modeUpdate; // Finalize the object
+
+    return { addProperty, build };
+  };
 
   console.log("ModeDetails", mode);
 
@@ -385,11 +373,14 @@ const ModeDetails = ({
         </div>
         <Button
           variant="secondary"
-          className={cn("mr-4", unsavedChanges && "border-rose-400 border-2")}
+          className={cn(
+            "mr-4",
+            unsavedChanges.length > 0 && "border-rose-400 border-2"
+          )}
           disabled={!settingsAreValid}
           onClick={handleSaveMode}
         >
-          {unsavedChanges && (
+          {unsavedChanges.length > 0 && (
             <Badge variant="destructive" className="text-xs font-normal">
               Unsaved changes
             </Badge>
@@ -422,6 +413,14 @@ const ModeDetails = ({
                   {
                     value: "large-v3-turbo",
                     label: "Whisper Large V3 Turbo",
+                  },
+                  {
+                    value: "large-v3",
+                    label: "Whisper Large V3",
+                  },
+                  {
+                    value: "distil-large-v3",
+                    label: "Whisper Distil Large V3",
                   },
                 ]}
                 initialMessage="Select a model..."

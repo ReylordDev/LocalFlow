@@ -173,9 +173,12 @@ export interface ModeCreate extends ModeBase {
   text_replacements: TextReplacementBase[];
 }
 
-export interface ModeUpdate extends ModeCreate {
-  id: UUID;
-}
+export type ModeUpdate = Partial<ModeBase> & { id: UUID } & {
+  voice_model_name?: string;
+  language_model_name?: string;
+  prompt?: Partial<PromptBase>;
+  text_replacements?: TextReplacementBase[];
+};
 
 interface VoiceModelBase {
   name: VoiceModelType;
@@ -201,7 +204,7 @@ export interface PromptBase {
   include_clipboard: boolean;
   include_active_window: boolean;
 
-  examples?: ExampleBase[];
+  examples: ExampleBase[];
 }
 
 export interface Prompt extends PromptBase {

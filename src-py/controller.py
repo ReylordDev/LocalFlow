@@ -15,13 +15,16 @@ from models import (
     ControllerStatusType,
     DevicesMessage,
     ErrorMessage,
+    ExampleBase,
     Mode,
     ModeCreate,
     ModeUpdate,
+    PromptUpdate,
     Result,
     SelectDeviceCommand,
     SelectModeCommand,
     StatusMessage,
+    TextReplacementBase,
     TranscriptionMessage,
 )
 from utils.ipc import print_message, print_nested_model, print_progress
@@ -250,7 +253,24 @@ def debug():
     # TODO: Check that ollama is running
     controller = Controller()
 
-    mode_id = controller.database_manager.get_mode_by_name("General").id
+    mode_id = controller.database_manager.get_mode_by_name("General_4").id
+
+    controller.database_manager.update_mode(
+        ModeUpdate(
+            id=mode_id,
+            name="General_4",
+            prompt=PromptUpdate(
+                system_prompt="Hello, how can I help you today?",
+                include_clipboard=True,
+                examples=[
+                    ExampleBase(
+                        input="Hello, how are you?",
+                        output="I'm doing well, thank you!",
+                    )
+                ],
+            ),
+        )
+    )
 
 
 if __name__ == "__main__":

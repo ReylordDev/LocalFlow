@@ -213,7 +213,7 @@ class ModeBase(SQLModel):
     name: str = Field(index=True)
     default: bool = False
     active: bool = False
-    voice_language: LanguageType = Field(sa_type=String)
+    voice_language: LanguageType = Field(sa_type=String, default="auto")
     translate_to_english: bool = False
     use_language_model: bool = False
     record_system_audio: bool = False
@@ -291,6 +291,11 @@ class ModeCreate(ModeBase):
 
 class ModeUpdate(ModeCreate):
     id: UUID
+    name: str | None = None
+    text_replacements: list["TextReplacementBase"] | None = None
+    voice_model_name: VoiceModelNameType | None = None
+    language_model_name: str | None = None
+    prompt: Optional["PromptUpdate"] | None = None
 
 
 class VoiceModelBase(SQLModel):
@@ -342,6 +347,13 @@ class Prompt(PromptBase, table=True):
 
 class PromptCreate(PromptBase):
     examples: list["ExampleBase"] = []
+
+
+class PromptUpdate(PromptBase):
+    system_prompt: str | None = None
+    include_clipboard: bool | None = None
+    include_active_window: bool | None = None
+    examples: list["ExampleBase"] | None = None
 
 
 class ExampleBase(SQLModel):
