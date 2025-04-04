@@ -108,6 +108,33 @@ export class WindowManager {
     }
   }
 
+  setMiniWindowPosition(x: number, y: number) {
+    if (this.miniWindow && !this.miniWindow.isDestroyed()) {
+      this.miniWindow.setPosition(x, y);
+    }
+  }
+
+  getMiniWindowPosition() {
+    if (this.miniWindow && !this.miniWindow.isDestroyed()) {
+      return this.miniWindow.getPosition();
+    }
+    return [0, 0];
+  }
+
+  getMiniWindowSize() {
+    if (this.miniWindow && !this.miniWindow.isDestroyed()) {
+      const size = this.miniWindow.getContentSize();
+      return {
+        width: size[0],
+        height: size[1],
+      };
+    }
+    return {
+      width: 0,
+      height: 0,
+    };
+  }
+
   setMiniWindowHeight(height: 180 | 386) {
     if (this.miniWindow && !this.miniWindow.isDestroyed()) {
       const currentSize = this.miniWindow.getContentSize();

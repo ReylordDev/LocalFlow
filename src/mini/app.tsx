@@ -283,10 +283,10 @@ const ModePicker = ({
   setModePickerOpen: (open: boolean) => void;
 }) => {
   return (
-    <div className="no-drag flex min-h-28 w-full items-center justify-center">
+    <div className="no-drag flex max-h-[328px] min-h-28 w-full items-center justify-center py-2">
       <RadioGroup
         defaultValue={modes.find((mode) => mode.active)?.id}
-        className="flex w-full flex-col items-center gap-2 px-4"
+        className="scrollbar flex max-h-full w-full flex-col items-center gap-2 overflow-y-auto px-4"
         onValueChange={(value) => {
           const selectedMode = modes.find((mode) => mode.id === value);
           if (selectedMode) {
