@@ -1,7 +1,7 @@
 import gc
 from loguru import logger
 from faster_whisper import WhisperModel
-from models import LanguageType, Mode, ModelNotLoadedException, VoiceModel
+from models import Mode, ModelNotLoadedException
 
 
 class Transcriber:
@@ -31,7 +31,9 @@ class LocalTranscriber(Transcriber):
 
     def load_model(self):
         self.model = WhisperModel(
-            model_size_or_path=self.mode.voice_model.name, device="cuda"
+            model_size_or_path=self.mode.voice_model.name,
+            device="cuda",
+            local_files_only=True,
         )
         logger.info(f"{self.mode.voice_model.name} loaded into memory")
 

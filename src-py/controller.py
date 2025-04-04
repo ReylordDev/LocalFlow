@@ -77,6 +77,12 @@ class Controller:
         )
         self.transcriber.unload_model()
 
+        if not transcription:
+            logger.warning("Transcription empty or failed")
+            self.update_status("idle")
+            self.compressor.cleanup()
+            return
+
         if self.mode.use_language_model:
             assert self.mode.language_model is not None
             assert self.mode.prompt is not None

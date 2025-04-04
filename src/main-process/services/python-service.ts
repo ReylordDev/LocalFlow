@@ -49,6 +49,21 @@ export class PythonService extends EventEmitter {
         PYTHONUTF8: "1",
       },
     });
+    consoleLog("Python shell initialized");
+    consoleLog("Script path:", this.config.scriptPath);
+    consoleLog("Python path:", this.config.pythonPath);
+    consoleLog(
+      "Working directory:",
+      this.config.isPackaged
+        ? path.join(process.resourcesPath, "src-py")
+        : this.config.rootDir,
+    );
+    consoleLog("Environment variables:", {
+      PRODUCTION: String(!this.config.isDev),
+      USER_DATA_PATH: this.config.dataDir,
+      LOG_LEVEL: this.config.isDev ? "DEBUG" : "INFO",
+      PYTHONUTF8: "1",
+    });
 
     this.shell.on("message", this.handleMessage.bind(this));
   }

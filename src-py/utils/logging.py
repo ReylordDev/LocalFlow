@@ -27,9 +27,6 @@ class InterceptHandler(logging.Handler):
 
 
 def initialize_logger():
-    # Remove any existing loguru handlers
-    logger.remove()
-
     # Get log level from environment variable or default to DEBUG
     log_level = os.environ.get("LOG_LEVEL", "DEBUG")
 
@@ -60,7 +57,7 @@ def initialize_logger():
     whisper_logger.propagate = False
 
     logger.info(
-        f"\nLogger initialized in {'PRODUCTION' if is_production_environment() else 'DEVELOPMENT'} mode"
+        f"\nLogger initialized in {'PRODUCTION' if is_production_environment() else 'DEVELOPMENT'} mode, log level: {log_level}"
     )
     logger.info(f"Python default encoding: {sys.getdefaultencoding()}")
     logger.info(f"Python utf-8 mode: {sys.flags.utf8_mode}")

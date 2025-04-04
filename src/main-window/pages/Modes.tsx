@@ -463,6 +463,7 @@ const ModeDetails = ({
                 initialMessage="Select a language..."
                 noMatchesMessage="No languages found"
                 searchPlaceholder="Search for a language"
+                disabled={voiceModelName === ""}
               />
             </div>
             <Separator orientation="horizontal" />
