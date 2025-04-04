@@ -18,7 +18,8 @@ type Action =
   | "get_results"
   | "delete_result"
   | "add_example"
-  | "get_voice_models";
+  | "get_voice_models"
+  | "get_language_models";
 
 // --------------- Electron to Python IPC Models --------------- //
 
@@ -117,6 +118,10 @@ export interface VoiceModelsMessage {
   voice_models: VoiceModel[];
 }
 
+export interface LanguageModelsMessage {
+  language_models: LanguageModel[];
+}
+
 export interface Message {
   type:
     | "progress"
@@ -130,7 +135,8 @@ export interface Message {
     | "result"
     | "results"
     | "modes_update"
-    | "voice_models";
+    | "voice_models"
+    | "language_models";
   data:
     | ProgressMessage
     | TranscriptionMessage
@@ -142,7 +148,8 @@ export interface Message {
     | ModesMessage
     | ResultMessage
     | ResultsMessage
-    | VoiceModelsMessage;
+    | VoiceModelsMessage
+    | LanguageModelsMessage;
 }
 
 // --------------- Database Models --------------- //
@@ -219,7 +226,7 @@ export interface VoiceModel extends VoiceModelBase {
   modes: Mode[];
 }
 
-interface LanguageModel {
+export interface LanguageModel {
   name: string;
   modes: Mode[];
 }
@@ -389,6 +396,10 @@ export const CHANNELS = {
       VOICE_MODELS_REQUEST: "database:voiceModels:getAll",
       VOICE_MODELS_RESPONSE: "database:voiceModels:receiveVoiceModels",
     },
+    LANGUAGE_MODELS: {
+      LANGUAGE_MODELS_REQUEST: "database:languageModels:getAll",
+      LANGUAGE_MODELS_RESPONSE: "database:languageModels:receiveLanguageModels",
+    },
   },
   RECORDING_HISTORY: {
     OPEN_WINDOW: "recordingHistory:open-window",
@@ -455,6 +466,12 @@ declare global {
           callback: (voiceModels: VoiceModel[]) => void,
         ) => () => void;
       };
+      languageModels: {
+        requestAll: () => void;
+        onReceiveLanguageModels: (
+          callback: (languageModels: LanguageModel[]) => void,
+        ) => () => void;
+      };
     };
     recordingHistory: {
       openWindow: () => void;
@@ -482,6 +499,7 @@ export const PYTHON_SERVICE_EVENTS = {
   RESULT: "result",
   RESULTS: "results",
   VOICE_MODELS: "voice-models",
+  LANGUAGE_MODELS: "language-models",
 };
 
 export const SETTINGS_SERVICE_EVENTS = {

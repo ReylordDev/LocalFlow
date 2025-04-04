@@ -17,6 +17,7 @@ from models import (
     DevicesMessage,
     ErrorMessage,
     ExampleBase,
+    LanguageModelMessage,
     Mode,
     ModeCreate,
     ModeUpdate,
@@ -268,6 +269,15 @@ class Controller:
                 ),
             )
 
+        elif command.action == "get_language_models":
+            language_models = list(self.database_manager.get_language_models())
+            print_message(
+                "language_models",
+                LanguageModelMessage(
+                    language_models=language_models,
+                ),
+            )
+
 
 @logger.catch
 def main():
@@ -291,7 +301,7 @@ def debug():
     logger.warning("Running Debug Mode")
     controller = Controller()
 
-    controller.handle_command(Command(action="get_voice_models"))
+    controller.handle_command(Command(action="get_language_models"))
 
     # mode_id = controller.database_manager.get_mode_by_name("General_4").id
 

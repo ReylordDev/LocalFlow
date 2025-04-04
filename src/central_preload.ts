@@ -10,6 +10,7 @@ import {
   ControllerStatusType,
   Result,
   VoiceModel,
+  LanguageModel,
 } from "./lib/models";
 import { contextBridge, ipcRenderer, IpcRendererEvent } from "electron";
 
@@ -158,6 +159,31 @@ export const exposeDatabase = () => {
         return () => {
           ipcRenderer.off(
             CHANNELS.DATABASE.VOICE_MODELS.VOICE_MODELS_RESPONSE,
+            listener,
+          );
+        };
+      },
+    },
+    languageModels: {
+      requestAll: () => {
+        return ipcRenderer.send(
+          CHANNELS.DATABASE.LANGUAGE_MODELS.LANGUAGE_MODELS_REQUEST,
+        );
+      },
+      onReceiveLanguageModels: (callback) => {
+        const listener = (
+          _: IpcRendererEvent,
+          languageModels: LanguageModel[],
+        ) => {
+          callback(languageModels);
+        };
+        ipcRenderer.on(
+          CHANNELS.DATABASE.LANGUAGE_MODELS.LANGUAGE_MODELS_RESPONSE,
+          listener,
+        );
+        return () => {
+          ipcRenderer.off(
+            CHANNELS.DATABASE.LANGUAGE_MODELS.LANGUAGE_MODELS_RESPONSE,
             listener,
           );
         };

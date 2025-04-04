@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Button } from "../../components/ui/button";
 import {
   ExampleBase,
+  LanguageModel,
   LanguageType,
   Mode,
   ModeUpdate,
@@ -200,10 +201,15 @@ const ModeDetails = ({
     });
   const [showPromptDialog, setShowPromptDialog] = useState<boolean>(false);
   const [voiceModels, setVoiceModels] = useState<VoiceModel[]>([]);
+  const [languageModels, setLanguageModels] = useState<LanguageModel[]>([]);
 
   const selectedVoiceModel = useMemo(() => {
     return voiceModels.find((model) => model.name === voiceModelName);
   }, [voiceModels, voiceModelName]);
+
+  const selectedLanguageModel = useMemo(() => {
+    return languageModels.find((model) => model.name === languageModelName);
+  }, [languageModels, languageModelName]);
 
   useEffect(() => {
     window.database.voiceModels.requestAll();
@@ -211,6 +217,17 @@ const ModeDetails = ({
       (voiceModels) => {
         console.log("Received Voice Models", voiceModels);
         setVoiceModels(voiceModels);
+      },
+    );
+    return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    window.database.languageModels.requestAll();
+    const unsubscribe = window.database.languageModels.onReceiveLanguageModels(
+      (languageModels) => {
+        console.log("Received Language Models", languageModels);
+        setLanguageModels(languageModels);
       },
     );
     return () => unsubscribe();
@@ -535,30 +552,11 @@ const ModeDetails = ({
             <Separator orientation="horizontal" />
             <div className={cn(menuItemClass, !useAi && "opacity-50")}>
               <h3 className="text-md font-semibold">Model</h3>
-              {/* TODO: Fetch the available language models */}
               <Combobox
-                items={[
-                  {
-                    value: "gemma3:4b",
-                    label: "Gemma 3 (4b)",
-                  },
-                  {
-                    value: "gpt-4",
-                    label: "GPT-4",
-                  },
-                  {
-                    value: "gpt-4-32k",
-                    label: "GPT-4 32k",
-                  },
-                  {
-                    value: "gpt-4-turbo",
-                    label: "GPT-4 Turbo",
-                  },
-                  {
-                    value: "gpt-4-turbo-32k",
-                    label: "GPT-4 Turbo 32k",
-                  },
-                ]}
+                items={languageModels.map((model) => ({
+                  value: model.name,
+                  label: model.name,
+                }))}
                 value={languageModelName}
                 setValue={setLanguageModelName}
                 initialMessage="Select a model..."

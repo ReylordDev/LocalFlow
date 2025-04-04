@@ -492,6 +492,11 @@ class DatabaseManager:
             voice_models = session.exec(select(VoiceModel)).all()
             return voice_models
 
+    def get_language_models(self):
+        with self.create_session() as session:
+            language_models = session.exec(select(LanguageModel)).all()
+            return language_models
+
 
 if __name__ == "__main__":
     db = DatabaseManager()

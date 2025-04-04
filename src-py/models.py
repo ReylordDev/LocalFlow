@@ -32,6 +32,7 @@ ActionType = Literal[
     "delete_result",
     "add_example",
     "get_voice_models",
+    "get_language_models",
 ]
 StepType = Union[
     ActionType,
@@ -151,6 +152,10 @@ class VoiceModelMessage(BaseModel):
     voice_models: list["VoiceModel"]
 
 
+class LanguageModelMessage(BaseModel):
+    language_models: list["LanguageModel"]
+
+
 MessageType = Literal[
     "progress",
     "transcription",
@@ -164,6 +169,7 @@ MessageType = Literal[
     "result",
     "results",
     "voice_models",
+    "language_models",
 ]
 
 MessageDataType = Union[
@@ -178,6 +184,7 @@ MessageDataType = Union[
     ResultMessage,
     ResultsMessage,
     VoiceModelMessage,
+    LanguageModelMessage,
     dict,
 ]
 

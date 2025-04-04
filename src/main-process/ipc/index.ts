@@ -114,4 +114,10 @@ export function registerIpcHandlers(
       action: "get_voice_models",
     });
   });
+
+  ipcMain.on(CHANNELS.DATABASE.LANGUAGE_MODELS.LANGUAGE_MODELS_REQUEST, () => {
+    pythonService.sendCommand({
+      action: "get_language_models",
+    });
+  });
 }

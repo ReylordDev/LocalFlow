@@ -160,6 +160,13 @@ app.whenReady().then(async () => {
     );
   });
 
+  pythonService.on(PYTHON_SERVICE_EVENTS.LANGUAGE_MODELS, (languageModels) => {
+    windowManager.sendMainWindowMessage(
+      CHANNELS.DATABASE.LANGUAGE_MODELS.LANGUAGE_MODELS_RESPONSE,
+      languageModels,
+    );
+  });
+
   registerIpcHandlers(settingsService, config, pythonService, windowManager);
 });
 
