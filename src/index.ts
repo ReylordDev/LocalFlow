@@ -1,4 +1,4 @@
-import { app, clipboard, Notification } from "electron";
+import { app, clipboard, nativeTheme, Notification } from "electron";
 import { PythonService } from "./main-process/services/python-service";
 import { SettingsService } from "./main-process/services/settings-service";
 import { WindowManager } from "./main-process/windows/window-manager";
@@ -17,6 +17,9 @@ import {
 
 // Handle setup events
 if (require("electron-squirrel-startup")) app.quit();
+
+// Use light mode for now.
+nativeTheme.themeSource = "light";
 
 // Initialize core services
 const config = new AppConfig();

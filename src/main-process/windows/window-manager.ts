@@ -1,4 +1,4 @@
-import { BrowserWindow, screen } from "electron";
+import { BrowserWindow, Menu, screen } from "electron";
 import { AppConfig } from "../utils/config";
 import { CHANNELS } from "../../lib/models";
 
@@ -36,6 +36,7 @@ export class WindowManager {
       }
     });
     this.mainWindow = mainWindow;
+    Menu.setApplicationMenu(null);
   }
 
   toggleMainWindow() {
