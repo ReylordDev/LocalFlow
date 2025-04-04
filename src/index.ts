@@ -170,6 +170,16 @@ app.whenReady().then(async () => {
     );
   });
 
+  pythonService.on(
+    PYTHON_SERVICE_EVENTS.TEXT_REPLACEMENTS,
+    (textReplacements) => {
+      windowManager.sendMainWindowMessage(
+        CHANNELS.DATABASE.TEXT_REPLACEMENTS.TEXT_REPLACEMENTS_RESPONSE,
+        textReplacements,
+      );
+    },
+  );
+
   registerIpcHandlers(settingsService, config, pythonService, windowManager);
 });
 

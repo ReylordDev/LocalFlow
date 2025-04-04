@@ -17,6 +17,7 @@ import {
   ResultsMessage,
   VoiceModelsMessage,
   LanguageModelsMessage,
+  TextReplacementsMessage,
 } from "../../lib/models";
 import path from "path";
 import { SettingsService } from "./settings-service";
@@ -137,6 +138,12 @@ export class PythonService extends EventEmitter {
         this.emit(
           PYTHON_SERVICE_EVENTS.LANGUAGE_MODELS,
           (message.data as LanguageModelsMessage).language_models,
+        );
+        break;
+      case "text_replacements":
+        this.emit(
+          PYTHON_SERVICE_EVENTS.TEXT_REPLACEMENTS,
+          (message.data as TextReplacementsMessage).text_replacements,
         );
         break;
       default:

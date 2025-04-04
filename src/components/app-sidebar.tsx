@@ -2,8 +2,8 @@ import {
   ArrowUpRight,
   Brain,
   History,
-  MoveUpRight,
   Settings,
+  TextCursorInput,
   UserRound,
   Volume2,
 } from "lucide-react";
@@ -37,6 +37,10 @@ const sidebarRecord: Record<Page, SidebarItem> = {
   "Recording History": {
     icon: <History />,
     external: true,
+  },
+  "Text Replacements": {
+    icon: <TextCursorInput />,
+    external: false,
   },
 };
 

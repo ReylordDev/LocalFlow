@@ -216,7 +216,6 @@ class DatabaseManager:
 
     def create_text_replacement(self, text_replacement: TextReplacementBase):
         with self.create_session() as session:
-            # Create the new text replacement
             text_replacement = TextReplacement(
                 original_text=text_replacement.original_text,
                 replacement_text=text_replacement.replacement_text,
@@ -226,6 +225,43 @@ class DatabaseManager:
             session.commit()
             logger.info(f"Text replacement created: {text_replacement.id}")
             return text_replacement
+
+    def get_all_text_replacements(self):
+        with self.create_session() as session:
+            text_replacements = session.exec(select(TextReplacement)).all()
+            return text_replacements
+
+    def get_global_text_replacements(self):
+        with self.create_session() as session:
+            text_replacements = session.exec(
+                select(TextReplacement).where(TextReplacement.mode_id == None)  # noqa: E711
+            ).all()
+            logger.debug(f"Global text replacements: {text_replacements}")
+            return text_replacements
+
+    def create_global_text_replacement(self, text_replacement: TextReplacementBase):
+        with self.create_session() as session:
+            new_text_replacement = TextReplacement(
+                original_text=text_replacement.original_text,
+                replacement_text=text_replacement.replacement_text,
+                mode_id=None,
+            )
+            session.add(new_text_replacement)
+            session.commit()
+            logger.info(f"Text replacement created: {new_text_replacement.id}")
+            return new_text_replacement
+
+    def delete_text_replacement(self, text_replacement_id: UUID):
+        with self.create_session() as session:
+            text_replacement = session.exec(
+                select(TextReplacement).where(TextReplacement.id == text_replacement_id)
+            ).first()
+            if not text_replacement:
+                logger.warning(f"Text replacement not found: {text_replacement_id}")
+                raise Exception(f"Text replacement not found: {text_replacement_id}")
+            session.delete(text_replacement)
+            session.commit()
+            logger.info(f"Text replacement deleted: {text_replacement.id}")
 
     def get_voice_model_by_name(self, voice_model_name: str) -> VoiceModel:
         with self.create_session() as session:

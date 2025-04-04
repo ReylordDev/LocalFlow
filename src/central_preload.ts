@@ -11,6 +11,7 @@ import {
   Result,
   VoiceModel,
   LanguageModel,
+  TextReplacement,
 } from "./lib/models";
 import { contextBridge, ipcRenderer, IpcRendererEvent } from "electron";
 
@@ -123,6 +124,43 @@ export const exposeDatabase = () => {
         return () => {
           ipcRenderer.off(CHANNELS.DATABASE.MODES.MODES_UPDATE, listener);
         };
+      },
+    },
+    textReplacements: {
+      requestAll: () => {
+        ipcRenderer.send(
+          CHANNELS.DATABASE.TEXT_REPLACEMENTS.TEXT_REPLACEMENTS_REQUEST,
+        );
+      },
+      onReceiveTextReplacements: (callback) => {
+        const listener = (
+          _: IpcRendererEvent,
+          textReplacements: TextReplacement[],
+        ) => {
+          callback(textReplacements);
+        };
+        ipcRenderer.on(
+          CHANNELS.DATABASE.TEXT_REPLACEMENTS.TEXT_REPLACEMENTS_RESPONSE,
+          listener,
+        );
+        return () => {
+          ipcRenderer.off(
+            CHANNELS.DATABASE.TEXT_REPLACEMENTS.TEXT_REPLACEMENTS_RESPONSE,
+            listener,
+          );
+        };
+      },
+      createTextReplacement: (textReplacement) => {
+        ipcRenderer.send(
+          CHANNELS.DATABASE.TEXT_REPLACEMENTS.CREATE_TEXT_REPLACEMENT,
+          textReplacement,
+        );
+      },
+      deleteTextReplacement: (textReplacementId) => {
+        ipcRenderer.send(
+          CHANNELS.DATABASE.TEXT_REPLACEMENTS.DELETE_TEXT_REPLACEMENT,
+          textReplacementId,
+        );
       },
     },
     results: {

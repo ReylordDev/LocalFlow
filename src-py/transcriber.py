@@ -1,12 +1,15 @@
 import gc
 from loguru import logger
 from faster_whisper import WhisperModel
-from models import Mode, ModelNotLoadedException
+from models import Mode, ModelNotLoadedException, TextReplacement
 
 
 class Transcriber:
-    def __init__(self, mode: Mode):
+    def __init__(
+        self, mode: Mode, global_text_replacements: list[TextReplacement] = []
+    ):
         self.mode = mode
+        self.global_text_replacements = global_text_replacements
         self.model = None
 
     def transcribe_audio(self, file_name: str, language: str | None = None):
@@ -26,8 +29,10 @@ class Transcriber:
 
 
 class LocalTranscriber(Transcriber):
-    def __init__(self, mode: Mode):
-        super().__init__(mode)
+    def __init__(
+        self, mode: Mode, global_text_replacements: list[TextReplacement] = []
+    ):
+        super().__init__(mode, global_text_replacements)
 
     def load_model(self):
         self.model = WhisperModel(
@@ -76,5 +81,18 @@ class LocalTranscriber(Transcriber):
                 transcription += segment.text
             transcription = transcription.strip()
             logger.info(f'Transcription: "{transcription}"')
+
+            text_replacements = (
+                self.global_text_replacements + self.mode.text_replacements
+            )
+
+            logger.debug(f"Text replacements: {text_replacements}")
+            prev_transcription = transcription
+            for tr in text_replacements:
+                transcription = tr.apply_replacement(transcription)
+
+            if transcription != prev_transcription:
+                logger.info(f"Transcription after replacements: {transcription}")
+
             # self.set_language(info.language)
             return transcription

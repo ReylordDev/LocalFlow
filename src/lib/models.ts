@@ -19,7 +19,10 @@ type Action =
   | "delete_result"
   | "add_example"
   | "get_voice_models"
-  | "get_language_models";
+  | "get_language_models"
+  | "get_text_replacements"
+  | "create_text_replacement"
+  | "delete_text_replacement";
 
 // --------------- Electron to Python IPC Models --------------- //
 
@@ -35,6 +38,10 @@ interface SelectDeviceCommand {
   index: number;
 }
 
+interface SelectTextReplacementCommand {
+  text_replacement_id: UUID;
+}
+
 interface AddExampleCommand {
   prompt_id: UUID;
   example: ExampleBase;
@@ -48,7 +55,9 @@ export interface Command {
     | SelectResultCommand
     | ModeCreate
     | ModeUpdate
-    | AddExampleCommand;
+    | AddExampleCommand
+    | SelectTextReplacementCommand
+    | TextReplacementBase;
 }
 
 // --------------- Python to Electron IPC Models --------------- //
@@ -122,6 +131,10 @@ export interface LanguageModelsMessage {
   language_models: LanguageModel[];
 }
 
+export interface TextReplacementsMessage {
+  text_replacements: TextReplacement[];
+}
+
 export interface Message {
   type:
     | "progress"
@@ -136,7 +149,8 @@ export interface Message {
     | "results"
     | "modes_update"
     | "voice_models"
-    | "language_models";
+    | "language_models"
+    | "text_replacements";
   data:
     | ProgressMessage
     | TranscriptionMessage
@@ -149,7 +163,8 @@ export interface Message {
     | ResultMessage
     | ResultsMessage
     | VoiceModelsMessage
-    | LanguageModelsMessage;
+    | LanguageModelsMessage
+    | TextReplacementsMessage;
 }
 
 // --------------- Database Models --------------- //
@@ -289,10 +304,11 @@ export interface Result extends ResultBase {
 // TODO: update with new pages
 export const pages = [
   "Modes",
+  "Text Replacements",
   "Configuration",
   "Audio",
-  "Credits",
   "Recording History",
+  "Credits",
 ] as const;
 export type Page = (typeof pages)[number];
 
@@ -392,6 +408,13 @@ export const CHANNELS = {
     EXAMPLES: {
       ADD_EXAMPLE: "database:examples:addExample",
     },
+    TEXT_REPLACEMENTS: {
+      TEXT_REPLACEMENTS_REQUEST: "database:textReplacements:getAll",
+      TEXT_REPLACEMENTS_RESPONSE:
+        "database:textReplacements:receiveTextReplacements",
+      CREATE_TEXT_REPLACEMENT: "database:textReplacements:create",
+      DELETE_TEXT_REPLACEMENT: "database:textReplacements:delete",
+    },
     VOICE_MODELS: {
       VOICE_MODELS_REQUEST: "database:voiceModels:getAll",
       VOICE_MODELS_RESPONSE: "database:voiceModels:receiveVoiceModels",
@@ -460,6 +483,14 @@ declare global {
         // Or use modeId? Should work the same
         addExample: (promptId: UUID, example: ExampleBase) => void;
       };
+      textReplacements: {
+        requestAll: () => void;
+        onReceiveTextReplacements: (
+          callback: (textReplacements: TextReplacement[]) => void,
+        ) => () => void;
+        createTextReplacement: (textReplacement: TextReplacementBase) => void;
+        deleteTextReplacement: (textReplacementId: UUID) => void;
+      };
       voiceModels: {
         requestAll: () => void;
         onReceiveVoiceModels: (
@@ -500,6 +531,7 @@ export const PYTHON_SERVICE_EVENTS = {
   RESULTS: "results",
   VOICE_MODELS: "voice-models",
   LANGUAGE_MODELS: "language-models",
+  TEXT_REPLACEMENTS: "text-replacements",
 };
 
 export const SETTINGS_SERVICE_EVENTS = {

@@ -16,19 +16,19 @@ from models import (
     ControllerStatusType,
     DevicesMessage,
     ErrorMessage,
-    ExampleBase,
     LanguageModelMessage,
     Mode,
     ModeCreate,
     ModeUpdate,
-    PromptUpdate,
     Result,
     SelectDeviceCommand,
     SelectModeCommand,
     SelectResultCommand,
+    SelectTextReplacementCommand,
     StatusMessage,
     TranscriptionMessage,
     VoiceModelMessage,
+    TextReplacementBase,
 )
 from utils.ipc import print_message, print_nested_model, print_progress
 from loguru import logger
@@ -64,9 +64,10 @@ class Controller:
         self.compressor.compress()
 
         self.update_status("loading_voice_model")
-        self.transcriber = LocalTranscriber(
-            self.mode,
+        global_text_replacements = list(
+            self.database_manager.get_global_text_replacements()
         )
+        self.transcriber = LocalTranscriber(self.mode, global_text_replacements)
         self.transcriber.load_model()
 
         self.update_status("transcribing")
@@ -247,7 +248,7 @@ class Controller:
             self.database_manager.delete_result(result_id)
 
             # not sure if this is necessary
-            results = self.database_manager.get_all_results()
+            results = list(self.database_manager.get_all_results())
             print_nested_model(
                 "results",
                 {"results": [dump_instance(r.create_instance()) for r in results]},
@@ -278,6 +279,36 @@ class Controller:
                 ),
             )
 
+        elif command.action == "get_text_replacements":
+            text_replacements = list(self.database_manager.get_all_text_replacements())
+            print_nested_model(
+                "text_replacements",
+                {"text_replacements": [tr.model_dump() for tr in text_replacements]},
+            )
+
+        elif command.action == "create_text_replacement":
+            if not isinstance(command.data, TextReplacementBase):
+                print_message("error", ErrorMessage(error="Invalid command data"))
+                return
+            _ = self.database_manager.create_global_text_replacement(command.data)
+            text_replacements = list(self.database_manager.get_all_text_replacements())
+            print_nested_model(
+                "text_replacements",
+                {"text_replacements": [tr.model_dump() for tr in text_replacements]},
+            )
+
+        elif command.action == "delete_text_replacement":
+            if not isinstance(command.data, SelectTextReplacementCommand):
+                print_message("error", ErrorMessage(error="Invalid command data"))
+                return
+            text_replacement_id = command.data.text_replacement_id
+            self.database_manager.delete_text_replacement(text_replacement_id)
+            text_replacements = list(self.database_manager.get_all_text_replacements())
+            print_nested_model(
+                "text_replacements",
+                {"text_replacements": [tr.model_dump() for tr in text_replacements]},
+            )
+
 
 @logger.catch
 def main():
@@ -301,7 +332,7 @@ def debug():
     logger.warning("Running Debug Mode")
     controller = Controller()
 
-    controller.handle_command(Command(action="get_language_models"))
+    controller.database_manager.get_global_text_replacements()
 
     # mode_id = controller.database_manager.get_mode_by_name("General_4").id
 

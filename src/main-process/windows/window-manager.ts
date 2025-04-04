@@ -29,6 +29,7 @@ export class WindowManager {
       show: false,
     });
     mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
+    mainWindow.webContents.openDevTools();
     mainWindow.on("close", (e) => {
       if (mainWindow.isVisible()) {
         e.preventDefault();

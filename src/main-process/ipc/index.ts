@@ -11,6 +11,7 @@ import {
   ExampleBase,
   ModeCreate,
   ModeUpdate,
+  TextReplacementBase,
 } from "../../lib/models";
 import { UUID } from "crypto";
 
@@ -120,4 +121,35 @@ export function registerIpcHandlers(
       action: "get_language_models",
     });
   });
+
+  ipcMain.on(
+    CHANNELS.DATABASE.TEXT_REPLACEMENTS.TEXT_REPLACEMENTS_REQUEST,
+    () => {
+      pythonService.sendCommand({
+        action: "get_text_replacements",
+      });
+    },
+  );
+
+  ipcMain.on(
+    CHANNELS.DATABASE.TEXT_REPLACEMENTS.CREATE_TEXT_REPLACEMENT,
+    (_, textReplacement: TextReplacementBase) => {
+      pythonService.sendCommand({
+        action: "create_text_replacement",
+        data: textReplacement,
+      });
+    },
+  );
+
+  ipcMain.on(
+    CHANNELS.DATABASE.TEXT_REPLACEMENTS.DELETE_TEXT_REPLACEMENT,
+    (_, textReplacementId: UUID) => {
+      pythonService.sendCommand({
+        action: "delete_text_replacement",
+        data: {
+          text_replacement_id: textReplacementId,
+        },
+      });
+    },
+  );
 }

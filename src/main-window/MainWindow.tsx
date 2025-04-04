@@ -5,6 +5,8 @@ import AudioPage from "./pages/Audio";
 import { AppSidebar } from "../components/app-sidebar";
 import { Page } from "../lib/models";
 import ConfigurationPage from "./pages/Configuration";
+import TextReplacements from "./pages/TextReplacements";
+
 const MainWindow = () => {
   console.log("MainWindow");
   const [page, setPage] = useState<Page>("Modes");
@@ -19,6 +21,8 @@ const MainWindow = () => {
         return <Credits />;
       case "Audio":
         return <AudioPage />;
+      case "Text Replacements":
+        return <TextReplacements />;
     }
   }
 

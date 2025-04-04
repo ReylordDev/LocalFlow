@@ -33,6 +33,9 @@ ActionType = Literal[
     "add_example",
     "get_voice_models",
     "get_language_models",
+    "get_text_replacements",
+    "create_text_replacement",
+    "delete_text_replacement",
 ]
 StepType = Union[
     ActionType,
@@ -60,6 +63,10 @@ class SelectDeviceCommand(BaseModel):
     index: int
 
 
+class SelectTextReplacementCommand(BaseModel):
+    text_replacement_id: UUID
+
+
 class AddExampleCommand(BaseModel):
     prompt_id: UUID
     example: "ExampleBase"
@@ -72,9 +79,11 @@ class Command(BaseModel):
             SelectModeCommand,
             SelectDeviceCommand,
             SelectResultCommand,
+            SelectTextReplacementCommand,
             AddExampleCommand,
             "ModeUpdate",
             "ModeCreate",
+            "TextReplacementBase",
         ]
     ] = None
 
@@ -121,6 +130,10 @@ class DevicesMessage(BaseModel):
 
 class ModesMessage(SQLModel):
     modes: list["Mode"]
+
+
+class TextReplacementsMessage(BaseModel):
+    text_replacements: list["TextReplacement"]
 
 
 ControllerStatusType = Literal[
@@ -170,6 +183,7 @@ MessageType = Literal[
     "results",
     "voice_models",
     "language_models",
+    "text_replacements",
 ]
 
 MessageDataType = Union[
@@ -185,6 +199,7 @@ MessageDataType = Union[
     ResultsMessage,
     VoiceModelMessage,
     LanguageModelMessage,
+    TextReplacementsMessage,
     dict,
 ]
 
@@ -417,6 +432,11 @@ class TextReplacement(TextReplacementBase, table=True):
 
     mode_id: UUID | None = Field(foreign_key="mode.id")
     mode: Mode | None = Relationship(back_populates="text_replacements")
+
+    def apply_replacement(self, text: str) -> str:
+        if not self.original_text or not self.replacement_text:
+            return text
+        return text.replace(self.original_text, self.replacement_text)
 
 
 class ResultBase(SQLModel):
