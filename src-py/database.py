@@ -1,7 +1,7 @@
 import os
 from uuid import UUID
 
-from sqlmodel import SQLModel, create_engine, Session, select
+from sqlmodel import SQLModel, create_engine, Session, select, desc
 from sqlalchemy.orm import subqueryload
 from models import (
     Example,
@@ -463,7 +463,9 @@ class DatabaseManager:
 
     def get_all_results(self):
         with self.create_session() as session:
-            results = session.exec(select(Result)).all()
+            results = session.exec(
+                select(Result).order_by(desc(Result.created_at))
+            ).all()
             return results
 
     def add_example(self, prompt_id: UUID, example: ExampleBase):

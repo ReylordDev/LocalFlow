@@ -55,6 +55,9 @@ export const exposeSettings = () => {
     setOutput(outputConfig) {
       return ipcRenderer.send(CHANNELS.SETTINGS.SET_OUTPUT, outputConfig);
     },
+    getLocale() {
+      return ipcRenderer.invoke(CHANNELS.SETTINGS.GET_LOCALE);
+    },
   } satisfies Window["settings"]);
 };
 

@@ -17,6 +17,7 @@ import {
   ContextMenuTrigger,
 } from "../components/ui/context-menu";
 import { UUID } from "crypto";
+import { useLocale } from "../lib/hooks";
 
 const HistoryWindow = () => {
   const [history, setHistory] = useState<Result[]>([]);
@@ -59,6 +60,7 @@ function Sidebar({
 }) {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [filteredHistory, setFilteredHistory] = useState<Result[]>(history);
+  const locale = useLocale();
 
   useEffect(() => {
     setFilteredHistory(history);
@@ -135,7 +137,7 @@ function Sidebar({
                 </h3>
                 <div className="flex items-center justify-between">
                   <p className="text-sm text-zinc-500 group-hover:text-zinc-100">
-                    {new Date(result.created_at * 1000).toLocaleString()}
+                    {new Date(result.created_at * 1000).toLocaleString(locale)}
                   </p>
                   <p className="text-sm text-zinc-500 group-hover:text-zinc-100">
                     {result.duration.toFixed(0)}s
@@ -143,7 +145,7 @@ function Sidebar({
                 </div>
               </div>
             </ContextMenuTrigger>
-            <ContextMenuContent>
+            <ContextMenuContent className="p-0">
               <ContextMenuItem
                 onClick={() => {
                   handleDelete(result.id);
@@ -171,6 +173,7 @@ function ResultDetails({ result }: { result: Result }) {
   const [displayState, setDisplayState] = useState<
     "transcription" | "ai_result"
   >("transcription");
+  const locale = useLocale();
 
   if (!result) {
     return (
@@ -189,7 +192,7 @@ function ResultDetails({ result }: { result: Result }) {
     >
       <div className="flex w-full items-center justify-between p-4">
         <p className="select-text">
-          {new Date(result.created_at * 1000).toLocaleString()}
+          {new Date(result.created_at * 1000).toLocaleString(locale)}
         </p>
         <div className="flex items-center gap-2">
           <Button

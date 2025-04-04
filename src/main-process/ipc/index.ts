@@ -1,4 +1,4 @@
-import { ipcMain, clipboard, shell } from "electron";
+import { ipcMain, clipboard, shell, app } from "electron";
 import { PythonService } from "../services/python-service";
 import { SettingsService } from "../services/settings-service";
 import { WindowManager } from "../windows/window-manager";
@@ -103,5 +103,9 @@ export function registerIpcHandlers(
   ipcMain.on(CHANNELS.FILE.OPEN, (_, location: string) => {
     consoleLog("Opening file:", location);
     shell.openPath(location);
+  });
+
+  ipcMain.handle(CHANNELS.SETTINGS.GET_LOCALE, () => {
+    return app.getSystemLocale();
   });
 }

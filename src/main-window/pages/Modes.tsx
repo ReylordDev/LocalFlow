@@ -638,50 +638,50 @@ const ModeDetails = ({
               )}
             </div>
           </div>
-          {mode && !mode?.default && (
-            <div className="flex flex-col gap-2">
-              <h2 className="text-lg font-semibold">Danger Zone</h2>
-              <div className="flex flex-col gap-2 rounded-md border border-zinc-200 bg-white p-2">
-                <div className={cn(menuItemClass)}>
-                  <h3 className="text-md font-semibold">Delete Mode</h3>
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button variant="destructive">
-                        <Trash2 />
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>
-                          Are you absolutely sure?
-                        </AlertDialogTitle>
-                        <AlertDialogDescription>
-                          This action cannot be undone.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction asChild>
-                          <Button
-                            className="bg-red-500 text-zinc-50 hover:bg-red-500/90 dark:bg-red-900 dark:text-zinc-50 dark:hover:bg-red-900/90"
-                            variant="destructive"
-                            onClick={() => {
-                              console.log("Delete Mode", mode?.id);
-                              window.database.modes.deleteMode(mode?.id);
-                              setIndex(0);
-                            }}
-                          >
-                            Delete Mode
-                          </Button>
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                </div>
+        </div>
+        {mode && !mode?.default && (
+          <div className="flex flex-col gap-2">
+            <h2 className="text-lg font-semibold">Danger Zone</h2>
+            <div className="flex flex-col gap-2 rounded-md border border-zinc-200 bg-white p-2">
+              <div className={cn(menuItemClass)}>
+                <h3 className="text-md font-semibold">Delete Mode</h3>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive">
+                      <Trash2 />
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>
+                        Are you absolutely sure?
+                      </AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This action cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction asChild>
+                        <Button
+                          className="bg-red-500 text-zinc-50 hover:bg-red-500/90 dark:bg-red-900 dark:text-zinc-50 dark:hover:bg-red-900/90"
+                          variant="destructive"
+                          onClick={() => {
+                            console.log("Delete Mode", mode?.id);
+                            window.database.modes.deleteMode(mode?.id);
+                            setIndex(0);
+                          }}
+                        >
+                          Delete Mode
+                        </Button>
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );

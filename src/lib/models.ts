@@ -339,6 +339,7 @@ export const CHANNELS = {
     SET_APPLICATION: "settings:set-application",
     SET_OUTPUT: "settings:set-output",
     SETTINGS_CHANGED: "settings:changed",
+    GET_LOCALE: "settings:get-locale",
   },
   URL: {
     OPEN: "url:open",
@@ -399,6 +400,7 @@ declare global {
       onSettingsChanged: (
         callback: (settings: AppSettings) => void,
       ) => () => void;
+      getLocale: () => Promise<string>;
     };
     url: {
       open: (url: string) => void;
