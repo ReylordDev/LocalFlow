@@ -197,6 +197,22 @@ const MainContentDisplay = ({ status }: { status: ControllerStatusType }) => {
     };
   }, []);
 
+  useEffect(() => {
+    if (status === "result") {
+      const padding = 16; // Padding in pixels
+      const border = 2; // Border in pixels
+      const maxHeight = 328; // Maximum height in pixels
+      const minHeight = 112; // Minimum height in pixels
+      const textArea = document.querySelector(
+        "#result-text",
+      ) as HTMLTextAreaElement;
+      const textHeight = textArea.clientHeight;
+      const computedHeight = textHeight + padding + border;
+      const height = Math.min(Math.max(computedHeight, minHeight), maxHeight);
+      window.mini.setMainContentHeight(height);
+    }
+  }, [status]);
+
   switch (status) {
     case "idle":
       return (
@@ -223,13 +239,9 @@ const MainContentDisplay = ({ status }: { status: ControllerStatusType }) => {
       );
     case "result":
       return (
-        // <textarea
-        //   readOnly
-        //   className="bg-zinc-900 text-white resize-none overflow-y-auto no-drag select-text border-0 ring-0 rounded-3xl w-full text-wrapjjj p-4 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0"
-        //   value={resultText || ""}
-        // />
         <div className="no-drag flex max-h-[328px] min-h-28 w-full select-text flex-col justify-center rounded-t-3xl px-4 py-2">
           <p
+            id="result-text"
             className={cn(
               "scrollbar overflow-y-auto whitespace-pre-wrap",
               resultText?.trim().length > 200 ? "text-left" : "text-center",
@@ -282,6 +294,29 @@ const ModePicker = ({
   setActiveMode: (mode: Mode) => void;
   setModePickerOpen: (open: boolean) => void;
 }) => {
+  const heightPerMode = 40; // Height of each mode item in pixels
+  const gapHeight = 8; // Gap between mode items in pixels
+  const paddingHeight = 16; // Padding around the mode picker in pixels
+  const borderHeight = 2; // Border height in pixels
+  const minHeight = 112; // Minimum height of the mode picker in pixels
+  const maxHeight = 328; // Maximum height of the mode picker in pixels
+
+  useEffect(() => {
+    const totalHeight =
+      modes.length * heightPerMode +
+      (modes.length - 1) * gapHeight +
+      paddingHeight +
+      borderHeight;
+
+    window.mini.setMainContentHeight(
+      Math.min(totalHeight, Math.max(minHeight, maxHeight)),
+    );
+
+    return () => {
+      window.mini.setMainContentHeight(minHeight + borderHeight);
+    };
+  }, [modes.length, heightPerMode, gapHeight, paddingHeight, maxHeight]);
+
   return (
     <div className="no-drag flex max-h-[328px] min-h-28 w-full items-center justify-center py-2">
       <RadioGroup

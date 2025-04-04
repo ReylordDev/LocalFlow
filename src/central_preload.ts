@@ -271,6 +271,9 @@ export const exposeMini = () => {
         ipcRenderer.off(CHANNELS.MINI.CHANGE_MODE_SHORTCUT_PRESSED, listener);
       };
     },
+    setMainContentHeight: (height: number) => {
+      ipcRenderer.send(CHANNELS.MINI.SET_MAIN_CONTENT_HEIGHT, height);
+    },
   } satisfies Window["mini"]);
 };
 

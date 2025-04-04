@@ -152,4 +152,8 @@ export function registerIpcHandlers(
       });
     },
   );
+
+  ipcMain.on(CHANNELS.MINI.SET_MAIN_CONTENT_HEIGHT, (_, height: number) => {
+    windowManager.setMiniWindowMainContentHeight(height);
+  });
 }

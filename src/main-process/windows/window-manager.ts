@@ -1,5 +1,5 @@
 import { BrowserWindow, Menu, screen } from "electron";
-import { AppConfig } from "../utils/config";
+import { AppConfig, consoleLog } from "../utils/config";
 import { CHANNELS } from "../../lib/models";
 
 declare const MAIN_WINDOW_WEBPACK_ENTRY: string;
@@ -83,6 +83,8 @@ export class WindowManager {
     // TEMP for development
     // miniWindow.hide();
 
+    miniWindow.webContents.openDevTools();
+
     // and load the index.html of the app.
     miniWindow.loadURL(MINI_WEBPACK_ENTRY);
 
@@ -122,29 +124,50 @@ export class WindowManager {
     return [0, 0];
   }
 
-  getMiniWindowSize() {
-    if (this.miniWindow && !this.miniWindow.isDestroyed()) {
-      const size = this.miniWindow.getContentSize();
-      return {
-        width: size[0],
-        height: size[1],
-      };
-    }
-    return {
-      width: 0,
-      height: 0,
-    };
-  }
+  // getMiniWindowSize() {
+  //   if (this.miniWindow && !this.miniWindow.isDestroyed()) {
+  //     const size = this.miniWindow.getContentSize();
+  //     return {
+  //       width: size[0],
+  //       height: size[1],
+  //     };
+  //   }
+  //   return {
+  //     width: 0,
+  //     height: 0,
+  //   };
+  // }
 
-  setMiniWindowHeight(height: 180 | 386) {
+  // setMiniWindowHeight(height: 180 | 386) {
+  //   if (this.miniWindow && !this.miniWindow.isDestroyed()) {
+  //     const currentSize = this.miniWindow.getContentSize();
+  //     const currentPosition = this.miniWindow.getPosition();
+  //     this.miniWindow.setContentSize(currentSize[0], height);
+  //     this.miniWindow.setPosition(
+  //       currentPosition[0],
+  //       currentPosition[1] - (height - currentSize[1]),
+  //     );
+  //   }
+  // }
+
+  setMiniWindowMainContentHeight(height: number) {
     if (this.miniWindow && !this.miniWindow.isDestroyed()) {
-      const currentSize = this.miniWindow.getContentSize();
-      const currentPosition = this.miniWindow.getPosition();
-      this.miniWindow.setContentSize(currentSize[0], height);
-      this.miniWindow.setPosition(
-        currentPosition[0],
-        currentPosition[1] - (height - currentSize[1]),
-      );
+      const menuBarHeight = 56;
+      const miniWindowHeight = height + menuBarHeight;
+
+      const previousHeight = this.miniWindow.getContentSize()[1];
+      const deltaHeight = miniWindowHeight - previousHeight;
+      consoleLog("previousY", this.miniWindow.getBounds().y);
+      consoleLog("main content height", height);
+      consoleLog("miniWindowHeight", miniWindowHeight);
+      consoleLog("previousHeight", previousHeight);
+      consoleLog("deltaHeight", deltaHeight);
+      consoleLog("newY", this.miniWindow.getBounds().y - deltaHeight);
+
+      this.miniWindow.setBounds({
+        y: this.miniWindow.getBounds().y - deltaHeight,
+        height: miniWindowHeight,
+      });
     }
   }
 

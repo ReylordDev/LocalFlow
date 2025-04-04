@@ -387,6 +387,7 @@ export const CHANNELS = {
     STATUS_UPDATE: "mini:status-update",
     RESULT: "mini:result",
     CHANGE_MODE_SHORTCUT_PRESSED: "mini:change-mode-shortcut-pressed",
+    SET_MAIN_CONTENT_HEIGHT: "mini:setMainContentHeight",
   },
   DEVICE: {
     DEVICES_REQUEST: "device:requestAll",
@@ -461,6 +462,7 @@ declare global {
       ) => () => void;
       onResult: (callback: (result: Result) => void) => () => void;
       onChangeModeShortcutPressed: (callback: () => void) => () => void;
+      setMainContentHeight: (height: number) => void;
     };
     device: {
       requestAll: () => void;

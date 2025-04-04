@@ -63,13 +63,6 @@ app.whenReady().then(async () => {
       windowManager.sendMiniWindowMessage(
         CHANNELS.MINI.CHANGE_MODE_SHORTCUT_PRESSED,
       );
-      const size = windowManager.getMiniWindowSize();
-      consoleLog("Mini window height:", size.height);
-      if (size.height === 180) {
-        windowManager.setMiniWindowHeight(386);
-      } else {
-        windowManager.setMiniWindowHeight(180);
-      }
     },
   );
 
@@ -108,11 +101,6 @@ app.whenReady().then(async () => {
     PYTHON_SERVICE_EVENTS.STATUS_UPDATE,
     (status: ControllerStatusType) => {
       windowManager.sendMiniWindowMessage(CHANNELS.MINI.STATUS_UPDATE, status);
-      if (status === "result") {
-        windowManager.setMiniWindowHeight(386);
-      } else {
-        windowManager.setMiniWindowHeight(180);
-      }
     },
   );
 
