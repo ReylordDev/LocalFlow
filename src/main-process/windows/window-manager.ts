@@ -75,7 +75,6 @@ export class WindowManager {
       useContentSize: true,
       transparent: true,
       alwaysOnTop: true,
-      hiddenInMissionControl: true,
       resizable: false,
       webPreferences: {
         preload: MINI_PRELOAD_WEBPACK_ENTRY,
@@ -182,6 +181,7 @@ export class WindowManager {
     const recordingHistoryWindow = new BrowserWindow({
       height: 1024,
       width: 1440,
+      parent: this.mainWindow,
       webPreferences: {
         preload: RECORDING_HISTORY_PRELOAD_WEBPACK_ENTRY,
       },
