@@ -8,6 +8,7 @@ import {
   PromptBase,
   TextReplacement,
   TextReplacementBase,
+  VoiceModel,
   languageNameMap,
 } from "../../lib/models";
 import { Separator } from "../../components/ui/separator";
@@ -197,6 +198,23 @@ const ModeDetails = ({
       replacement_text: "",
       original_text: "",
     });
+  const [showPromptDialog, setShowPromptDialog] = useState<boolean>(false);
+  const [voiceModels, setVoiceModels] = useState<VoiceModel[]>([]);
+
+  const selectedVoiceModel = useMemo(() => {
+    return voiceModels.find((model) => model.name === voiceModelName);
+  }, [voiceModels, voiceModelName]);
+
+  useEffect(() => {
+    window.database.voiceModels.requestAll();
+    const unsubscribe = window.database.voiceModels.onReceiveVoiceModels(
+      (voiceModels) => {
+        console.log("Received Voice Models", voiceModels);
+        setVoiceModels(voiceModels);
+      },
+    );
+    return () => unsubscribe();
+  }, []);
 
   const modelState = useMemo(() => {
     const modelState: Record<keyof ModeUpdate, unknown> = {
@@ -230,12 +248,10 @@ const ModeDetails = ({
     prompt,
   ]);
 
-  const [showPromptDialog, setShowPromptDialog] = useState<boolean>(false);
-
   const settingsAreValid = useMemo(() => {
     if (name.length === 0) return false;
     if (!voiceModelName || voiceModelName.length === 0) return false;
-    // TODO: validate voice language input
+    if (!voiceLanguage || voiceLanguage.length === 0) return false;
 
     if (useAi) {
       if (!languageModelName) return false;
@@ -415,20 +431,11 @@ const ModeDetails = ({
             <div className={cn(menuItemClass)}>
               <h3 className="text-md font-semibold">Model</h3>
               <Combobox
-                items={[
-                  {
-                    value: "large-v3-turbo",
-                    label: "Whisper Large V3 Turbo",
-                  },
-                  {
-                    value: "large-v3",
-                    label: "Whisper Large V3",
-                  },
-                  {
-                    value: "distil-large-v3",
-                    label: "Whisper Distil Large V3",
-                  },
-                ]}
+                items={voiceModels.map((model) => ({
+                  // TODO: use the ai instead
+                  value: model.name,
+                  label: model.name,
+                }))}
                 initialMessage="Select a model..."
                 noMatchesMessage="No models found"
                 searchPlaceholder="Search for a model"
@@ -440,30 +447,60 @@ const ModeDetails = ({
             <div className={cn(menuItemClass)}>
               <h3 className="text-md font-semibold">Language</h3>
               <Combobox
-                items={[
-                  {
-                    value: "auto",
-                    label: "Automatic",
-                  },
-                  {
-                    value: "en",
-                    label: "English",
-                  },
-                  {
-                    value: "es",
-                    label: "Spanish",
-                  },
-                  {
-                    value: "fr",
-                    label: "French",
-                  },
-                ]}
+                items={
+                  selectedVoiceModel?.language === "english-only"
+                    ? [
+                        {
+                          value: "en",
+                          label: "English",
+                        },
+                      ]
+                    : [
+                        // TODO: single source of truth
+                        {
+                          value: "auto",
+                          label: "Auto",
+                        },
+                        {
+                          value: "en",
+                          label: "English",
+                        },
+                        {
+                          value: "de",
+                          label: "German",
+                        },
+                        {
+                          value: "fr",
+                          label: "French",
+                        },
+                        {
+                          value: "it",
+                          label: "Italian",
+                        },
+                        {
+                          value: "es",
+                          label: "Spanish",
+                        },
+                        {
+                          value: "pt",
+                          label: "Portuguese",
+                        },
+                        {
+                          value: "hi",
+                          label: "Hindi",
+                        },
+                        {
+                          value: "th",
+                          label: "Thai",
+                        },
+                      ]
+                }
                 value={voiceLanguage}
                 setValue={setVoiceLanguage}
                 initialMessage="Select a language..."
                 noMatchesMessage="No languages found"
                 searchPlaceholder="Search for a language"
-                disabled={voiceModelName === ""}
+                disabled={!selectedVoiceModel}
               />
             </div>
             <Separator orientation="horizontal" />

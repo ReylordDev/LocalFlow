@@ -108,4 +108,10 @@ export function registerIpcHandlers(
   ipcMain.handle(CHANNELS.SETTINGS.GET_LOCALE, () => {
     return app.getSystemLocale();
   });
+
+  ipcMain.on(CHANNELS.DATABASE.VOICE_MODELS.VOICE_MODELS_REQUEST, () => {
+    pythonService.sendCommand({
+      action: "get_voice_models",
+    });
+  });
 }

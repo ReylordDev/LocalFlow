@@ -27,6 +27,7 @@ from models import (
     SelectResultCommand,
     StatusMessage,
     TranscriptionMessage,
+    VoiceModelMessage,
 )
 from utils.ipc import print_message, print_nested_model, print_progress
 from loguru import logger
@@ -210,7 +211,7 @@ class Controller:
             mode = command.data
             self.database_manager.update_mode(mode)
 
-            modes = self.database_manager.get_all_modes()
+            modes = list(self.database_manager.get_all_modes())
 
             print_nested_model(
                 "modes", {"modes": [dump_instance(m.create_instance()) for m in modes]}
@@ -224,7 +225,7 @@ class Controller:
             self.database_manager.delete_mode(mode_id)
 
             # not sure if this is necessary
-            modes = self.database_manager.get_all_modes()
+            modes = list(self.database_manager.get_all_modes())
 
             print_nested_model(
                 "modes", {"modes": [dump_instance(m.create_instance()) for m in modes]}
@@ -258,10 +259,20 @@ class Controller:
             payload = command.data
             self.database_manager.add_example(payload.prompt_id, payload.example)
 
+        elif command.action == "get_voice_models":
+            voice_models = list(self.database_manager.get_voice_models())
+            print_message(
+                "voice_models",
+                VoiceModelMessage(
+                    voice_models=voice_models,
+                ),
+            )
+
 
 @logger.catch
 def main():
     initialize_logger()
+    # TODO: Check that ollama is running
     controller = Controller()
     while True:
         message = sys.stdin.readline()
@@ -278,27 +289,28 @@ def main():
 def debug():
     initialize_logger()
     logger.warning("Running Debug Mode")
-    # TODO: Check that ollama is running
     controller = Controller()
 
-    mode_id = controller.database_manager.get_mode_by_name("General_4").id
+    controller.handle_command(Command(action="get_voice_models"))
 
-    controller.database_manager.update_mode(
-        ModeUpdate(
-            id=mode_id,
-            name="General_4",
-            prompt=PromptUpdate(
-                system_prompt="Hello, how can I help you today?",
-                include_clipboard=True,
-                examples=[
-                    ExampleBase(
-                        input="Hello, how are you?",
-                        output="I'm doing well, thank you!",
-                    )
-                ],
-            ),
-        )
-    )
+    # mode_id = controller.database_manager.get_mode_by_name("General_4").id
+
+    # controller.database_manager.update_mode(
+    #     ModeUpdate(
+    #         id=mode_id,
+    #         name="General_4",
+    #         prompt=PromptUpdate(
+    #             system_prompt="Hello, how can I help you today?",
+    #             include_clipboard=True,
+    #             examples=[
+    #                 ExampleBase(
+    #                     input="Hello, how are you?",
+    #                     output="I'm doing well, thank you!",
+    #                 )
+    #             ],
+    #         ),
+    #     )
+    # )
 
 
 if __name__ == "__main__":

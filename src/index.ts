@@ -153,6 +153,13 @@ app.whenReady().then(async () => {
     );
   });
 
+  pythonService.on(PYTHON_SERVICE_EVENTS.VOICE_MODELS, (voiceModels) => {
+    windowManager.sendMainWindowMessage(
+      CHANNELS.DATABASE.VOICE_MODELS.VOICE_MODELS_RESPONSE,
+      voiceModels,
+    );
+  });
+
   registerIpcHandlers(settingsService, config, pythonService, windowManager);
 });
 

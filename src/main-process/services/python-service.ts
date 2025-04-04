@@ -15,6 +15,7 @@ import {
   ModesMessage,
   ResultMessage,
   ResultsMessage,
+  VoiceModelsMessage,
 } from "../../lib/models";
 import path from "path";
 import { SettingsService } from "./settings-service";
@@ -123,6 +124,12 @@ export class PythonService extends EventEmitter {
         this.emit(
           PYTHON_SERVICE_EVENTS.RESULTS,
           (message.data as ResultsMessage).results,
+        );
+        break;
+      case "voice_models":
+        this.emit(
+          PYTHON_SERVICE_EVENTS.VOICE_MODELS,
+          (message.data as VoiceModelsMessage).voice_models,
         );
         break;
       default:

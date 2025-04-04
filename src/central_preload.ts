@@ -9,6 +9,7 @@ import {
   AppSettings,
   ControllerStatusType,
   Result,
+  VoiceModel,
 } from "./lib/models";
 import { contextBridge, ipcRenderer, IpcRendererEvent } from "electron";
 
@@ -140,6 +141,28 @@ export const exposeDatabase = () => {
         );
       },
     },
+    voiceModels: {
+      requestAll: () => {
+        return ipcRenderer.send(
+          CHANNELS.DATABASE.VOICE_MODELS.VOICE_MODELS_REQUEST,
+        );
+      },
+      onReceiveVoiceModels: (callback) => {
+        const listener = (_: IpcRendererEvent, voiceModels: VoiceModel[]) => {
+          callback(voiceModels);
+        };
+        ipcRenderer.on(
+          CHANNELS.DATABASE.VOICE_MODELS.VOICE_MODELS_RESPONSE,
+          listener,
+        );
+        return () => {
+          ipcRenderer.off(
+            CHANNELS.DATABASE.VOICE_MODELS.VOICE_MODELS_RESPONSE,
+            listener,
+          );
+        };
+      },
+    },
   } satisfies Window["database"]);
 };
 
@@ -176,7 +199,7 @@ export const exposeMini = () => {
       };
     },
     onChangeModeShortcutPressed(callback) {
-      const listener = (_: IpcRendererEvent) => {
+      const listener = () => {
         callback();
       };
       ipcRenderer.on(CHANNELS.MINI.CHANGE_MODE_SHORTCUT_PRESSED, listener);

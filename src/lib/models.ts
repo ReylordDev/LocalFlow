@@ -17,7 +17,8 @@ type Action =
   | "delete_mode"
   | "get_results"
   | "delete_result"
-  | "add_example";
+  | "add_example"
+  | "get_voice_models";
 
 // --------------- Electron to Python IPC Models --------------- //
 
@@ -111,6 +112,11 @@ export interface ResultMessage {
 export interface ResultsMessage {
   results: Result[];
 }
+
+export interface VoiceModelsMessage {
+  voice_models: VoiceModel[];
+}
+
 export interface Message {
   type:
     | "progress"
@@ -123,7 +129,8 @@ export interface Message {
     | "modes"
     | "result"
     | "results"
-    | "modes_update";
+    | "modes_update"
+    | "voice_models";
   data:
     | ProgressMessage
     | TranscriptionMessage
@@ -134,7 +141,8 @@ export interface Message {
     | StatusMessage
     | ModesMessage
     | ResultMessage
-    | ResultsMessage;
+    | ResultsMessage
+    | VoiceModelsMessage;
 }
 
 // --------------- Database Models --------------- //
@@ -206,7 +214,7 @@ interface VoiceModelBase {
   parameters: number;
 }
 
-interface VoiceModel extends VoiceModelBase {
+export interface VoiceModel extends VoiceModelBase {
   id: UUID;
   modes: Mode[];
 }
@@ -377,6 +385,10 @@ export const CHANNELS = {
     EXAMPLES: {
       ADD_EXAMPLE: "database:examples:addExample",
     },
+    VOICE_MODELS: {
+      VOICE_MODELS_REQUEST: "database:voiceModels:getAll",
+      VOICE_MODELS_RESPONSE: "database:voiceModels:receiveVoiceModels",
+    },
   },
   RECORDING_HISTORY: {
     OPEN_WINDOW: "recordingHistory:open-window",
@@ -437,6 +449,12 @@ declare global {
         // Or use modeId? Should work the same
         addExample: (promptId: UUID, example: ExampleBase) => void;
       };
+      voiceModels: {
+        requestAll: () => void;
+        onReceiveVoiceModels: (
+          callback: (voiceModels: VoiceModel[]) => void,
+        ) => () => void;
+      };
     };
     recordingHistory: {
       openWindow: () => void;
@@ -463,6 +481,7 @@ export const PYTHON_SERVICE_EVENTS = {
   MODES: "modes",
   RESULT: "result",
   RESULTS: "results",
+  VOICE_MODELS: "voice-models",
 };
 
 export const SETTINGS_SERVICE_EVENTS = {

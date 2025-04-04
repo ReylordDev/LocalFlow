@@ -31,6 +31,7 @@ ActionType = Literal[
     "get_results",
     "delete_result",
     "add_example",
+    "get_voice_models",
 ]
 StepType = Union[
     ActionType,
@@ -146,6 +147,10 @@ class ResultsMessage(BaseModel):
     results: list["Result"]
 
 
+class VoiceModelMessage(BaseModel):
+    voice_models: list["VoiceModel"]
+
+
 MessageType = Literal[
     "progress",
     "transcription",
@@ -158,6 +163,7 @@ MessageType = Literal[
     "modes_update",
     "result",
     "results",
+    "voice_models",
 ]
 
 MessageDataType = Union[
@@ -171,6 +177,7 @@ MessageDataType = Union[
     ModesMessage,
     ResultMessage,
     ResultsMessage,
+    VoiceModelMessage,
     dict,
 ]
 

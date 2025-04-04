@@ -487,6 +487,11 @@ class DatabaseManager:
             logger.info(f"Example added: {new_example.id}")
             return new_example
 
+    def get_voice_models(self):
+        with self.create_session() as session:
+            voice_models = session.exec(select(VoiceModel)).all()
+            return voice_models
+
 
 if __name__ == "__main__":
     db = DatabaseManager()
