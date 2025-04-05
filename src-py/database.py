@@ -486,6 +486,19 @@ class DatabaseManager:
                 logger.warning(f"Mode not found: {mode_id}")
                 raise Exception(f"Mode not found: {mode_id}")
 
+            if mode.active:
+                # If the mode is active, switch to the default mode
+                default_mode = session.exec(
+                    select(Mode).where(Mode.default == True)  # noqa: E712
+                ).first()
+                if default_mode:
+                    default_mode.active = True
+                    session.add(default_mode)
+                    logger.info(f"Switched to default mode: {default_mode.name}")
+                else:
+                    logger.warning("No default mode found to switch to")
+                    raise Exception("No default mode found to switch to")
+
             # Delete the mode
             session.delete(mode)
             session.commit()

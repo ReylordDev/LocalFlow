@@ -454,8 +454,8 @@ class ResultBase(SQLModel):
 
 class Result(ResultBase, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True)
-    mode_id: UUID = Field(foreign_key="mode.id")
-    mode: Mode = Relationship(
+    mode_id: UUID | None = Field(foreign_key="mode.id")
+    mode: Mode | None = Relationship(
         back_populates="results", sa_relationship_kwargs={"lazy": "selectin"}
     )
 
@@ -476,7 +476,9 @@ class Result(ResultBase, table=True):
                 "ai_result": self.ai_result,
                 "duration": self.duration,
                 "processing_time": self.processing_time,
-                "mode": dump_instance(self.mode.create_instance()),
+                "mode": dump_instance(self.mode.create_instance())
+                if self.mode
+                else None,
                 "location": self.location,
             },
         )
