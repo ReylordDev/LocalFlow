@@ -154,6 +154,7 @@ export class WindowManager extends EventEmitter {
       }
     } else {
       consoleLog("Mini window is destroyed or not created yet.");
+      this.showMiniWindow();
     }
   }
 

@@ -152,4 +152,13 @@ export function registerIpcHandlers(
   ipcMain.on(CHANNELS.MINI.SET_MAIN_CONTENT_HEIGHT, (_, height: number) => {
     windowManager.setMiniWindowMainContentHeight(height);
   });
+
+  ipcMain.on(CHANNELS.DATABASE.MODES.ACTIVATE_MODE, (_, modeId: UUID) => {
+    pythonService.sendCommand({
+      action: "switch_mode",
+      data: {
+        mode_id: modeId,
+      },
+    });
+  });
 }

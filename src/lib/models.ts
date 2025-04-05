@@ -400,6 +400,7 @@ export const CHANNELS = {
       CREATE_MODE: "database:modes:createMode",
       UPDATE_MODE: "database:modes:updateMode",
       DELETE_MODE: "database:modes:deleteMode",
+      ACTIVATE_MODE: "database:modes:activateMode",
     },
     RESULTS: {
       DELETE_RESULT: "database:results:deleteResult",
@@ -476,6 +477,7 @@ declare global {
         updateMode: (mode: ModeUpdate) => void;
         deleteMode: (modeId: UUID) => void;
         onModesUpdate: (callback: (modes: Mode[]) => void) => () => void;
+        activateMode: (modeId: UUID) => void;
       };
       results: {
         deleteResult: (resultId: UUID) => void;

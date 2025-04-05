@@ -135,26 +135,7 @@ export default function Modes() {
               <Button
                 onClick={(e) => {
                   e.stopPropagation();
-                  modes.map((m) => {
-                    window.database.modes.updateMode({
-                      id: m.id,
-                      active: false,
-                    });
-                  });
-                  window.database.modes.updateMode({
-                    id: mode.id,
-                    active: true,
-                  });
-                  console.log("Toggle Mode", mode.id, !mode.active);
-                  setModes((prev) =>
-                    prev.map((m) => {
-                      if (m.id === mode.id) {
-                        return { ...m, active: true };
-                      } else {
-                        return { ...m, active: false };
-                      }
-                    }),
-                  );
+                  window.database.modes.activateMode(mode.id);
                 }}
               >
                 Activate

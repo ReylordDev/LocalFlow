@@ -63,15 +63,15 @@ class LocalTranscriber(Transcriber):
                 if self.get_voice_language() != "auto"
                 else None
             )
+            task = "transcribe" if not self.mode.translate_to_english else "translate"
+            logger.debug(f"Transcription task: {task}")
             segments, info = self.model.transcribe(
                 file,
                 beam_size=5,
                 language=language,
                 vad_filter=True,
                 temperature=0.0,
-                task="transcribe"
-                if not self.mode.translate_to_english
-                else "translate",
+                task=task,
             )
             logger.debug(
                 f"Language: {info.language} ({info.language_probability * 100:.2f}%)"

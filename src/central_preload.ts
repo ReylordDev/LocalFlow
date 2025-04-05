@@ -108,6 +108,9 @@ export const exposeDatabase = () => {
       deleteMode(modeId) {
         return ipcRenderer.send(CHANNELS.DATABASE.MODES.DELETE_MODE, modeId);
       },
+      activateMode(modeId) {
+        return ipcRenderer.send(CHANNELS.DATABASE.MODES.ACTIVATE_MODE, modeId);
+      },
       onModesUpdate(callback) {
         const listener = (_: IpcRendererEvent, modes: Mode[]) => {
           callback(modes);
