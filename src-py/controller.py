@@ -179,6 +179,13 @@ class Controller:
                 f"Controller is not in a valid state ({self.status}) to cancel recording"
             )
 
+    def print_refreshed_modes(self):
+        modes = list(self.database_manager.get_all_modes())
+
+        print_nested_model(
+            "modes", {"modes": [dump_instance(m.create_instance()) for m in modes]}
+        )
+
     # TODO: Move each command into their own functions
     def handle_command(self, command: Command):
         logger.info(f"Received command: {command}")
@@ -238,11 +245,7 @@ class Controller:
             mode = command.data
             self.database_manager.update_mode(mode)
 
-            modes = list(self.database_manager.get_all_modes())
-
-            print_nested_model(
-                "modes", {"modes": [dump_instance(m.create_instance()) for m in modes]}
-            )
+            self.print_refreshed_modes()
 
         elif command.action == "delete_mode":
             if not isinstance(command.data, SelectModeCommand):
@@ -251,12 +254,7 @@ class Controller:
             mode_id = command.data.mode_id
             self.database_manager.delete_mode(mode_id)
 
-            # not sure if this is necessary
-            modes = list(self.database_manager.get_all_modes())
-
-            print_nested_model(
-                "modes", {"modes": [dump_instance(m.create_instance()) for m in modes]}
-            )
+            self.print_refreshed_modes()
 
         elif command.action == "get_results":
             results = self.database_manager.get_all_results()
@@ -334,6 +332,15 @@ class Controller:
                 {"text_replacements": [tr.model_dump() for tr in text_replacements]},
             )
 
+        elif command.action == "switch_mode":
+            if not isinstance(command.data, SelectModeCommand):
+                print_message("error", ErrorMessage(error="Invalid command data"))
+                return
+            mode_id = command.data.mode_id
+            self.database_manager.switch_mode(mode_id)
+
+            self.print_refreshed_modes()
+
 
 @logger.catch
 def main():
@@ -357,9 +364,8 @@ def debug():
     logger.warning("Running Debug Mode")
     controller = Controller()
 
-    controller.process_transcription("Hello, how are you?")
-
-    # mode_id = controller.database_manager.get_mode_by_name("General_4").id
+    # mode_id = controller.database_manager.get_mode_by_name("Voice Only").id
+    # controller.database_manager.switch_mode(mode_id)
 
     # controller.database_manager.update_mode(
     #     ModeUpdate(
@@ -381,4 +387,4 @@ def debug():
 
 if __name__ == "__main__":
     main()
-    # debug()
+    debug()

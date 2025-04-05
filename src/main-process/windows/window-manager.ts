@@ -66,6 +66,15 @@ export class WindowManager extends EventEmitter {
     Menu.setApplicationMenu(null);
   }
 
+  showMainWindow() {
+    if (this.mainWindow && !this.mainWindow.isDestroyed()) {
+      this.mainWindow.show();
+    } else {
+      this.createMainWindow();
+      this.mainWindow.show();
+    }
+  }
+
   toggleMainWindow() {
     if (!this.mainWindow || this.mainWindow.isDestroyed()) {
       consoleLog("Main window is destroyed or not created yet.");
@@ -133,6 +142,18 @@ export class WindowManager extends EventEmitter {
     if (this.miniWindow && !this.miniWindow.isDestroyed()) {
       this.sendMiniWindowMessage(CHANNELS.MINI.STATUS_UPDATE, "idle");
       this.miniWindow.hide();
+    }
+  }
+
+  toggleMiniWindow() {
+    if (this.miniWindow && !this.miniWindow.isDestroyed()) {
+      if (this.miniWindow.isVisible()) {
+        this.hideMiniWindow();
+      } else {
+        this.showMiniWindow();
+      }
+    } else {
+      consoleLog("Mini window is destroyed or not created yet.");
     }
   }
 
@@ -235,7 +256,7 @@ export class WindowManager extends EventEmitter {
     const recordingHistoryWindow = new BrowserWindow({
       height: 1024,
       width: 1440,
-      parent: this.mainWindow,
+      // parent: this.mainWindow,
       webPreferences: {
         preload: RECORDING_HISTORY_PRELOAD_WEBPACK_ENTRY,
       },
@@ -250,6 +271,17 @@ export class WindowManager extends EventEmitter {
       !this.recordingHistoryWindow.isDestroyed()
     ) {
       this.recordingHistoryWindow.webContents.send(channel, data);
+    }
+  }
+
+  showRecordingHistoryWindow() {
+    if (
+      !this.recordingHistoryWindow ||
+      this.recordingHistoryWindow.isDestroyed()
+    ) {
+      this.createRecordingHistoryWindow();
+    } else {
+      this.recordingHistoryWindow.show();
     }
   }
 

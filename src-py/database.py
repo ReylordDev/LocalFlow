@@ -214,6 +214,31 @@ class DatabaseManager:
             ).all()
             return modes
 
+    def switch_mode(self, mode_id: UUID):
+        with self.create_session() as session:
+            # Get the current active mode
+            current_active_mode = session.exec(
+                select(Mode).where(Mode.active == True)
+            ).first()
+            if current_active_mode:
+                current_active_mode.active = False
+                session.add(current_active_mode)
+
+            # Get the mode to switch to
+            mode_to_switch = session.exec(
+                select(Mode).where(Mode.id == mode_id)
+            ).first()
+            if not mode_to_switch:
+                logger.warning(f"Mode not found: {mode_id}")
+                raise Exception(f"Mode not found: {mode_id}")
+
+            # Switch the mode
+            mode_to_switch.active = True
+            session.add(mode_to_switch)
+            session.commit()
+            logger.info(f"Switched to mode: {mode_to_switch.name}")
+            return mode_to_switch
+
     def create_text_replacement(self, text_replacement: TextReplacementBase):
         with self.create_session() as session:
             text_replacement = TextReplacement(

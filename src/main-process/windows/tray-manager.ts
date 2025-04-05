@@ -1,9 +1,10 @@
 import { Tray, Menu, NativeImage, nativeImage, app } from "electron";
 import { PythonService } from "../services/python-service";
 import { WindowManager } from "./window-manager";
-import { AppConfig } from "../utils/config";
+import { AppConfig, consoleLog } from "../utils/config";
 import { SettingsService } from "../services/settings-service";
 import path from "path";
+import { Mode, PYTHON_SERVICE_EVENTS } from "../../lib/models";
 
 export class TrayManager {
   private tray: Tray;
@@ -17,7 +18,20 @@ export class TrayManager {
 
   initialize() {
     this.createTrayIcon();
-    this.updateContextMenu();
+
+    this.tray.on("click", () => {
+      this.windowManager.toggleMiniWindow();
+    });
+
+    consoleLog("Requesting modes from database for context menu");
+    this.updateContextMenu([]);
+    this.pythonService.sendCommand({
+      action: "get_modes",
+    });
+    this.pythonService.on(PYTHON_SERVICE_EVENTS.MODES, (modes: Mode[]) => {
+      consoleLog("Received modes from database for context menu");
+      this.updateContextMenu(modes);
+    });
   }
 
   private createTrayIcon() {
@@ -40,18 +54,53 @@ export class TrayManager {
     }
     this.tray = new Tray(icon);
 
-    this.tray.on("click", () => {
-      this.windowManager.toggleMainWindow();
-    });
-
     this.tray.setToolTip("LocalFlow");
   }
 
-  updateContextMenu() {
+  updateContextMenu(modes: Mode[]) {
     const contextMenu = Menu.buildFromTemplate([
       {
-        label: "Toggle Recording",
+        label: "Start/Stop Recording",
         click: () => this.pythonService.toggleRecording(),
+      },
+      {
+        label: "Transcribe File",
+        click: () => consoleLog("Transcribe File clicked"),
+      },
+      {
+        label: "History",
+        click: () => {
+          this.windowManager.showRecordingHistoryWindow();
+        },
+      },
+      {
+        label: "Settings",
+        click: () => {
+          this.windowManager.showMainWindow();
+        },
+      },
+      {
+        type: "separator",
+      },
+      {
+        label: "Switch Mode",
+        submenu: modes.map((mode) => ({
+          label: mode.name,
+          type: "radio",
+          checked: mode.active,
+          click: () => {
+            consoleLog(`Switching to mode: ${mode.name}`);
+            this.pythonService.sendCommand({
+              action: "switch_mode",
+              data: {
+                mode_id: mode.id,
+              },
+            });
+          },
+        })),
+      },
+      {
+        type: "separator",
       },
       {
         label: "Quit",

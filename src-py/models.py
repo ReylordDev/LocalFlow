@@ -28,6 +28,7 @@ ActionType = Literal[
     "create_mode",
     "update_mode",
     "delete_mode",
+    "switch_mode",
     "get_results",
     "delete_result",
     "add_example",
