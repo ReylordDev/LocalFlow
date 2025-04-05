@@ -347,7 +347,6 @@ export interface AppSettings {
 }
 
 export const CHANNEL_NAMES = {
-  CONTROLLER: "controller",
   SETTINGS: "settings",
   URL: "url",
   MINI: "mini",
@@ -359,9 +358,6 @@ export const CHANNEL_NAMES = {
 };
 
 export const CHANNELS = {
-  CONTROLLER: {
-    TOGGLE_RECORDING: "controller:toggle-recording",
-  },
   SETTINGS: {
     GET: "settings:get-all",
     DISABLE_SHORTCUT: "settings:disable-shortcut",

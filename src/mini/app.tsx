@@ -213,12 +213,12 @@ const MainContentDisplay = ({ status }: { status: ControllerStatusType }) => {
   }, [status]);
 
   useEffect(() => {
+    const padding = 16; // Padding in pixels
+    const border = 2; // Border in pixels
+    const maxHeight = 328; // Maximum height in pixels
+    const minHeight = 112 + border; // Minimum height in pixels
     if (status === "result" || status === "generating_ai_result") {
       if (resultText || transcriptionText) {
-        const padding = 16; // Padding in pixels
-        const border = 2; // Border in pixels
-        const maxHeight = 328; // Maximum height in pixels
-        const minHeight = 112; // Minimum height in pixels
         const resultTextArea = document.querySelector(
           "#result-text",
         ) as HTMLTextAreaElement;
@@ -234,6 +234,8 @@ const MainContentDisplay = ({ status }: { status: ControllerStatusType }) => {
         const height = Math.min(Math.max(computedHeight, minHeight), maxHeight);
         window.mini.setMainContentHeight(height);
       }
+    } else {
+      window.mini.setMainContentHeight(minHeight);
     }
   }, [status, resultText, transcriptionText]);
 
@@ -346,7 +348,7 @@ const ModePicker = ({
   const gapHeight = 8; // Gap between mode items in pixels
   const paddingHeight = 16; // Padding around the mode picker in pixels
   const borderHeight = 2; // Border height in pixels
-  const minHeight = 112; // Minimum height of the mode picker in pixels
+  const minHeight = 112 + borderHeight; // Minimum height of the mode picker in pixels
   const maxHeight = 328; // Maximum height of the mode picker in pixels
 
   useEffect(() => {

@@ -1,6 +1,8 @@
 import { BrowserWindow, Menu, screen } from "electron";
+import { EventEmitter } from "events";
 import { AppConfig, consoleLog } from "../utils/config";
 import { CHANNELS } from "../../lib/models";
+import { SettingsService } from "../services/settings-service";
 
 declare const MAIN_WINDOW_WEBPACK_ENTRY: string;
 declare const MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY: string;
@@ -11,13 +13,18 @@ declare const RECORDING_HISTORY_PRELOAD_WEBPACK_ENTRY: string;
 declare const STARTUP_WEBPACK_ENTRY: string;
 declare const STARTUP_PRELOAD_WEBPACK_ENTRY: string;
 
-export class WindowManager {
+export class WindowManager extends EventEmitter {
   private mainWindow: BrowserWindow;
   private miniWindow: BrowserWindow;
   private startupWindow: BrowserWindow;
   private recordingHistoryWindow: BrowserWindow | null = null;
 
-  constructor(private config: AppConfig) {}
+  constructor(
+    private config: AppConfig,
+    private settingsService: SettingsService,
+  ) {
+    super();
+  }
 
   createMainWindow() {
     const mainWindow = new BrowserWindow({
@@ -29,21 +36,42 @@ export class WindowManager {
       show: false,
     });
     mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
-    mainWindow.webContents.openDevTools();
+    if (this.config.isDev) {
+      mainWindow.webContents.openDevTools();
+    }
     mainWindow.on("close", (e) => {
-      if (mainWindow.isVisible()) {
+      if (this.settingsService.currentSettings.application.closeToTray) {
         e.preventDefault();
         mainWindow.hide();
       }
     });
+
+    mainWindow.on("minimize", () => {
+      if (this.settingsService.currentSettings.application.minimizeToTray) {
+        mainWindow.hide();
+      } else {
+        mainWindow.minimize();
+      }
+    });
+
+    mainWindow.on("closed", () => {
+      this.emit("main-window-closed");
+    });
+
+    mainWindow.on("ready-to-show", () => {
+      mainWindow.show();
+    });
+
     this.mainWindow = mainWindow;
     Menu.setApplicationMenu(null);
   }
 
   toggleMainWindow() {
-    if (this.mainWindow.isDestroyed()) {
-      this.createMainWindow();
-    } else if (this.mainWindow.isVisible()) {
+    if (!this.mainWindow || this.mainWindow.isDestroyed()) {
+      consoleLog("Main window is destroyed or not created yet.");
+      return;
+    }
+    if (this.mainWindow.isVisible()) {
       this.mainWindow.hide();
     } else {
       this.mainWindow.show();
@@ -80,10 +108,11 @@ export class WindowManager {
         preload: MINI_PRELOAD_WEBPACK_ENTRY,
       },
     });
-    // TEMP for development
-    // miniWindow.hide();
+    miniWindow.hide();
 
-    miniWindow.webContents.openDevTools();
+    if (this.config.isDev) {
+      miniWindow.webContents.openDevTools();
+    }
 
     // and load the index.html of the app.
     miniWindow.loadURL(MINI_WEBPACK_ENTRY);
@@ -94,14 +123,16 @@ export class WindowManager {
   showMiniWindow() {
     if (this.miniWindow && !this.miniWindow.isDestroyed()) {
       this.miniWindow.showInactive();
+    } else {
+      this.createMiniWindow();
+      this.miniWindow.showInactive();
     }
   }
 
   hideMiniWindow() {
     if (this.miniWindow && !this.miniWindow.isDestroyed()) {
       this.sendMiniWindowMessage(CHANNELS.MINI.STATUS_UPDATE, "idle");
-      // TEMPORARY for deveopment
-      // this.miniWindow.hide();
+      this.miniWindow.hide();
     }
   }
 

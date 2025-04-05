@@ -25,10 +25,6 @@ export function registerIpcHandlers(
   registerURLHandlers();
   registerDeviceHandlers(pythonService);
 
-  ipcMain.on(CHANNELS.CONTROLLER.TOGGLE_RECORDING, () => {
-    pythonService.toggleRecording();
-  });
-
   ipcMain.on(CHANNELS.MINI.AUDIO_LEVEL_REQUEST, () => {
     pythonService.sendCommand({
       action: "audio_level",

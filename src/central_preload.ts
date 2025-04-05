@@ -18,14 +18,6 @@ import { contextBridge, ipcRenderer, IpcRendererEvent } from "electron";
 // Expose protected methods that allow the renderer process to use
 // the ipcRenderer without exposing the entire object
 
-export const exposeController = () => {
-  contextBridge.exposeInMainWorld(CHANNEL_NAMES.CONTROLLER, {
-    toggleRecording: () => {
-      ipcRenderer.send(CHANNELS.CONTROLLER.TOGGLE_RECORDING);
-    },
-  } satisfies Window["controller"]);
-};
-
 export const exposeSettings = () => {
   contextBridge.exposeInMainWorld(CHANNEL_NAMES.SETTINGS, {
     getAll: async () => {

@@ -17,6 +17,8 @@ export default function ConfigurationPage() {
   const [enableRecordingWindow, setEnableRecordingWindow] = useState(true);
   const [autoCloseRecordingWindow, setAutoCloseRecordingWindow] =
     useState(false);
+  const [minimizeToTray, setMinimizeToTray] = useState(false);
+  const [closeToTray, setCloseToTray] = useState(false);
 
   const [autoPasteResult, setAutoPasteResult] = useState(false);
   const [restoreClipboard, setRestoreClipboard] = useState(false);
@@ -33,6 +35,8 @@ export default function ConfigurationPage() {
       setAutoCloseRecordingWindow(
         settings.application.autoCloseRecordingWindow,
       );
+      setMinimizeToTray(settings.application.minimizeToTray);
+      setCloseToTray(settings.application.closeToTray);
 
       setAutoPasteResult(settings.output.autoPasteResult);
       setRestoreClipboard(settings.output.restoreClipboard);
@@ -48,8 +52,8 @@ export default function ConfigurationPage() {
 
     window.settings.setApplication({
       launchAtStartup,
-      minimizeToTray: true,
-      closeToTray: true,
+      minimizeToTray,
+      closeToTray,
       enableRecordingWindow,
       autoCloseRecordingWindow,
     });
@@ -69,6 +73,8 @@ export default function ConfigurationPage() {
     launchAtStartup,
     enableRecordingWindow,
     autoCloseRecordingWindow,
+    minimizeToTray,
+    closeToTray,
     autoPasteResult,
     restoreClipboard,
   ]);
@@ -148,6 +154,28 @@ export default function ConfigurationPage() {
                 checked={autoCloseRecordingWindow}
                 onCheckedChange={(checked) => {
                   setAutoCloseRecordingWindow(checked);
+                }}
+              />
+            </div>
+            <Separator orientation="horizontal" />
+            <div className={cn(menuItemClass)}>
+              <h3 className="text-md font-semibold">
+                Minimize to the System Tray
+              </h3>
+              <Switch
+                checked={minimizeToTray}
+                onCheckedChange={(checked) => {
+                  setMinimizeToTray(checked);
+                }}
+              />
+            </div>
+            <Separator orientation="horizontal" />
+            <div className={cn(menuItemClass)}>
+              <h3 className="text-md font-semibold">Close to Tray</h3>
+              <Switch
+                checked={closeToTray}
+                onCheckedChange={(checked) => {
+                  setCloseToTray(checked);
                 }}
               />
             </div>

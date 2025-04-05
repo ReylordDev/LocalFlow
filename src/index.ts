@@ -25,7 +25,7 @@ nativeTheme.themeSource = "light";
 const config = new AppConfig();
 const settingsService = new SettingsService(config);
 const pythonService = new PythonService(config, settingsService);
-const windowManager = new WindowManager(config);
+const windowManager = new WindowManager(config, settingsService);
 const trayManager = new TrayManager(
   config,
   windowManager,
@@ -48,6 +48,9 @@ app.whenReady().then(async () => {
   );
 
   settingsService.on(SETTINGS_SERVICE_EVENTS.SHORTCUT_PRESSED.TOGGLE, () => {
+    if (settingsService.currentSettings.application.enableRecordingWindow) {
+      windowManager.showMiniWindow();
+    }
     pythonService.toggleRecording();
   });
 
@@ -110,10 +113,15 @@ app.whenReady().then(async () => {
       ? result.ai_result
       : result.transcription;
     clipboard.writeText(text);
-    new Notification({
-      title: "Transcription copied to clipboard",
-      body: text,
-    }).show();
+    if (!settingsService.currentSettings.application.enableRecordingWindow) {
+      new Notification({
+        title: "Transcription copied to clipboard",
+        body: text,
+      }).show();
+    }
+    if (settingsService.currentSettings.application.autoCloseRecordingWindow) {
+      windowManager.hideMiniWindow();
+    }
   });
 
   pythonService.on(
@@ -179,6 +187,10 @@ app.whenReady().then(async () => {
   );
 
   registerIpcHandlers(settingsService, config, pythonService, windowManager);
+
+  windowManager.on("main-window-closed", () => {
+    app.quit();
+  });
 });
 
 // Quit app
