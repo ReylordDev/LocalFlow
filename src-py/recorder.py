@@ -131,6 +131,10 @@ class AudioRecorder:
             else:
                 return self.duration
 
+    def get_file_path(self):
+        file_path = f"{get_temp_path()}/recording.wav"
+        return file_path
+
     def save_audio(self):
         if not self.audio_data:
             logger.warning("No audio data to save.")

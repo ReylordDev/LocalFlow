@@ -386,6 +386,7 @@ export const CHANNELS = {
     AUDIO_LEVEL_RESPONSE: "mini:audio-level",
     STATUS_UPDATE: "mini:status-update",
     RESULT: "mini:result",
+    TRANSCRIPTION: "mini:transcription",
     CHANGE_MODE_SHORTCUT_PRESSED: "mini:change-mode-shortcut-pressed",
     SET_MAIN_CONTENT_HEIGHT: "mini:setMainContentHeight",
   },
@@ -461,6 +462,7 @@ declare global {
         callback: (status: ControllerStatusType) => void,
       ) => () => void;
       onResult: (callback: (result: Result) => void) => () => void;
+      onTranscription(callback: (transcription: string) => void): () => void;
       onChangeModeShortcutPressed: (callback: () => void) => () => void;
       setMainContentHeight: (height: number) => void;
     };

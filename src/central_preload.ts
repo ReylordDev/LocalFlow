@@ -274,6 +274,15 @@ export const exposeMini = () => {
     setMainContentHeight: (height: number) => {
       ipcRenderer.send(CHANNELS.MINI.SET_MAIN_CONTENT_HEIGHT, height);
     },
+    onTranscription(callback) {
+      const listener = (_: IpcRendererEvent, transcription: string) => {
+        callback(transcription);
+      };
+      ipcRenderer.on(CHANNELS.MINI.TRANSCRIPTION, listener);
+      return () => {
+        ipcRenderer.off(CHANNELS.MINI.TRANSCRIPTION, listener);
+      };
+    },
   } satisfies Window["mini"]);
 };
 

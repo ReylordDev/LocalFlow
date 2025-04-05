@@ -116,6 +116,16 @@ app.whenReady().then(async () => {
     }).show();
   });
 
+  pythonService.on(
+    PYTHON_SERVICE_EVENTS.TRANSCRIPTION,
+    (transcriptionMessage) => {
+      windowManager.sendMiniWindowMessage(
+        CHANNELS.MINI.TRANSCRIPTION,
+        transcriptionMessage,
+      );
+    },
+  );
+
   pythonService.on(PYTHON_SERVICE_EVENTS.MODES, (modes: Mode[]) => {
     windowManager.sendMainWindowMessage(
       CHANNELS.DATABASE.MODES.MODES_RESPONSE,

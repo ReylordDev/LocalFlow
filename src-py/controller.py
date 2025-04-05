@@ -6,8 +6,8 @@ from compressor import Compressor
 from transcriber import LocalTranscriber
 from formatter import AIProcessor
 from utils.logging import initialize_logger
-from utils.utils import get_temp_path
 from utils.model_utils import dump_instance
+from utils.utils import get_lorem_ipsum
 from window_detector import WindowDetector
 from models import (
     AddExampleCommand,
@@ -54,15 +54,17 @@ class Controller:
         self.status = status
         print_message("status", StatusMessage(status=status))
 
-    def execute_transcription_workflow(self):
-        logger.info(f"Executing transcription workflow, mode: {self.mode}")
+    def stop_recording(self):
         if self.recorder.recording:
             self.recorder.stop()
-        processing_start_time = time.time()
+        return self.recorder.get_file_path()
 
+    def compress_recording(self, file_path: str):
         self.update_status("compressing")
-        self.compressor.compress()
+        compressed_file = self.compressor.compress(file_path)
+        return compressed_file
 
+    def transcribe_audio(self, file_path: str):
         self.update_status("loading_voice_model")
         global_text_replacements = list(
             self.database_manager.get_global_text_replacements()
@@ -71,14 +73,43 @@ class Controller:
         self.transcriber.load_model()
 
         self.update_status("transcribing")
-        transcription = self.transcriber.transcribe_audio(
-            f"{get_temp_path()}/recording.flac"
-        )
+        transcription = self.transcriber.transcribe_audio(file_path)
         print_message(
             "transcription",
             TranscriptionMessage(transcription=transcription),
         )
         self.transcriber.unload_model()
+        return transcription
+
+    def process_transcription(self, transcription: str):
+        assert self.mode.language_model is not None
+        assert self.mode.prompt is not None
+        self.update_status("loading_language_model")
+        self.processor = AIProcessor(self.mode)
+        self.processor.load_model()
+
+        self.update_status("generating_ai_result")
+        ai_result = self.processor.process(transcription)
+        self.processor.unload_model()
+
+        return ai_result
+
+    def execute_transcription_workflow(self):
+        logger.info(f"Executing transcription workflow, mode: {self.mode}")
+        processing_start_time = time.time()
+        recording_file = self.stop_recording()
+        if not recording_file:
+            logger.warning("Recording file not found")
+            self.update_status("idle")
+            return
+
+        compressed_file = self.compress_recording(recording_file)
+        if not compressed_file:
+            logger.warning("Compression failed or file not found")
+            self.update_status("idle")
+            return
+
+        transcription = self.transcribe_audio(compressed_file)
 
         if not transcription:
             logger.warning("Transcription empty or failed")
@@ -86,16 +117,10 @@ class Controller:
             self.compressor.cleanup()
             return
 
-        if self.mode.use_language_model:
-            assert self.mode.language_model is not None
-            assert self.mode.prompt is not None
-            self.update_status("loading_language_model")
-            self.processor = AIProcessor(self.mode)
-            self.processor.load_model()
+        ai_result = None
 
-            self.update_status("generating_ai_result")
-            ai_result = self.processor.process(transcription)
-            self.processor.unload_model()
+        if self.mode.use_language_model:
+            ai_result = self.process_transcription(transcription)
 
         self.update_status("saving")
         result = Result(
@@ -332,7 +357,7 @@ def debug():
     logger.warning("Running Debug Mode")
     controller = Controller()
 
-    controller.database_manager.get_global_text_replacements()
+    controller.process_transcription("Hello, how are you?")
 
     # mode_id = controller.database_manager.get_mode_by_name("General_4").id
 

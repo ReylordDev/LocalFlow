@@ -181,6 +181,9 @@ const StatusDisplay = ({ status }: { status: ControllerStatusType }) => {
 
 const MainContentDisplay = ({ status }: { status: ControllerStatusType }) => {
   const [resultText, setResultText] = useState<string | null>(null);
+  const [transcriptionText, setTranscriptionText] = useState<string | null>(
+    null,
+  );
 
   useEffect(() => {
     const unsubscribe = window.mini.onResult((result) => {
@@ -198,20 +201,41 @@ const MainContentDisplay = ({ status }: { status: ControllerStatusType }) => {
   }, []);
 
   useEffect(() => {
-    if (status === "result") {
-      const padding = 16; // Padding in pixels
-      const border = 2; // Border in pixels
-      const maxHeight = 328; // Maximum height in pixels
-      const minHeight = 112; // Minimum height in pixels
-      const textArea = document.querySelector(
-        "#result-text",
-      ) as HTMLTextAreaElement;
-      const textHeight = textArea.clientHeight;
-      const computedHeight = textHeight + padding + border;
-      const height = Math.min(Math.max(computedHeight, minHeight), maxHeight);
-      window.mini.setMainContentHeight(height);
+    if (status === "generating_ai_result") {
+      const unsubscribe = window.mini.onTranscription((transcription) => {
+        setTranscriptionText(transcription);
+      });
+
+      return () => {
+        unsubscribe();
+      };
     }
   }, [status]);
+
+  useEffect(() => {
+    if (status === "result" || status === "generating_ai_result") {
+      if (resultText || transcriptionText) {
+        const padding = 16; // Padding in pixels
+        const border = 2; // Border in pixels
+        const maxHeight = 328; // Maximum height in pixels
+        const minHeight = 112; // Minimum height in pixels
+        const resultTextArea = document.querySelector(
+          "#result-text",
+        ) as HTMLTextAreaElement;
+        const transcriptionTextArea = document.querySelector(
+          "#transcription-text",
+        ) as HTMLTextAreaElement;
+        const textArea = resultTextArea || transcriptionTextArea; // Use the appropriate text area based on the status
+        console.log("Text area: ", textArea.id);
+        const textHeight = textArea.clientHeight;
+        console.log("Text height: ", textHeight);
+        const computedHeight = textHeight + padding + border;
+        console.log("Computed height: ", computedHeight);
+        const height = Math.min(Math.max(computedHeight, minHeight), maxHeight);
+        window.mini.setMainContentHeight(height);
+      }
+    }
+  }, [status, resultText, transcriptionText]);
 
   switch (status) {
     case "idle":
@@ -230,13 +254,37 @@ const MainContentDisplay = ({ status }: { status: ControllerStatusType }) => {
     case "loading_voice_model":
     case "transcribing":
     case "loading_language_model":
-    case "generating_ai_result":
     case "saving":
       return (
         <div className="flex min-h-28 items-center justify-center">
           <Loader2 className="animate-spin-slow" />
         </div>
       );
+    case "generating_ai_result":
+      console.log("Transcription text: ", transcriptionText);
+      if (!transcriptionText) {
+        return (
+          <div className="flex min-h-28 items-center justify-center">
+            <Loader2 className="animate-spin-slow" />
+          </div>
+        );
+      } else {
+        return (
+          <div className="no-drag flex max-h-[328px] min-h-28 w-full select-text flex-col justify-center rounded-t-3xl px-4 py-2">
+            <p
+              id="transcription-text"
+              className={cn(
+                "scrollbar overflow-y-auto whitespace-pre-wrap",
+                transcriptionText.trim().length > 200
+                  ? "text-left"
+                  : "text-center",
+              )}
+            >
+              {transcriptionText.trim()}
+            </p>
+          </div>
+        );
+      }
     case "result":
       return (
         <div className="no-drag flex max-h-[328px] min-h-28 w-full select-text flex-col justify-center rounded-t-3xl px-4 py-2">

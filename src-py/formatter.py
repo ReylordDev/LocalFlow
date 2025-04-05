@@ -1,4 +1,5 @@
 import os
+from utils.ipc import print_message
 import time
 from typing import Literal, Optional
 from httpx import request
@@ -9,6 +10,7 @@ from models import (
     Mode,
     OllamaOfflineException,
     Prompt,
+    TranscriptionMessage,
 )
 import ollama
 
@@ -62,22 +64,31 @@ class AIProcessor:
         logger.info(f"System Prompt: {complete_system_prompt}")
         logger.info(f"Prompt: {transcription}")
 
-        generate_response = ollama.generate(
+        stream = ollama.generate(
             model=self.language_model.name,
             system=complete_system_prompt,
             prompt=transcription,
             keep_alive="1m",
+            stream=True,
         )
 
-        result = generate_response.response
-        prompt_tokens = generate_response.prompt_eval_count
-        response_tokens = generate_response.eval_count
-        if generate_response.total_duration:
-            total_duration = generate_response.total_duration / 10**9
+        message = ""
+        for chunk in stream:
+            content = chunk.response
+            if content:
+                message += content
+                print_message(
+                    "transcription", TranscriptionMessage(transcription=message)
+                )
+
+        prompt_tokens = chunk.prompt_eval_count
+        response_tokens = chunk.eval_count
+        if chunk.total_duration:
+            total_duration = chunk.total_duration / 10**9
         else:
             total_duration = 0
 
-        result = post_process_result(result)
+        result = post_process_result(message)
 
         logger.info(result)
         if prompt_tokens and response_tokens:
@@ -317,26 +328,4 @@ class LocalFormatter(Formatter):
 
 
 if __name__ == "__main__":
-    formatter = LocalFormatter()
-    formatter.load_model()
-
-    raw_transcription_1 = " What do I wish I could achieve today? I would like to do my weekly review of my tasks and just try to get my organization straight. What I don't want to do is work on Psycluster. That's not helpful. While it's fun and I enjoy it and it feels good, I need to postpone it. I did also have an idea of working on the local flow project. I could implement a groq a groq formatter and transcriber, which would be kind of cool. It would probably be a little bit more work and once again that is a side project. It can be part of the main process, but I need to be clear and conscious about that. "
-
-    formatted_transcription_1 = formatter.improve_transcription(raw_transcription_1)
-
-    logger.info(f"Raw transcription: {raw_transcription_1}")
-    logger.info(f"Formatted transcription: {formatted_transcription_1}")
-
-    raw_transcription_2 = " Okay, it's time to finally take a break at journal. I have been working relentlessly on the response clustering project these last couple of days. And I have made tremendous progress and I'm incredibly proud of it. However, I cannot ignore the fact that I have been neglecting everything else in my life. The truth is that I really enjoy this kind of work because it allows me to basically dominate my mind space in such a way that I don't think about anything else. And that is productive and it works and I get things done, but it's not healthy when you start neglecting other things. The truth is I've been pushing various tasks and I'm not exactly... progressing in my life's journey with the exception of this one project. But my ambition is high and I want to treasure that. I just wish I could find a more balanced schedule that properly respects my time and health while still fueling my ambition."
-
-    formatted_transcription_2 = formatter.improve_transcription(raw_transcription_2)
-
-    logger.info(f"Raw transcription: {raw_transcription_2}")
-    logger.info(f"Formatted transcription: {formatted_transcription_2}")
-
-    raw_transcription_3 = " Okay, so I've just realized that I don't have any transcriptions left, and I need one to be able to test out this new feature that I've built. Additionally, I think it would make sense to make it as long as possible, just to make sure that the full text display is correctly working. So, I mean, let's just give some context, I suppose, right? Again, I've been using DeepSeq to help me add some features, and it's worked really well to add the transcription deletion feature, which, as you can tell, I've tested out quite a bit because I have no transcriptions left. Anyway, I'm using it now to add the dialog feature. So, when you click on the transcription in the history tab, you can actually see the full transcription, and it should also show some additional... information such as the date. From what it looks like, it's been implementing quite nicely with my code base, so I'm excited to see how this one turned out."
-
-    formatted_transcription_3 = formatter.improve_transcription(raw_transcription_3)
-
-    logger.info(f"Raw transcription: {raw_transcription_3}")
-    logger.info(f"Formatted transcription: {formatted_transcription_3}")
+    pass

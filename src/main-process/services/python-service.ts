@@ -18,6 +18,7 @@ import {
   VoiceModelsMessage,
   LanguageModelsMessage,
   TextReplacementsMessage,
+  TranscriptionMessage,
 } from "../../lib/models";
 import path from "path";
 import { SettingsService } from "./settings-service";
@@ -80,7 +81,10 @@ export class PythonService extends EventEmitter {
         this.handleStatusUpdate((message.data as StatusMessage).status);
         break;
       case "transcription":
-        consoleLog("Voice Model Transcription:", message.data);
+        this.emit(
+          PYTHON_SERVICE_EVENTS.TRANSCRIPTION,
+          (message.data as TranscriptionMessage).transcription,
+        );
         break;
       case "audio_level":
         this.emit(
