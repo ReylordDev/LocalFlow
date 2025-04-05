@@ -358,9 +358,8 @@ const ModePicker = ({
       paddingHeight +
       borderHeight;
 
-    window.mini.setMainContentHeight(
-      Math.min(totalHeight, Math.max(minHeight, maxHeight)),
-    );
+    const computedHeight = Math.min(totalHeight, maxHeight);
+    window.mini.setMainContentHeight(Math.max(computedHeight, minHeight));
 
     return () => {
       window.mini.setMainContentHeight(minHeight + borderHeight);
