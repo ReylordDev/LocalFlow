@@ -57,6 +57,7 @@ export function AppSidebar({
         // TODO: Open the recording history
         window.recordingHistory.openWindow();
       }
+      setPage(identifier as Page);
     } else {
       // Handle internal navigation
       setPage(identifier as Page);
