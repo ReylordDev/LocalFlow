@@ -1,5 +1,5 @@
 import { Copy, FolderClosed, PanelRightOpen, Search } from "lucide-react";
-import { ExampleBase, Result } from "../lib/models";
+import { ExampleBase, languageNameMap, Result } from "../lib/models";
 import { useEffect, useState } from "react";
 import { cn } from "../lib/utils";
 import { Button } from "../components/ui/button";
@@ -18,6 +18,18 @@ import {
 } from "../components/ui/context-menu";
 import { UUID } from "crypto";
 import { useLocale } from "../lib/hooks";
+import {
+  SidebarProvider,
+  SidebarTrigger,
+  Sidebar as SidebarShadcn,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupLabel,
+  SidebarGroupContent,
+  SidebarMenu,
+  SidebarMenuItem,
+} from "../components/ui/sidebar";
+import { Separator } from "../components/ui/separator";
 
 const HistoryWindow = () => {
   const [history, setHistory] = useState<Result[]>([]);
@@ -186,72 +198,157 @@ function ResultDetails({ result }: { result: Result }) {
   console.log("ResultDetails:", result);
 
   return (
-    <Tabs
-      defaultValue="transcription"
-      className="flex h-screen w-full max-w-[1120px] flex-col items-center"
-    >
-      <div className="flex w-full items-center justify-between p-4">
-        <p className="select-text">
-          {new Date(result.created_at * 1000).toLocaleString(locale)}
-        </p>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => {
-              window.clipboard.copy(
-                displayState === "transcription"
-                  ? result.transcription
-                  : result.mode.use_language_model
-                    ? result.ai_result
-                    : result.transcription,
-              );
-            }}
-          >
-            <Copy />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => {
-              console.log("Opening file:", result.location);
-              window.file.open(result.location);
-            }}
-          >
-            <FolderClosed />
-          </Button>
-          <TabsList>
-            <TabsTrigger
-              onClick={() => setDisplayState("transcription")}
-              value="transcription"
+    <SidebarProvider defaultOpen={false}>
+      <Tabs
+        defaultValue="transcription"
+        className="flex h-screen w-full max-w-[1120px] flex-col items-center"
+      >
+        <div className="flex w-full items-center justify-between p-4">
+          <p className="select-text">
+            {new Date(result.created_at * 1000).toLocaleString(locale)}
+          </p>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => {
+                window.clipboard.copy(
+                  displayState === "transcription"
+                    ? result.transcription
+                    : result.mode.use_language_model
+                      ? result.ai_result
+                      : result.transcription,
+                );
+              }}
             >
-              Transcription
-            </TabsTrigger>
-            <TabsTrigger
-              disabled={!result.mode.use_language_model}
-              onClick={() => setDisplayState("ai_result")}
-              value="ai_result"
+              <Copy />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => {
+                console.log("Opening file:", result.location);
+                window.file.open(result.location);
+              }}
             >
-              AI Result
-            </TabsTrigger>
-          </TabsList>
-          <Button variant="ghost" size="icon">
-            <PanelRightOpen />
-          </Button>
+              <FolderClosed />
+            </Button>
+            <TabsList>
+              <TabsTrigger
+                onClick={() => setDisplayState("transcription")}
+                value="transcription"
+              >
+                Transcription
+              </TabsTrigger>
+              <TabsTrigger
+                disabled={!result.mode.use_language_model}
+                onClick={() => setDisplayState("ai_result")}
+                value="ai_result"
+              >
+                AI Result
+              </TabsTrigger>
+            </TabsList>
+            <SidebarTrigger>
+              {/* <Button variant="ghost" size="icon"> */}
+              <PanelRightOpen />
+              {/* </Button> */}
+            </SidebarTrigger>
+          </div>
         </div>
-      </div>
-      <TabsContent value="transcription" className="w-full">
-        <p className="w-full select-text whitespace-pre-line p-4">
-          {result.transcription}
-        </p>
-      </TabsContent>
-      <TabsContent value="ai_result" className="w-full">
-        <p className="w-full select-text whitespace-pre-line p-4">
-          {result.mode.use_language_model
-            ? result.ai_result
-            : result.transcription}
-        </p>
-      </TabsContent>
-    </Tabs>
+        <TabsContent value="transcription" className="w-full">
+          <p className="w-full select-text whitespace-pre-line p-4">
+            {result.transcription}
+          </p>
+        </TabsContent>
+        <TabsContent value="ai_result" className="w-full">
+          <p className="w-full select-text whitespace-pre-line p-4">
+            {result.mode.use_language_model
+              ? result.ai_result
+              : result.transcription}
+          </p>
+        </TabsContent>
+      </Tabs>
+      <MetadataSidebar result={result} />
+    </SidebarProvider>
+  );
+}
+
+function MetadataSidebar({ result }: { result: Result | null }) {
+  const locale = useLocale();
+  return (
+    <SidebarShadcn side="right">
+      <SidebarContent className="p-4">
+        <SidebarGroup>
+          <SidebarGroupLabel>Recording</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu className="flex w-full flex-col gap-2 rounded-md border bg-zinc-100 p-4">
+              <SidebarMenuItem className="flex items-center justify-between">
+                <p>Duration</p>
+                <p>{result?.duration.toFixed(0)}s</p>
+              </SidebarMenuItem>
+              <Separator orientation="horizontal" />
+              <SidebarMenuItem className="flex items-center justify-between">
+                <p>Processing Time</p>
+                <p>{result?.processing_time.toFixed(0)}s</p>
+              </SidebarMenuItem>
+              <Separator orientation="horizontal" />
+              <SidebarMenuItem className="flex items-center justify-between">
+                <p>Created At</p>
+                <p>
+                  {new Date(result?.created_at * 1000).toLocaleString(locale)}
+                </p>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+        <SidebarGroup>
+          <SidebarGroupLabel>Configuration</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu className="flex w-full flex-col gap-2 rounded-md border bg-zinc-100 p-4">
+              <SidebarMenuItem className="flex items-center justify-between">
+                <p>Mode</p>
+                <p>{result?.mode.name}</p>
+              </SidebarMenuItem>
+              <Separator orientation="horizontal" />
+              <SidebarMenuItem className="flex items-center justify-between">
+                <p>Model</p>
+                <p>{result?.mode.voice_model.name}</p>
+              </SidebarMenuItem>
+              <Separator orientation="horizontal" />
+              {result?.mode.use_language_model && (
+                <SidebarMenuItem className="flex items-center justify-between">
+                  <p>Language Model</p>
+                  <p>{result?.mode.language_model.name}</p>
+                </SidebarMenuItem>
+              )}
+              <Separator orientation="horizontal" />
+              <SidebarMenuItem className="flex items-center justify-between">
+                <p>Language</p>
+                <p>{languageNameMap[result?.mode.voice_language]}</p>
+              </SidebarMenuItem>
+              <Separator orientation="horizontal" />
+              <SidebarMenuItem className="flex items-center justify-between">
+                <p>English Translation Enabled</p>
+                <p>{result?.mode.translate_to_english ? "Yes" : "No"}</p>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+        {result?.mode.use_language_model && result.mode.prompt && (
+          <SidebarGroup>
+            <SidebarGroupLabel>Prompt</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu className="flex w-full flex-col gap-2 rounded-md border bg-zinc-100 p-4">
+                <SidebarMenuItem className="flex items-center justify-between">
+                  <p className="select-text">
+                    {result?.mode.prompt.system_prompt}
+                  </p>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
+      </SidebarContent>
+    </SidebarShadcn>
   );
 }

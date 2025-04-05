@@ -263,6 +263,9 @@ export class WindowManager extends EventEmitter {
       },
     });
     recordingHistoryWindow.loadURL(RECORDING_HISTORY_WEBPACK_ENTRY);
+    if (this.config.isDev) {
+      recordingHistoryWindow.webContents.openDevTools();
+    }
     this.recordingHistoryWindow = recordingHistoryWindow;
   };
 
