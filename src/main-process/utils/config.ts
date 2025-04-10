@@ -4,6 +4,7 @@ import log from "electron-log";
 
 export const consoleLog = app.isPackaged ? log.log : console.log;
 export const consoleError = app.isPackaged ? log.error : console.error;
+export const logger = app.isPackaged ? log : console;
 
 export class AppConfig {
   readonly isPackaged: boolean;

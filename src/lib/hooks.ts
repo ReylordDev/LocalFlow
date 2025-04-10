@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { AppSettings } from "../lib/models";
+import { AppSettings } from "./models";
 export function useSettings() {
   const [settings, setSettings] = useState<AppSettings>();
 

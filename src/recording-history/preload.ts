@@ -4,7 +4,7 @@ import {
   exposeFile,
   exposeDatabase,
   exposeSettings,
-} from "../central_preload";
+} from "../central-preload";
 
 exposeRecordingHistory();
 exposeDatabase();
