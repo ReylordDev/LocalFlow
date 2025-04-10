@@ -1,6 +1,6 @@
-from typing import Any, Optional, Union
+from typing import Optional, Union
 from uuid import UUID
-from pydantic import BaseModel, RootModel
+from pydantic import BaseModel
 from models.db import ExampleBase, ModeCreate, ModeUpdate, TextReplacementBase
 
 

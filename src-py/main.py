@@ -9,8 +9,8 @@ from utils.logging import initialize_logger
 initialize_logger()
 
 # Import components
-from models.commands import Command
-from core.controller import Controller
+from models.commands import Command  # noqa: E402
+from core.controller import Controller  # noqa: E402
 
 
 def main():

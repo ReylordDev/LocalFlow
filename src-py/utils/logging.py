@@ -1,9 +1,9 @@
 import os
 import sys
 import logging
-from typing import Literal
 from loguru import logger
-from .utils import get_log_level, get_user_data_path, is_production_environment
+from .paths import get_user_data_path
+from .environment import get_log_level, is_production_environment
 
 
 class InterceptHandler(logging.Handler):

@@ -6,7 +6,7 @@ from pydantic import BaseModel, ConfigDict, computed_field
 from sqlmodel import Field, Relationship, SQLModel, String
 
 from utils.paths import get_user_data_path
-from utils.model_utils import create_instance, dump_instance
+from utils.serialization import create_instance, dump_instance
 
 
 ### SQLModels

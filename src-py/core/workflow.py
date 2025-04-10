@@ -1,14 +1,8 @@
 import time
 from loguru import logger
-from models.db import Mode, Result
-from services.audio.recorder import AudioRecorder
-from services.audio.compressor import Compressor
-from services.ai.transcriber import LocalTranscriber
-from services.ai.formatter import AIProcessor
-from services.storage.database import DatabaseManager
-from api.ipc import print_nested_model, print_message
-from models.messages import TranscriptionMessage, ControllerStatusType
-from utils.model_utils import dump_instance
+from models.db import Result
+from api.ipc import print_nested_model
+from utils.serialization import dump_instance
 
 
 class TranscriptionWorkflow:

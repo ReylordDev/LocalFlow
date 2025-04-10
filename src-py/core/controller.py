@@ -1,10 +1,7 @@
-import time
 from loguru import logger
-from typing import Optional
-from uuid import UUID
 
 from api.ipc import print_message, print_nested_model, print_progress
-from utils.model_utils import dump_instance
+from utils.serialization import dump_instance
 from models.commands import (
     SelectModeCommand,
     SelectDeviceCommand,

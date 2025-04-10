@@ -1,7 +1,6 @@
 import time
-from typing import Any, List, Literal, Optional, Union
+from typing import Any, List, Literal, Union
 from pydantic import BaseModel, Field
-from uuid import UUID
 
 
 ControllerStatusType = Literal[
