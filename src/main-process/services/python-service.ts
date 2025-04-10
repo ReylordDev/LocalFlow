@@ -23,10 +23,24 @@ import {
 import path from "path";
 import { SettingsService } from "./settings-service";
 
+/**
+ * Service for managing communication with the Python backend.
+ * Handles initialization of Python shell, sending commands,
+ * and processing messages received from the Python process.
+ *
+ * Extends EventEmitter to provide event-based communication
+ * between the python service and the main process.
+ */
 export class PythonService extends EventEmitter {
-  private shell: PythonShell;
+  private shell!: PythonShell; // Using definite assignment assertion
   private activeRecording = false;
 
+  /**
+   * Creates a new PythonService instance
+   *
+   * @param config - Application configuration settings
+   * @param settingsService - Service for handling application settings
+   */
   constructor(
     private config: AppConfig,
     private settingsService: SettingsService,
@@ -38,6 +52,10 @@ export class PythonService extends EventEmitter {
     );
   }
 
+  /**
+   * Initializes the Python shell with the appropriate configuration
+   * and sets up the message handler
+   */
   async initialize() {
     this.shell = new PythonShell(this.config.scriptPath, {
       pythonPath: this.config.pythonPath,
@@ -53,16 +71,16 @@ export class PythonService extends EventEmitter {
         PYTHONUTF8: "1",
       },
     });
-    logger.log("Python shell initialized");
-    logger.log("Script path:", this.config.scriptPath);
-    logger.log("Python path:", this.config.pythonPath);
-    logger.log(
+    logger.info("Python shell initialized");
+    logger.debug("Script path:", this.config.scriptPath);
+    logger.debug("Python path:", this.config.pythonPath);
+    logger.debug(
       "Working directory:",
       this.config.isPackaged
         ? path.join(process.resourcesPath, "src-py")
         : this.config.rootDir,
     );
-    logger.log("Environment variables:", {
+    logger.debug("Environment variables:", {
       PRODUCTION: String(!this.config.isDev),
       USER_DATA_PATH: this.config.dataDir,
       LOG_LEVEL: this.config.isDev ? "DEBUG" : "INFO",
@@ -72,6 +90,12 @@ export class PythonService extends EventEmitter {
     this.shell.on("message", this.handleMessage.bind(this));
   }
 
+  /**
+   * Handles messages received from the Python process
+   * and routes them to the appropriate handler
+   *
+   * @param message - Message received from Python process
+   */
   private handleMessage(message: Message) {
     switch (message.type) {
       case "progress":
@@ -99,14 +123,14 @@ export class PythonService extends EventEmitter {
         );
         break;
       case "error":
-        logger.log("Error:", message.data);
+        logger.error("Error from Python backend:", message.data);
         this.emit(
           PYTHON_SERVICE_EVENTS.ERROR,
           (message.data as unknown as ErrorMessage).error,
         );
         break;
       case "exception":
-        logger.log("Exception:", message.data);
+        logger.error("Exception from Python backend:", message.data);
         break;
       case "modes":
         this.emit(
@@ -151,36 +175,66 @@ export class PythonService extends EventEmitter {
         );
         break;
       default:
-        logger.log("Unknown message type:", message.type);
+        logger.warn("Unknown message type:", message.type);
     }
   }
 
+  /**
+   * Handles progress updates from the Python process
+   *
+   * @param progress - Progress update information
+   */
   private handleProgressUpdate(progress: ProgressMessage) {
     if (progress.step === "init" && progress.status === "complete") {
+      logger.info("Models initialization complete");
       this.emit(PYTHON_SERVICE_EVENTS.MODELS_READY);
     }
   }
 
+  /**
+   * Handles status updates from the Python process
+   *
+   * @param status - Current status of the Python controller
+   */
   private handleStatusUpdate(status: ControllerStatusType) {
+    logger.debug("Status update from Python backend:", status);
     this.emit(PYTHON_SERVICE_EVENTS.STATUS_UPDATE, status);
   }
 
+  /**
+   * Toggles recording state and sends the toggle command to the Python process
+   */
   toggleRecording() {
     this.sendCommand({ action: "toggle" } as Command);
     this.activeRecording = !this.activeRecording;
+    logger.info(`Recording ${this.activeRecording ? "started" : "stopped"}`);
   }
 
+  /**
+   * Handles settings changes from the settings service
+   *
+   * @param settings - Updated application settings
+   */
   private handleSettingsChange(settings: AppSettings) {
-    logger.log("Settings changed:", settings);
-    logger.log("Not implemented yet.");
+    logger.debug("Settings changed:", settings);
+    logger.warn("Settings change handler not implemented yet.");
   }
 
+  /**
+   * Sends a command to the Python process
+   *
+   * @param command - The command to send
+   */
   sendCommand(command: Command) {
-    logger.log("Sending command to Python:", command);
+    logger.debug("Sending command to Python:", command);
     this.shell.send(command);
   }
 
+  /**
+   * Shuts down the Python process
+   */
   shutdown() {
+    logger.info("Shutting down Python service");
     this.shell.kill();
   }
 }
