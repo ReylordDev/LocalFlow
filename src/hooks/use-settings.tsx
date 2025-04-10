@@ -1,5 +1,5 @@
+import { AppSettings } from "../lib/models";
 import { useEffect, useState } from "react";
-import { DEFAULT_SETTINGS } from "../main-process/services/settings-service";
 
 /**
  * A hook that provides access to the application settings.
@@ -25,7 +25,7 @@ import { DEFAULT_SETTINGS } from "../main-process/services/settings-service";
  * ```
  */
 export function useSettings() {
-  const [settings, setSettings] = useState(DEFAULT_SETTINGS);
+  const [settings, setSettings] = useState<AppSettings | undefined>(undefined);
 
   useEffect(() => {
     window.settings.getAll().then((settings) => {

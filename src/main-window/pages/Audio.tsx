@@ -9,7 +9,7 @@ const menuItemClass = "justify-between items-center flex px-4 min-h-[50px]";
 
 export default function AudioPage() {
   const [devices, setDevices] = useState<Device[]>([]);
-  const [selectedDeviceIndex, setSelectedDeviceIndex] = useState(null);
+  const [selectedDeviceIndex, setSelectedDeviceIndex] = useState("");
   const [useSystemDefaultDevice, setUseSystemDefaultDevice] = useState(false);
   const [boostAudio, setBoostAudio] = useState(false);
 
@@ -28,7 +28,7 @@ export default function AudioPage() {
     window.settings.getAll().then((settings) => {
       console.log("Settings: ", settings);
       setSelectedDeviceIndex(
-        settings.audio.device ? settings.audio.device.index.toString() : null,
+        settings.audio.device ? settings.audio.device.index.toString() : "",
       );
       setUseSystemDefaultDevice(settings.audio.useSystemDefaultDevice);
       setBoostAudio(settings.audio.automaticallyIncreaseMicVolume);
@@ -36,9 +36,10 @@ export default function AudioPage() {
   }, []);
 
   const handleSettingsChange = () => {
-    const selectedDevice = devices.find(
-      (device) => device.index.toString() === selectedDeviceIndex,
-    );
+    const selectedDevice =
+      devices.find(
+        (device) => device.index.toString() === selectedDeviceIndex,
+      ) || null;
     window.settings.setAudio({
       device: selectedDevice,
       useSystemDefaultDevice,

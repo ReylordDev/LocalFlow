@@ -1,24 +1,30 @@
 import { createRoot } from "react-dom/client";
 import SpeechVocalization from "../components/SpeechVocalization";
-import { useEffect, useState } from "react";
-import { AudioWaveform, Loader2 } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { AlertCircle, AudioWaveform, Loader2 } from "lucide-react";
 import { ControllerStatusType, Mode } from "../lib/models";
 import { Separator } from "../components/ui/separator";
 import { useSettings } from "../hooks/use-settings";
 import { ShortcutDisplay } from "../components/shortcut";
 import { cn, formatTimer } from "../lib/utils";
 import { RadioGroup, RadioGroupItem } from "../components/ui/radio-group";
+import { ErrorBoundary } from "../components/error-boundary";
 
+/**
+ * Mini window application component
+ * Displays recording status, transcription results, and mode selection
+ */
 const App = () => {
   const [status, setStatus] = useState<ControllerStatusType>("idle");
   const settings = useSettings();
   const [activeMode, setActiveMode] = useState<Mode | null>(null);
   const [modes, setModes] = useState<Mode[]>([]);
   const [modePickerOpen, setModePickerOpen] = useState(false);
+  const [modeError, setModeError] = useState<Error | null>(null);
 
   useEffect(() => {
     const unsubscribe = window.mini.onStatusUpdate((status) => {
-      console.log("Status updated: ", status);
+      console.info("Status updated:", status);
       setStatus(status);
     });
 
@@ -29,40 +35,55 @@ const App = () => {
   }, []);
 
   useEffect(() => {
-    window.database.modes.requestAll();
+    try {
+      window.database.modes.requestAll();
+    } catch (error) {
+      console.error("Failed to request modes:", error);
+      setModeError(
+        error instanceof Error ? error : new Error("Failed to request modes"),
+      );
+    }
   }, []);
 
-  const handleReceiveModes = (modes: Mode[]) => {
-    const activeMode = modes.find((mode) => mode.active);
-    setActiveMode(activeMode || null);
-    setModes(modes);
-  };
+  const handleReceiveModes = useCallback((modes: Mode[]) => {
+    try {
+      const activeMode = modes.find((mode) => mode.active);
+      setActiveMode(activeMode || null);
+      setModes(modes);
+      setModeError(null);
+    } catch (error) {
+      console.error("Error processing modes:", error);
+      setModeError(
+        error instanceof Error ? error : new Error("Error processing modes"),
+      );
+    }
+  }, []);
 
   useEffect(() => {
     const unsubscribe = window.database.modes.onModesUpdate((modes) => {
-      console.log("Modes updated: ", modes);
+      console.debug("Modes updated:", modes);
       handleReceiveModes(modes);
     });
 
     return () => {
       unsubscribe();
     };
-  }, []);
+  }, [handleReceiveModes]);
 
   useEffect(() => {
     const unsubscribe = window.database.modes.onReceiveModes((modes) => {
-      console.log("Received modes: ", modes);
+      console.debug("Received modes:", modes);
       handleReceiveModes(modes);
     });
 
     return () => {
       unsubscribe();
     };
-  }, []);
+  }, [handleReceiveModes]);
 
   useEffect(() => {
     const unsubscribe = window.mini.onChangeModeShortcutPressed(() => {
-      console.log("Change mode shortcut pressed");
+      console.debug("Change mode shortcut pressed");
       setModePickerOpen((prev) => !prev);
     });
     return () => {
@@ -70,81 +91,137 @@ const App = () => {
     };
   }, []);
 
-  if (!settings) {
-    return null; // or a loading state
+  // Display error if we have one
+  if (modeError) {
+    return (
+      <div className="flex h-screen w-full flex-col items-center justify-center bg-zinc-50 p-4 text-center">
+        <AlertCircle className="mb-2 size-8 text-rose-500" />
+        <h2 className="mb-1 text-lg font-semibold">Mode Loading Error</h2>
+        <p className="text-sm text-zinc-600">{modeError.message}</p>
+        <button
+          className="mt-4 rounded bg-zinc-200 px-4 py-2 text-sm hover:bg-zinc-300"
+          onClick={() => {
+            setModeError(null);
+            try {
+              window.database.modes.requestAll();
+            } catch (error) {
+              console.error("Failed to reload modes:", error);
+              setModeError(
+                error instanceof Error
+                  ? error
+                  : new Error("Failed to reload modes"),
+              );
+            }
+          }}
+        >
+          Retry
+        </button>
+      </div>
+    );
   }
 
+  if (!settings) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center bg-zinc-50">
+        <Loader2 className="animate-spin-slow" />
+      </div>
+    );
+  }
+
+  // Main component rendering
   return (
-    <div className="flex h-screen w-full select-none flex-col justify-end bg-transparent font-sans">
-      <div className="drag flex w-full flex-col items-center justify-end rounded-3xl border border-zinc-500 bg-zinc-50">
-        {!modePickerOpen ? (
-          <MainContentDisplay status={status} />
-        ) : (
-          <ModePicker
-            modes={modes}
-            setActiveMode={setActiveMode}
-            setModePickerOpen={setModePickerOpen}
-          />
-        )}
-        <div className="flex h-14 w-full shrink-0 items-center justify-between rounded-b-3xl border-t border-t-zinc-200 bg-zinc-100 text-zinc-600">
-          <div className="pl-8">
-            <StatusDisplay status={status} />
-          </div>
-          <TimerDisplay status={status} />
+    <ErrorBoundary
+      onError={(error, errorInfo) => {
+        console.error("Error caught by ErrorBoundary:", error, errorInfo);
+      }}
+    >
+      <div className="flex h-screen w-full select-none flex-col justify-end bg-transparent font-sans">
+        <div className="drag flex w-full flex-col items-center justify-end rounded-3xl border border-zinc-500 bg-zinc-50">
           {!modePickerOpen ? (
-            <div className="flex h-6 items-center space-x-6 pr-8">
-              <div className="flex items-center gap-4">
-                {activeMode ? activeMode.name : ""}
-                <ShortcutDisplay
-                  shortcut={settings.keyboard.changeModeShortcut}
-                />
-              </div>
-              <Separator orientation="vertical" decorative />
-              <div className="flex items-center gap-4">
-                {status === "idle" || status === "result" ? "Start" : "Stop"}
-                <ShortcutDisplay
-                  shortcut={settings.keyboard.toggleRecordingShortcut}
-                />
-              </div>
-              <Separator orientation="vertical" decorative />
-              <div className="flex items-center gap-4">
-                {status === "result" ? "Reset" : "Cancel"}
-                <ShortcutDisplay
-                  shortcut={settings.keyboard.cancelRecordingShortcut}
-                />
-              </div>
-            </div>
+            <ErrorBoundary>
+              <MainContentDisplay status={status} />
+            </ErrorBoundary>
           ) : (
-            <div className="flex h-6 items-center space-x-6 pr-8">
-              <div className="flex items-center gap-4">
-                Navigate
-                <ShortcutDisplay shortcut={"Up"} />
-                <ShortcutDisplay shortcut={"Down"} />
-              </div>
-              <Separator orientation="vertical" decorative />
-              <div className="flex items-center gap-4">
-                Select Mode
-                <ShortcutDisplay shortcut={"Enter"} />
-              </div>
-              <Separator orientation="vertical" decorative />
-              <div className="flex items-center gap-4">
-                Cancel
-                <ShortcutDisplay
-                  shortcut={settings.keyboard.changeModeShortcut}
-                />
-              </div>
-            </div>
+            <ErrorBoundary>
+              <ModePicker
+                modes={modes}
+                setActiveMode={setActiveMode}
+                setModePickerOpen={setModePickerOpen}
+              />
+            </ErrorBoundary>
           )}
+          <div className="flex h-14 w-full shrink-0 items-center justify-between rounded-b-3xl border-t border-t-zinc-200 bg-zinc-100 text-zinc-600">
+            <div className="pl-8">
+              <StatusDisplay status={status} />
+            </div>
+            <TimerDisplay status={status} />
+            {!modePickerOpen ? (
+              <div className="flex h-6 items-center space-x-6 pr-8">
+                <div className="flex items-center gap-4">
+                  {activeMode ? activeMode.name : ""}
+                  <ShortcutDisplay
+                    shortcut={settings.keyboard.changeModeShortcut}
+                  />
+                </div>
+                <Separator orientation="vertical" decorative />
+                <div className="flex items-center gap-4">
+                  {status === "idle" || status === "result" ? "Start" : "Stop"}
+                  <ShortcutDisplay
+                    shortcut={settings.keyboard.toggleRecordingShortcut}
+                  />
+                </div>
+                <Separator orientation="vertical" decorative />
+                <div className="flex items-center gap-4">
+                  {status === "result" ? "Reset" : "Cancel"}
+                  <ShortcutDisplay
+                    shortcut={settings.keyboard.cancelRecordingShortcut}
+                  />
+                </div>
+              </div>
+            ) : (
+              <div className="flex h-6 items-center space-x-6 pr-8">
+                <div className="flex items-center gap-4">
+                  Navigate
+                  <ShortcutDisplay shortcut={"Up"} />
+                  <ShortcutDisplay shortcut={"Down"} />
+                </div>
+                <Separator orientation="vertical" decorative />
+                <div className="flex items-center gap-4">
+                  Select Mode
+                  <ShortcutDisplay shortcut={"Enter"} />
+                </div>
+                <Separator orientation="vertical" decorative />
+                <div className="flex items-center gap-4">
+                  Cancel
+                  <ShortcutDisplay
+                    shortcut={settings.keyboard.changeModeShortcut}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
-    </div>
+    </ErrorBoundary>
   );
 };
 
-const root = createRoot(document.getElementById("app"));
+const appElement = document.getElementById("app");
+if (!appElement) {
+  throw new Error("App element not found");
+}
+const root = createRoot(appElement);
 root.render(<App />);
 
-const StatusDisplay = ({ status }: { status: ControllerStatusType }) => {
+interface StatusDisplayProps {
+  status: ControllerStatusType;
+}
+
+/**
+ * Displays the current status of the recording process
+ * @param status The current status of the controller
+ */
+const StatusDisplay = ({ status }: StatusDisplayProps) => {
   switch (status) {
     case "idle":
       return <AudioWaveform />;
@@ -179,17 +256,25 @@ const StatusDisplay = ({ status }: { status: ControllerStatusType }) => {
   }
 };
 
-const MainContentDisplay = ({ status }: { status: ControllerStatusType }) => {
-  const [resultText, setResultText] = useState<string | null>(null);
+interface MainContentDisplayProps {
+  status: ControllerStatusType;
+}
+
+/**
+ * Main content display component that adapts based on current recording status
+ * @param status The current status of the controller
+ */
+const MainContentDisplay = ({ status }: MainContentDisplayProps) => {
+  const [resultText, setResultText] = useState("");
   const [transcriptionText, setTranscriptionText] = useState<string | null>(
     null,
   );
 
   useEffect(() => {
     const unsubscribe = window.mini.onResult((result) => {
-      console.log("Result updated: ", result);
+      console.info("Result updated: ", result);
       setResultText(
-        result.mode.use_language_model
+        result.mode.use_language_model && result.ai_result
           ? result.ai_result
           : result.transcription,
       );
@@ -226,11 +311,11 @@ const MainContentDisplay = ({ status }: { status: ControllerStatusType }) => {
           "#transcription-text",
         ) as HTMLTextAreaElement;
         const textArea = resultTextArea || transcriptionTextArea; // Use the appropriate text area based on the status
-        console.log("Text area: ", textArea.id);
+        console.debug("Text area: ", textArea.id);
         const textHeight = textArea.clientHeight;
-        console.log("Text height: ", textHeight);
+        console.debug("Text height: ", textHeight);
         const computedHeight = textHeight + padding + border;
-        console.log("Computed height: ", computedHeight);
+        console.debug("Computed height: ", computedHeight);
         const height = Math.min(Math.max(computedHeight, minHeight), maxHeight);
         window.mini.setMainContentHeight(height);
       }
@@ -263,7 +348,7 @@ const MainContentDisplay = ({ status }: { status: ControllerStatusType }) => {
         </div>
       );
     case "generating_ai_result":
-      console.log("Transcription text: ", transcriptionText);
+      console.debug("Transcription text: ", transcriptionText);
       if (!transcriptionText) {
         return (
           <div className="flex min-h-28 items-center justify-center">
@@ -294,10 +379,10 @@ const MainContentDisplay = ({ status }: { status: ControllerStatusType }) => {
             id="result-text"
             className={cn(
               "scrollbar overflow-y-auto whitespace-pre-wrap",
-              resultText?.trim().length > 200 ? "text-left" : "text-center",
+              resultText.trim().length > 200 ? "text-left" : "text-center",
             )}
           >
-            {resultText?.trim()}
+            {resultText.trim()}
           </p>
         </div>
       );
@@ -306,11 +391,20 @@ const MainContentDisplay = ({ status }: { status: ControllerStatusType }) => {
   }
 };
 
-const TimerDisplay = ({ status }: { status: ControllerStatusType }) => {
+interface TimerDisplayProps {
+  status: ControllerStatusType;
+}
+
+/**
+ * Displays a timer during recording
+ * @param status The current status of the controller
+ */
+const TimerDisplay = ({ status }: TimerDisplayProps) => {
   const [timer, setTimer] = useState(0);
 
   useEffect(() => {
-    let timerInterval: NodeJS.Timeout;
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    let timerInterval: NodeJS.Timeout = setInterval(() => {}, 1000); // Initialize with an empty interval
     if (status === "recording") {
       setTimer(0); // Reset timer when starting to record
       timerInterval = setInterval(() => {
@@ -335,15 +429,23 @@ const TimerDisplay = ({ status }: { status: ControllerStatusType }) => {
   );
 };
 
+interface ModePickerProps {
+  modes: Mode[];
+  setActiveMode: (mode: Mode) => void;
+  setModePickerOpen: (open: boolean) => void;
+}
+
+/**
+ * Mode picker component for selecting different recording modes
+ * @param modes List of available recording modes
+ * @param setActiveMode Function to set the active mode
+ * @param setModePickerOpen Function to toggle the mode picker visibility
+ */
 const ModePicker = ({
   modes,
   setActiveMode,
   setModePickerOpen,
-}: {
-  modes: Mode[];
-  setActiveMode: (mode: Mode) => void;
-  setModePickerOpen: (open: boolean) => void;
-}) => {
+}: ModePickerProps) => {
   const heightPerMode = 40; // Height of each mode item in pixels
   const gapHeight = 8; // Gap between mode items in pixels
   const paddingHeight = 16; // Padding around the mode picker in pixels

@@ -159,9 +159,11 @@ const ModeDetails = ({
     mode ? mode.use_language_model : false,
   );
   const [languageModelName, setLanguageModelName] = useState(
-    mode ? mode.language_model?.name : "",
+    mode && mode.language_model ? mode.language_model.name : "",
   );
-  const [prompt, setPrompt] = useState<PromptBase>(mode ? mode.prompt : null); // TODO: Check the validity
+  const [prompt, setPrompt] = useState(
+    mode ? (mode.prompt as PromptBase) : undefined,
+  ); // TODO: Check the validity
   const [name, setName] = useState<string>(mode ? mode.name : "");
   const [voiceModelName, setVoiceModelName] = useState<string>(
     mode ? mode.voice_model.name : "",
@@ -359,7 +361,10 @@ const ModeDetails = ({
   }
 
   const createModeUpdate = () => {
-    const modeUpdate: ModeUpdate = { id: mode?.id };
+    if (!mode) {
+      throw new Error("Mode is not defined");
+    }
+    const modeUpdate: ModeUpdate = { id: mode.id };
 
     const addProperty = (key: keyof ModeUpdate, value: unknown) => {
       (modeUpdate[key] as typeof value) = value;
@@ -709,7 +714,7 @@ const PromptDetails = ({
   setPrompt,
   hidePromptDialog,
 }: {
-  prompt: PromptBase | null;
+  prompt: PromptBase | undefined;
   setPrompt: (prompt: PromptBase) => void;
   hidePromptDialog: () => void;
 }) => {
@@ -928,7 +933,7 @@ const UpdateExampleDialog = ({
 }: {
   example: ExampleBase;
   index: number;
-  examples: ExampleBase[] | null;
+  examples: ExampleBase[];
   setExamples: (examples: ExampleBase[]) => void;
 }) => {
   const [exampleInput, setExampleInput] = useState<string>(example.input);
@@ -1002,7 +1007,7 @@ const AddExampleDialog = ({
   setExampleInput: (input: string) => void;
   exampleOutput: string;
   setExampleOutput: (output: string) => void;
-  examples: ExampleBase[] | null;
+  examples: ExampleBase[];
   setExamples: (examples: ExampleBase[]) => void;
 }) => {
   useEffect(() => {

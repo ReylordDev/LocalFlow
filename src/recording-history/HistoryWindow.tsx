@@ -68,7 +68,7 @@ function Sidebar({
 }: {
   history: Result[];
   selectedResult: Result | null;
-  setSelectedResult: (result: Result) => void;
+  setSelectedResult: (result: Result | null) => void;
 }) {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [filteredHistory, setFilteredHistory] = useState<Result[]>(history);
@@ -86,7 +86,7 @@ function Sidebar({
     } else {
       setFilteredHistory(
         history.filter((result) =>
-          result.mode.use_language_model
+          result.mode.use_language_model && result.ai_result
             ? result.ai_result.toLowerCase().includes(value) ||
               result.transcription.toLowerCase().includes(value)
             : result.transcription.toLowerCase().includes(value),
@@ -181,7 +181,7 @@ function Sidebar({
   );
 }
 
-function ResultDetails({ result }: { result: Result }) {
+function ResultDetails({ result }: { result: Result | null }) {
   const [displayState, setDisplayState] = useState<
     "transcription" | "ai_result"
   >("transcription");
@@ -215,7 +215,7 @@ function ResultDetails({ result }: { result: Result }) {
                 window.clipboard.copy(
                   displayState === "transcription"
                     ? result.transcription
-                    : result.mode.use_language_model
+                    : result.mode.use_language_model && result.ai_result
                       ? result.ai_result
                       : result.transcription,
                 );
@@ -273,7 +273,7 @@ function ResultDetails({ result }: { result: Result }) {
   );
 }
 
-function MetadataSidebar({ result }: { result: Result | null }) {
+function MetadataSidebar({ result }: { result: Result }) {
   const locale = useLocale();
   return (
     <SidebarShadcn side="right">
@@ -284,18 +284,18 @@ function MetadataSidebar({ result }: { result: Result | null }) {
             <SidebarMenu className="flex w-full flex-col gap-2 rounded-md border bg-zinc-100 p-4">
               <SidebarMenuItem className="flex items-center justify-between">
                 <p>Duration</p>
-                <p>{result?.duration.toFixed(0)}s</p>
+                <p>{result.duration.toFixed(0)}s</p>
               </SidebarMenuItem>
               <Separator orientation="horizontal" />
               <SidebarMenuItem className="flex items-center justify-between">
                 <p>Processing Time</p>
-                <p>{result?.processing_time.toFixed(0)}s</p>
+                <p>{result.processing_time.toFixed(0)}s</p>
               </SidebarMenuItem>
               <Separator orientation="horizontal" />
               <SidebarMenuItem className="flex items-center justify-between">
                 <p>Created At</p>
                 <p>
-                  {new Date(result?.created_at * 1000).toLocaleString(locale)}
+                  {new Date(result.created_at * 1000).toLocaleString(locale)}
                 </p>
               </SidebarMenuItem>
             </SidebarMenu>
@@ -307,41 +307,41 @@ function MetadataSidebar({ result }: { result: Result | null }) {
             <SidebarMenu className="flex w-full flex-col gap-2 rounded-md border bg-zinc-100 p-4">
               <SidebarMenuItem className="flex items-center justify-between">
                 <p>Mode</p>
-                <p>{result?.mode.name}</p>
+                <p>{result.mode.name}</p>
               </SidebarMenuItem>
               <Separator orientation="horizontal" />
               <SidebarMenuItem className="flex items-center justify-between">
                 <p>Model</p>
-                <p>{result?.mode.voice_model.name}</p>
+                <p>{result.mode.voice_model.name}</p>
               </SidebarMenuItem>
               <Separator orientation="horizontal" />
-              {result?.mode.use_language_model && (
+              {result.mode.use_language_model && result.mode.language_model && (
                 <SidebarMenuItem className="flex items-center justify-between">
                   <p>Language Model</p>
-                  <p>{result?.mode.language_model.name}</p>
+                  <p>{result.mode.language_model.name}</p>
                 </SidebarMenuItem>
               )}
               <Separator orientation="horizontal" />
               <SidebarMenuItem className="flex items-center justify-between">
                 <p>Language</p>
-                <p>{languageNameMap[result?.mode.voice_language]}</p>
+                <p>{languageNameMap[result.mode.voice_language]}</p>
               </SidebarMenuItem>
               <Separator orientation="horizontal" />
               <SidebarMenuItem className="flex items-center justify-between">
                 <p>English Translation Enabled</p>
-                <p>{result?.mode.translate_to_english ? "Yes" : "No"}</p>
+                <p>{result.mode.translate_to_english ? "Yes" : "No"}</p>
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-        {result?.mode.use_language_model && result.mode.prompt && (
+        {result.mode.use_language_model && result.mode.prompt && (
           <SidebarGroup>
             <SidebarGroupLabel>Prompt</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu className="flex w-full flex-col gap-2 rounded-md border bg-zinc-100 p-4">
                 <SidebarMenuItem className="flex items-center justify-between">
                   <p className="select-text">
-                    {result?.mode.prompt.system_prompt}
+                    {result.mode.prompt.system_prompt}
                   </p>
                 </SidebarMenuItem>
               </SidebarMenu>
