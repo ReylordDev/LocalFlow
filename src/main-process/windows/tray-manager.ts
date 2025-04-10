@@ -3,7 +3,8 @@ import { PythonService } from "../services/python-service";
 import { WindowManager } from "./window-manager";
 import { AppConfig, logger } from "../utils/config";
 import path from "path";
-import { Mode, PYTHON_SERVICE_EVENTS } from "../../lib/models";
+import { Mode } from "../../lib/models/database";
+import { PYTHON_SERVICE_EVENTS } from "../../lib/models/channels";
 
 /**
  * Manages the system tray icon and its context menu functionality.

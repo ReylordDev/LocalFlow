@@ -1,7 +1,7 @@
 import { BrowserWindow, Menu, screen } from "electron";
 import { EventEmitter } from "events";
 import { AppConfig, logger } from "../utils/config";
-import { CHANNELS } from "../../lib/models";
+import { CHANNELS } from "../../lib/models/channels";
 import { SettingsService } from "../services/settings-service";
 
 declare const MAIN_WINDOW_WEBPACK_ENTRY: string;

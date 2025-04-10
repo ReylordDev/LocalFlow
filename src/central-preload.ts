@@ -1,19 +1,18 @@
 // See the Electron documentation for details on how to use preload scripts:
 // https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
 
-import {
-  Device,
-  CHANNELS,
-  Mode,
-  CHANNEL_NAMES,
-  AppSettings,
-  ControllerStatusType,
-  Result,
-  VoiceModel,
-  LanguageModel,
-  TextReplacement,
-} from "./lib/models";
+import { AppSettings } from "./lib/models/settings";
+import { CHANNEL_NAMES, CHANNELS } from "./lib/models/channels";
 import { contextBridge, ipcRenderer, IpcRendererEvent } from "electron";
+import {
+  ControllerStatusType,
+  Device,
+  LanguageModel,
+  Mode,
+  Result,
+  TextReplacement,
+  VoiceModel,
+} from "./lib/models/database";
 
 // Expose protected methods that allow the renderer process to use
 // the ipcRenderer without exposing the entire object

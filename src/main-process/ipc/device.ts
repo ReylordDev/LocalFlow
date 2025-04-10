@@ -1,4 +1,5 @@
-import { CHANNELS, Device } from "../../lib/models";
+import { Device } from "../../lib/models/database";
+import { CHANNELS } from "../../lib/models/channels";
 import { PythonService } from "../services/python-service";
 import { ipcMain } from "electron";
 

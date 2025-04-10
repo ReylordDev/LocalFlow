@@ -3,15 +3,11 @@ import { EventEmitter } from "events";
 import { AppConfig, logger } from "../utils/config";
 import {
   AudioLevelMessage,
-  Command,
   DevicesMessage,
   Message,
   ProgressMessage,
-  AppSettings,
-  PYTHON_SERVICE_EVENTS,
   ErrorMessage,
   StatusMessage,
-  ControllerStatusType,
   ModesMessage,
   ResultMessage,
   ResultsMessage,
@@ -19,9 +15,13 @@ import {
   LanguageModelsMessage,
   TextReplacementsMessage,
   TranscriptionMessage,
-} from "../../lib/models";
+} from "../../lib/models/messages";
+import { Command } from "../../lib/models/commands";
 import path from "path";
 import { SettingsService } from "./settings-service";
+import { PYTHON_SERVICE_EVENTS } from "../../lib/models/channels";
+import { ControllerStatusType } from "../../lib/models/database";
+import { AppSettings } from "../../lib/models/settings";
 
 /**
  * Service for managing communication with the Python backend.

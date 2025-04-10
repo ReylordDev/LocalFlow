@@ -2,7 +2,10 @@ import { useEffect, useState } from "react";
 import { Input } from "../../components/ui/input";
 import { Button } from "../../components/ui/button";
 import { Separator } from "../../components/ui/separator";
-import { TextReplacement, TextReplacementBase } from "../../lib/models";
+import {
+  TextReplacement,
+  TextReplacementBase,
+} from "../../lib/models/database";
 import { Trash2 } from "lucide-react";
 import { cn } from "../../lib/utils";
 

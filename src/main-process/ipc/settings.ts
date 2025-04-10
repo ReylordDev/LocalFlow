@@ -4,10 +4,10 @@ import { PythonService } from "../services/python-service";
 import {
   ApplicationConfig,
   AudioConfig,
-  CHANNELS,
   KeyboardConfig,
   OutputConfig,
-} from "../../lib/models";
+} from "../../lib/models/settings";
+import { CHANNELS } from "../../lib/models/channels";
 
 export function registerSettingsHandlers(
   settingsService: SettingsService,

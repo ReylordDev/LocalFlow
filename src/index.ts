@@ -5,15 +5,14 @@ import { WindowManager } from "./main-process/windows/window-manager";
 import { TrayManager } from "./main-process/windows/tray-manager";
 import { registerIpcHandlers } from "./main-process/ipc";
 import { AppConfig, logger } from "./main-process/utils/config";
+import { SETTINGS_SERVICE_EVENTS } from "./lib/models/settings";
+import { CHANNELS, PYTHON_SERVICE_EVENTS } from "./lib/models/channels";
 import {
-  Device,
-  CHANNELS,
-  PYTHON_SERVICE_EVENTS,
-  SETTINGS_SERVICE_EVENTS,
   ControllerStatusType,
+  Device,
   Mode,
   Result,
-} from "./lib/models";
+} from "./lib/models/database";
 
 // Handle setup events
 if (require("electron-squirrel-startup")) app.quit();

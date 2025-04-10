@@ -2,7 +2,7 @@ import { createRoot } from "react-dom/client";
 import SpeechVocalization from "../components/SpeechVocalization";
 import { useCallback, useEffect, useState } from "react";
 import { AlertCircle, AudioWaveform, Loader2 } from "lucide-react";
-import { ControllerStatusType, Mode } from "../lib/models";
+import { ControllerStatusType, Mode } from "../lib/models/database";
 import { Separator } from "../components/ui/separator";
 import { useSettings } from "../hooks/use-settings";
 import { ShortcutDisplay } from "../components/shortcut";

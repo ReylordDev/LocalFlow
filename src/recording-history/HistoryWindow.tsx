@@ -1,5 +1,5 @@
 import { Copy, FolderClosed, PanelRightOpen, Search } from "lucide-react";
-import { ExampleBase, languageNameMap, Result } from "../lib/models";
+import { ExampleBase, languageNameMap, Result } from "../lib/models/database";
 import { useEffect, useState } from "react";
 import { cn } from "../lib/utils";
 import { Button } from "../components/ui/button";

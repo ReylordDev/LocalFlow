@@ -2,7 +2,7 @@ import { Separator } from "../../components/ui/separator";
 import { Switch } from "../../components/ui/switch";
 import { Combobox } from "../../components/combobox";
 import { cn } from "../../lib/utils";
-import { Device } from "../../lib/models";
+import { Device } from "../../lib/models/database";
 import { useEffect, useState } from "react";
 
 const menuItemClass = "justify-between items-center flex px-4 min-h-[50px]";

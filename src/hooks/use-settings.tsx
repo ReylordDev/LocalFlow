@@ -1,4 +1,4 @@
-import { AppSettings } from "../lib/models";
+import { AppSettings } from "../lib/models/settings";
 import { useEffect, useState } from "react";
 
 /**

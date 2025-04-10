@@ -11,7 +11,7 @@ import {
   TextReplacementBase,
   VoiceModel,
   languageNameMap,
-} from "../../lib/models";
+} from "../../lib/models/database";
 import { Separator } from "../../components/ui/separator";
 import { ChevronLeft, ChevronUp, Trash2, Wand } from "lucide-react";
 import { Badge } from "../../components/ui/badge";

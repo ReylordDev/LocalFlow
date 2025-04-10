@@ -1,4 +1,4 @@
-import { CHANNELS } from "../../lib/models";
+import { CHANNELS } from "../../lib/models/channels";
 import { ipcMain, shell } from "electron";
 
 export function registerURLHandlers() {

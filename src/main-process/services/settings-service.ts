@@ -10,7 +10,7 @@ import {
   SETTINGS_SERVICE_EVENTS,
   KeyboardConfig,
   OutputConfig,
-} from "../../lib/models";
+} from "../../lib/models/settings";
 
 export const DEFAULT_SETTINGS: AppSettings = {
   keyboard: {

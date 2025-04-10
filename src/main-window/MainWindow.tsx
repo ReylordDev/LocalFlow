@@ -3,7 +3,7 @@ import Credits from "./pages/Credits";
 import Modes from "./pages/Modes";
 import AudioPage from "./pages/Audio";
 import { AppSidebar } from "../components/app-sidebar";
-import { Page } from "../lib/models";
+import { Page } from "../lib/models/ui";
 import ConfigurationPage from "./pages/Configuration";
 import TextReplacements from "./pages/TextReplacements";
 

@@ -7,12 +7,12 @@ import { registerURLHandlers } from "./url";
 import { registerDeviceHandlers } from "./device";
 import { registerSettingsHandlers } from "./settings";
 import {
-  CHANNELS,
   ExampleBase,
   ModeCreate,
   ModeUpdate,
   TextReplacementBase,
-} from "../../lib/models";
+} from "../../lib/models/database";
+import { CHANNELS } from "../../lib/models/channels";
 import { UUID } from "crypto";
 
 export function registerIpcHandlers(

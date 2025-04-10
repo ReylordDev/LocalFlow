@@ -7,10 +7,10 @@ import {
   UserRound,
   Volume2,
 } from "lucide-react";
-import { Page, pages } from "../lib/models";
 
 import { cn } from "../lib/utils";
 import { Button } from "../components/ui/button";
+import { Page, pages } from "../lib/models/ui";
 
 type SidebarItem = {
   icon: React.ReactNode;
