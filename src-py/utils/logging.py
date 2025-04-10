@@ -1,8 +1,9 @@
 import os
 import sys
 import logging
+from typing import Literal
 from loguru import logger
-from .utils import get_user_data_path, is_production_environment
+from .utils import get_log_level, get_user_data_path, is_production_environment
 
 
 class InterceptHandler(logging.Handler):
@@ -26,43 +27,50 @@ class InterceptHandler(logging.Handler):
         )
 
 
-def initialize_logger():
-    # Get log level from environment variable or default to DEBUG
-    log_level = os.environ.get("LOG_LEVEL", "DEBUG")
+def initialize_logger(
+    log_level: str = get_log_level(),
+):
+    """
+    Configure logger for the application.
+    Sets up logging to both stdout and a log file.
+    """
 
-    # Add console logger (only in development)
+    assert log_level in [
+        "DEBUG",
+        "INFO",
+        "WARNING",
+        "ERROR",
+        "CRITICAL",
+    ], f"Invalid log level: {log_level}"
+
+    # Remove default logger
+    logger.remove()
+
+    # Log to stderr with colors
     if not is_production_environment():
         logger.add(
             sys.stderr,
+            colorize=True,
+            format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",
             level=log_level,
-            format="<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",
         )
 
-    # Add file logger
+    # Log to file
     log_file = os.path.join(get_user_data_path(), "logs", "python.log")
+    os.makedirs(os.path.dirname(log_file), exist_ok=True)
+
     logger.add(
         log_file,
-        rotation="500 MB",
+        rotation="10 MB",  # Rotate when file reaches 10MB
+        retention="1 week",  # Keep logs for 1 week
+        compression="zip",  # Compress rotated logs
+        format="{time:YYYY-MM-DD HH:mm:ss} | {level: <8} | {name}:{function}:{line} - {message}",
         level=log_level,
-        encoding="utf-8",
     )
 
-    # Configure standard logging to use our interceptor
-    logging.basicConfig(handlers=[InterceptHandler()], level=0, force=True)
-
-    # Configure faster-whisper logger specifically
-    whisper_logger = logging.getLogger("faster_whisper")
-    whisper_logger.handlers = [InterceptHandler()]
-    whisper_logger.setLevel(log_level)
-    whisper_logger.propagate = False
-
-    logger.info(
-        f"\nLogger initialized in {'PRODUCTION' if is_production_environment() else 'DEVELOPMENT'} mode, log level: {log_level}"
-    )
-    logger.info(f"Python default encoding: {sys.getdefaultencoding()}")
-    logger.info(f"Python utf-8 mode: {sys.flags.utf8_mode}")
-    logger.info(f"Stdout encoding: {sys.stdout.encoding}")
-    logger.info(f"faster-whisper logs will be captured at {log_level} level")
+    logger.info("Logger initialized")
+    logger.debug(f"Python utf-8 mode: {sys.flags.utf8_mode}")
+    logger.debug(f"Stdout encoding: {sys.stdout.encoding}")
 
     if not sys.flags.utf8_mode:
         logger.warning(

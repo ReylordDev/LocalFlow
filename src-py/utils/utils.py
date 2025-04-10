@@ -16,6 +16,10 @@ def get_temp_path():
     return f"{get_user_data_path()}/temp"
 
 
+def get_log_level():
+    return os.environ.get("LOG_LEVEL", "DEBUG")
+
+
 def get_lorem_ipsum():
     return """
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse consectetur aliquet risus vitae congue. Sed cursus egestas faucibus. Quisque nec facilisis tortor. Nam faucibus odio sit amet eros consectetur, sed viverra magna fringilla. Quisque tincidunt iaculis elit id tristique. Nunc fringilla lectus id gravida molestie. Etiam nisl orci, accumsan eu libero eget, cursus facilisis purus. Vivamus lacinia velit rhoncus, sollicitudin neque vitae, lobortis lacus. In et accumsan urna, nec condimentum nunc. Curabitur molestie dictum placerat. Nam sollicitudin gravida justo, ac interdum nisi luctus at.
