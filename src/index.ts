@@ -4,7 +4,7 @@ import { SettingsService } from "./main-process/services/settings-service";
 import { WindowManager } from "./main-process/windows/window-manager";
 import { TrayManager } from "./main-process/windows/tray-manager";
 import { registerIpcHandlers } from "./main-process/ipc";
-import { AppConfig, consoleLog } from "./main-process/utils/config";
+import { AppConfig, logger } from "./main-process/utils/config";
 import {
   Device,
   CHANNELS,
@@ -78,7 +78,7 @@ app.whenReady().then(async () => {
   });
 
   pythonService.on(PYTHON_SERVICE_EVENTS.ERROR, (error: string) => {
-    consoleLog(error);
+    logger.error(error);
     new Notification({
       title: "Critical Error",
       body: error,

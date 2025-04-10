@@ -2,8 +2,7 @@ import path from "path";
 import { app } from "electron";
 import log from "electron-log";
 
-export const consoleLog = app.isPackaged ? log.log : console.log;
-export const consoleError = app.isPackaged ? log.error : console.error;
+// Unified logger that handles both packaged and development environments
 export const logger = app.isPackaged ? log : console;
 
 export class AppConfig {

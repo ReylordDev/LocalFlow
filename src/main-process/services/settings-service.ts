@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { EventEmitter } from "events";
-import { AppConfig, consoleLog } from "../utils/config";
+import { AppConfig, logger } from "../utils/config";
 import { globalShortcut } from "electron";
 import {
   ApplicationConfig,
@@ -73,13 +73,13 @@ export class SettingsService extends EventEmitter {
 
   disableShortcut(shortcut: string) {
     if (!shortcut) return;
-    consoleLog("Unregistering shortcut:", shortcut);
+    logger.info("Unregistering shortcut:", shortcut);
     globalShortcut.unregister(shortcut);
   }
 
   registerShortcuts() {
     if (this.settings.keyboard.toggleRecordingShortcut) {
-      consoleLog(
+      logger.info(
         "Registering toggle recording shortcut:",
         this.settings.keyboard.toggleRecordingShortcut,
       );
@@ -90,7 +90,7 @@ export class SettingsService extends EventEmitter {
     }
 
     if (this.settings.keyboard.cancelRecordingShortcut) {
-      consoleLog(
+      logger.info(
         "Registering cancel recording shortcut:",
         this.settings.keyboard.cancelRecordingShortcut,
       );
@@ -101,7 +101,7 @@ export class SettingsService extends EventEmitter {
     }
 
     if (this.settings.keyboard.changeModeShortcut) {
-      consoleLog(
+      logger.info(
         "Registering change mode shortcut:",
         this.settings.keyboard.changeModeShortcut,
       );

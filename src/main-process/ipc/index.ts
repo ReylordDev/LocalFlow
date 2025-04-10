@@ -2,7 +2,7 @@ import { ipcMain, clipboard, shell, app } from "electron";
 import { PythonService } from "../services/python-service";
 import { SettingsService } from "../services/settings-service";
 import { WindowManager } from "../windows/window-manager";
-import { AppConfig, consoleLog } from "../utils/config";
+import { AppConfig, logger } from "../utils/config";
 import { registerURLHandlers } from "./url";
 import { registerDeviceHandlers } from "./device";
 import { registerSettingsHandlers } from "./settings";
@@ -93,12 +93,12 @@ export function registerIpcHandlers(
   });
 
   ipcMain.on(CHANNELS.CLIPBOARD.COPY, (_, text: string) => {
-    consoleLog("Copying to clipboard:", text);
+    logger.log("Copying to clipboard:", text);
     clipboard.writeText(text);
   });
 
   ipcMain.on(CHANNELS.FILE.OPEN, (_, location: string) => {
-    consoleLog("Opening file:", location);
+    logger.log("Opening file:", location);
     shell.openPath(location);
   });
 

@@ -1,6 +1,6 @@
 import { BrowserWindow, Menu, screen } from "electron";
 import { EventEmitter } from "events";
-import { AppConfig, consoleLog } from "../utils/config";
+import { AppConfig, logger } from "../utils/config";
 import { CHANNELS } from "../../lib/models";
 import { SettingsService } from "../services/settings-service";
 
@@ -77,7 +77,7 @@ export class WindowManager extends EventEmitter {
 
   toggleMainWindow() {
     if (!this.mainWindow || this.mainWindow.isDestroyed()) {
-      consoleLog("Main window is destroyed or not created yet.");
+      logger.log("Main window is destroyed or not created yet.");
       return;
     }
     if (this.mainWindow.isVisible()) {
@@ -153,7 +153,7 @@ export class WindowManager extends EventEmitter {
         this.showMiniWindow();
       }
     } else {
-      consoleLog("Mini window is destroyed or not created yet.");
+      logger.log("Mini window is destroyed or not created yet.");
       this.showMiniWindow();
     }
   }
@@ -177,32 +177,6 @@ export class WindowManager extends EventEmitter {
     return [0, 0];
   }
 
-  // getMiniWindowSize() {
-  //   if (this.miniWindow && !this.miniWindow.isDestroyed()) {
-  //     const size = this.miniWindow.getContentSize();
-  //     return {
-  //       width: size[0],
-  //       height: size[1],
-  //     };
-  //   }
-  //   return {
-  //     width: 0,
-  //     height: 0,
-  //   };
-  // }
-
-  // setMiniWindowHeight(height: 180 | 386) {
-  //   if (this.miniWindow && !this.miniWindow.isDestroyed()) {
-  //     const currentSize = this.miniWindow.getContentSize();
-  //     const currentPosition = this.miniWindow.getPosition();
-  //     this.miniWindow.setContentSize(currentSize[0], height);
-  //     this.miniWindow.setPosition(
-  //       currentPosition[0],
-  //       currentPosition[1] - (height - currentSize[1]),
-  //     );
-  //   }
-  // }
-
   setMiniWindowMainContentHeight(height: number) {
     if (this.miniWindow && !this.miniWindow.isDestroyed()) {
       const menuBarHeight = 56;
@@ -210,12 +184,12 @@ export class WindowManager extends EventEmitter {
 
       const previousHeight = this.miniWindow.getContentSize()[1];
       const deltaHeight = miniWindowHeight - previousHeight;
-      consoleLog("previousY", this.miniWindow.getBounds().y);
-      consoleLog("main content height", height);
-      consoleLog("miniWindowHeight", miniWindowHeight);
-      consoleLog("previousHeight", previousHeight);
-      consoleLog("deltaHeight", deltaHeight);
-      consoleLog("newY", this.miniWindow.getBounds().y - deltaHeight);
+      logger.log("previousY", this.miniWindow.getBounds().y);
+      logger.log("main content height", height);
+      logger.log("miniWindowHeight", miniWindowHeight);
+      logger.log("previousHeight", previousHeight);
+      logger.log("deltaHeight", deltaHeight);
+      logger.log("newY", this.miniWindow.getBounds().y - deltaHeight);
 
       this.miniWindow.setBounds({
         y: this.miniWindow.getBounds().y - deltaHeight,

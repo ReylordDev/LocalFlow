@@ -1,7 +1,7 @@
 import { Tray, Menu, NativeImage, nativeImage, app } from "electron";
 import { PythonService } from "../services/python-service";
 import { WindowManager } from "./window-manager";
-import { AppConfig, consoleLog } from "../utils/config";
+import { AppConfig, logger } from "../utils/config";
 import { SettingsService } from "../services/settings-service";
 import path from "path";
 import { Mode, PYTHON_SERVICE_EVENTS } from "../../lib/models";
@@ -23,13 +23,13 @@ export class TrayManager {
       this.windowManager.toggleMiniWindow();
     });
 
-    consoleLog("Requesting modes from database for context menu");
+    logger.info("Requesting modes from database for context menu");
     this.updateContextMenu([]);
     this.pythonService.sendCommand({
       action: "get_modes",
     });
     this.pythonService.on(PYTHON_SERVICE_EVENTS.MODES, (modes: Mode[]) => {
-      consoleLog("Received modes from database for context menu");
+      logger.info("Received modes from database for context menu");
       this.updateContextMenu(modes);
     });
   }
@@ -65,7 +65,7 @@ export class TrayManager {
       },
       {
         label: "Transcribe File",
-        click: () => consoleLog("Transcribe File clicked"),
+        click: () => logger.info("Transcribe File clicked"),
       },
       {
         label: "History",
@@ -89,7 +89,7 @@ export class TrayManager {
           type: "radio",
           checked: mode.active,
           click: () => {
-            consoleLog(`Switching to mode: ${mode.name}`);
+            logger.info(`Switching to mode: ${mode.name}`);
             this.pythonService.sendCommand({
               action: "switch_mode",
               data: {

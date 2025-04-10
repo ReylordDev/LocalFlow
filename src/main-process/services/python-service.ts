@@ -1,6 +1,6 @@
 import { PythonShell } from "python-shell";
 import { EventEmitter } from "events";
-import { AppConfig, consoleLog } from "../utils/config";
+import { AppConfig, logger } from "../utils/config";
 import {
   AudioLevelMessage,
   Command,
@@ -53,16 +53,16 @@ export class PythonService extends EventEmitter {
         PYTHONUTF8: "1",
       },
     });
-    consoleLog("Python shell initialized");
-    consoleLog("Script path:", this.config.scriptPath);
-    consoleLog("Python path:", this.config.pythonPath);
-    consoleLog(
+    logger.log("Python shell initialized");
+    logger.log("Script path:", this.config.scriptPath);
+    logger.log("Python path:", this.config.pythonPath);
+    logger.log(
       "Working directory:",
       this.config.isPackaged
         ? path.join(process.resourcesPath, "src-py")
         : this.config.rootDir,
     );
-    consoleLog("Environment variables:", {
+    logger.log("Environment variables:", {
       PRODUCTION: String(!this.config.isDev),
       USER_DATA_PATH: this.config.dataDir,
       LOG_LEVEL: this.config.isDev ? "DEBUG" : "INFO",
@@ -99,14 +99,14 @@ export class PythonService extends EventEmitter {
         );
         break;
       case "error":
-        consoleLog("Error:", message.data);
+        logger.log("Error:", message.data);
         this.emit(
           PYTHON_SERVICE_EVENTS.ERROR,
           (message.data as unknown as ErrorMessage).error,
         );
         break;
       case "exception":
-        consoleLog("Exception:", message.data);
+        logger.log("Exception:", message.data);
         break;
       case "modes":
         this.emit(
@@ -151,7 +151,7 @@ export class PythonService extends EventEmitter {
         );
         break;
       default:
-        consoleLog("Unknown message type:", message.type);
+        logger.log("Unknown message type:", message.type);
     }
   }
 
@@ -171,12 +171,12 @@ export class PythonService extends EventEmitter {
   }
 
   private handleSettingsChange(settings: AppSettings) {
-    consoleLog("Settings changed:", settings);
-    consoleLog("Not implemented yet.");
+    logger.log("Settings changed:", settings);
+    logger.log("Not implemented yet.");
   }
 
   sendCommand(command: Command) {
-    consoleLog("Sending command to Python:", command);
+    logger.log("Sending command to Python:", command);
     this.shell.send(command);
   }
 
