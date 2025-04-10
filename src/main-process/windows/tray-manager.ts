@@ -2,38 +2,56 @@ import { Tray, Menu, NativeImage, nativeImage, app } from "electron";
 import { PythonService } from "../services/python-service";
 import { WindowManager } from "./window-manager";
 import { AppConfig, logger } from "../utils/config";
-import { SettingsService } from "../services/settings-service";
 import path from "path";
 import { Mode, PYTHON_SERVICE_EVENTS } from "../../lib/models";
 
+/**
+ * Manages the system tray icon and its context menu functionality.
+ * Handles tray initialization, icon creation, and menu updates based on application modes.
+ */
 export class TrayManager {
-  private tray: Tray;
+  private tray: Tray | undefined;
 
   constructor(
     private config: AppConfig,
     private windowManager: WindowManager,
     private pythonService: PythonService,
-    private settingsService: SettingsService,
   ) {}
 
+  /**
+   * Initializes the system tray icon and sets up event listeners.
+   * Creates the tray icon, sets up click handlers, and initializes the context menu.
+   */
   initialize() {
-    this.createTrayIcon();
+    const icon = this.createTrayIcon();
+    this.tray = new Tray(icon);
+    this.tray.setToolTip("LocalFlow");
 
     this.tray.on("click", () => {
       this.windowManager.toggleMiniWindow();
     });
 
     logger.info("Requesting modes from database for context menu");
-    this.updateContextMenu([]);
+    const contextMenu = this.updateContextMenu([]);
+    this.tray.setContextMenu(contextMenu);
     this.pythonService.sendCommand({
       action: "get_modes",
     });
     this.pythonService.on(PYTHON_SERVICE_EVENTS.MODES, (modes: Mode[]) => {
+      if (!this.tray) {
+        logger.error("Tray not initialized");
+        return;
+      }
       logger.info("Received modes from database for context menu");
-      this.updateContextMenu(modes);
+      const contextMenu = this.updateContextMenu(modes);
+      this.tray.setContextMenu(contextMenu);
     });
   }
 
+  /**
+   * Creates the appropriate tray icon based on the platform and application packaging state.
+   * @returns The native image object for the tray icon
+   */
   private createTrayIcon() {
     let image: string;
     if (process.platform === "win32") {
@@ -52,11 +70,14 @@ export class TrayManager {
         path.join(this.config.rootDir, "assets/icons", image),
       );
     }
-    this.tray = new Tray(icon);
-
-    this.tray.setToolTip("LocalFlow");
+    return icon;
   }
 
+  /**
+   * Updates the context menu with the provided modes.
+   * @param {Mode[]} modes - The list of modes to include in the context menu
+   * @returns The updated context menu
+   */
   updateContextMenu(modes: Mode[]) {
     const contextMenu = Menu.buildFromTemplate([
       {
@@ -109,6 +130,6 @@ export class TrayManager {
         },
       },
     ]);
-    this.tray.setContextMenu(contextMenu);
+    return contextMenu;
   }
 }

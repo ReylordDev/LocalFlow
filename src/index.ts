@@ -26,12 +26,7 @@ const config = new AppConfig();
 const settingsService = new SettingsService(config);
 const pythonService = new PythonService(config, settingsService);
 const windowManager = new WindowManager(config, settingsService);
-const trayManager = new TrayManager(
-  config,
-  windowManager,
-  pythonService,
-  settingsService,
-);
+const trayManager = new TrayManager(config, windowManager, pythonService);
 
 app.whenReady().then(async () => {
   await pythonService.initialize();
@@ -109,9 +104,10 @@ app.whenReady().then(async () => {
 
   pythonService.on(PYTHON_SERVICE_EVENTS.RESULT, (result: Result) => {
     windowManager.sendMiniWindowMessage(CHANNELS.MINI.RESULT, result);
-    const text = result.mode.use_language_model
-      ? result.ai_result
-      : result.transcription;
+    const text =
+      result.mode.use_language_model && result.ai_result
+        ? result.ai_result
+        : result.transcription;
     clipboard.writeText(text);
     if (!settingsService.currentSettings.application.enableRecordingWindow) {
       new Notification({
