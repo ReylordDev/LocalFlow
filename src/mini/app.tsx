@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { AudioWaveform, Loader2 } from "lucide-react";
 import { ControllerStatusType, Mode } from "../lib/models";
 import { Separator } from "../components/ui/separator";
-import { useSettings } from "../lib/hooks";
+import { useSettings } from "../hooks/use-settings";
 import { ShortcutDisplay } from "../components/shortcut";
 import { cn, formatTimer } from "../lib/utils";
 import { RadioGroup, RadioGroupItem } from "../components/ui/radio-group";

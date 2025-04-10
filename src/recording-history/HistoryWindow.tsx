@@ -17,7 +17,7 @@ import {
   ContextMenuTrigger,
 } from "../components/ui/context-menu";
 import { UUID } from "crypto";
-import { useLocale } from "../lib/hooks";
+import { useLocale } from "../hooks/use-locale";
 import {
   SidebarProvider,
   SidebarTrigger,
