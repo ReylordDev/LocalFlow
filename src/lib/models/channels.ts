@@ -55,9 +55,6 @@ declare global {
         createMode: (mode: import("./database").ModeCreate) => void;
         updateMode: (mode: import("./database").ModeUpdate) => void;
         deleteMode: (modeId: import("crypto").UUID) => void;
-        onModesUpdate: (
-          callback: (modes: import("./database").Mode[]) => void,
-        ) => () => void;
         activateMode: (modeId: import("crypto").UUID) => void;
       };
       results: {
@@ -163,7 +160,6 @@ export const CHANNELS = {
     MODES: {
       MODES_REQUEST: "database:modes:getAll",
       MODES_RESPONSE: "database:modes:receiveModes",
-      MODES_UPDATE: "database:modes:update",
       CREATE_MODE: "database:modes:createMode",
       UPDATE_MODE: "database:modes:updateMode",
       DELETE_MODE: "database:modes:deleteMode",
@@ -206,7 +202,6 @@ export enum PYTHON_SERVICE_EVENTS {
   AUDIO_LEVEL = "audio-level",
   DEVICES = "devices",
   STATUS_UPDATE = "status-update",
-  MODES_UPDATE = "modes-update",
   MODES = "modes",
   RESULT = "result",
   RESULTS = "results",
@@ -223,7 +218,6 @@ export type PythonEventMap = {
   [PYTHON_SERVICE_EVENTS.AUDIO_LEVEL]: number;
   [PYTHON_SERVICE_EVENTS.DEVICES]: import("./database").Device[];
   [PYTHON_SERVICE_EVENTS.STATUS_UPDATE]: import("./database").ControllerStatusType;
-  [PYTHON_SERVICE_EVENTS.MODES_UPDATE]: import("./database").Mode[];
   [PYTHON_SERVICE_EVENTS.MODES]: import("./database").Mode[];
   [PYTHON_SERVICE_EVENTS.RESULT]: import("./database").Result;
   [PYTHON_SERVICE_EVENTS.RESULTS]: import("./database").Result[];

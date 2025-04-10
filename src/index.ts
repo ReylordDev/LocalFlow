@@ -17,18 +17,17 @@ nativeTheme.themeSource = "light";
 // Initialize core services
 const config = new AppConfig();
 const settingsService = new SettingsService(config);
-const pythonService = new PythonService(config, settingsService);
+const pythonService = new PythonService(config);
 const windowManager = new WindowManager(config, settingsService);
 const trayManager = new TrayManager(config, windowManager, pythonService);
 
 app.whenReady().then(async () => {
+  registerSettingsEventHandlers();
+  registerPythonEventHandlers();
   await pythonService.initialize();
   windowManager.createStartupWindow();
 
-  registerSettingsEventHandlers();
-  registerPythonEventHandlers();
-
-  registerIpcHandlers(settingsService, config, pythonService, windowManager);
+  registerIpcHandlers(settingsService, pythonService, windowManager);
 
   windowManager.on("main-window-closed", () => {
     app.quit();
@@ -121,16 +120,6 @@ function registerPythonEventHandlers() {
     );
   });
 
-  pythonService.onPythonEvent(PYTHON_SERVICE_EVENTS.MODES_UPDATE, (modes) => {
-    windowManager.sendMainWindowMessage(
-      CHANNELS.DATABASE.MODES.MODES_UPDATE,
-      modes,
-    );
-    windowManager.sendMiniWindowMessage(
-      CHANNELS.DATABASE.MODES.MODES_UPDATE,
-      modes,
-    );
-  });
   pythonService.onPythonEvent(PYTHON_SERVICE_EVENTS.RESULTS, (results) => {
     windowManager.sendRecordingHistoryWindowMessage(
       CHANNELS.RECORDING_HISTORY.RESULTS_RESPONSE,

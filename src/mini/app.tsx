@@ -60,17 +60,6 @@ const App = () => {
   }, []);
 
   useEffect(() => {
-    const unsubscribe = window.database.modes.onModesUpdate((modes) => {
-      console.debug("Modes updated:", modes);
-      handleReceiveModes(modes);
-    });
-
-    return () => {
-      unsubscribe();
-    };
-  }, [handleReceiveModes]);
-
-  useEffect(() => {
     const unsubscribe = window.database.modes.onReceiveModes((modes) => {
       console.debug("Received modes:", modes);
       handleReceiveModes(modes);

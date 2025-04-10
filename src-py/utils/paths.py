@@ -1,8 +1,7 @@
 import os
 import sys
 import tempfile
-from pathlib import Path
-from loguru import logger
+from .environment import is_production_environment
 
 
 def get_application_path() -> str:
@@ -33,18 +32,10 @@ def get_user_data_path() -> str:
     Returns:
         Path to user data directory
     """
-    # Use a platform-specific location
-    if sys.platform == "win32":
-        app_data = os.path.join(os.environ["APPDATA"], "LocalFlow")
-    elif sys.platform == "darwin":
-        app_data = os.path.expanduser("~/Library/Application Support/LocalFlow")
-    else:  # Linux and other Unix-like systems
-        app_data = os.path.expanduser("~/.config/localflow")
-
-    # Create the directory if it doesn't exist
-    os.makedirs(app_data, exist_ok=True)
-
-    return app_data
+    if is_production_environment():
+        return os.environ.get("USER_DATA_PATH", os.getcwd())
+    else:
+        return os.getcwd()
 
 
 def get_temp_path() -> str:

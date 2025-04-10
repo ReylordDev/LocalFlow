@@ -92,8 +92,6 @@ export const exposeDatabase = () => {
       activateMode(modeId) {
         return ipcRenderer.send(CHANNELS.DATABASE.MODES.ACTIVATE_MODE, modeId);
       },
-      onModesUpdate: (callback) =>
-        genericListener(CHANNELS.DATABASE.MODES.MODES_UPDATE, callback),
     },
     textReplacements: {
       requestAll: () => {

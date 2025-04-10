@@ -2,7 +2,7 @@ import { ipcMain, clipboard, shell, app } from "electron";
 import { PythonService } from "../services/python-service";
 import { SettingsService } from "../services/settings-service";
 import { WindowManager } from "../windows/window-manager";
-import { AppConfig, logger } from "../utils/config";
+import { logger } from "../utils/config";
 import { registerURLHandlers } from "./url";
 import { registerDeviceHandlers } from "./device";
 import { registerSettingsHandlers } from "./settings";
@@ -17,7 +17,6 @@ import { UUID } from "crypto";
 
 export function registerIpcHandlers(
   settingsService: SettingsService,
-  config: AppConfig,
   pythonService: PythonService,
   windowManager: WindowManager,
 ) {

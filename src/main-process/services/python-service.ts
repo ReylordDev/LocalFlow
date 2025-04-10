@@ -17,13 +17,11 @@ import {
 } from "../../lib/models/messages";
 import { Command } from "../../lib/models/commands";
 import path from "path";
-import { SettingsService } from "./settings-service";
 import {
   PYTHON_SERVICE_EVENTS,
   PythonEventMap,
 } from "../../lib/models/channels";
 import { ControllerStatusType } from "../../lib/models/database";
-import { AppSettings } from "../../lib/models/settings";
 
 /**
  * Service for managing communication with the Python backend.
@@ -36,9 +34,6 @@ import { AppSettings } from "../../lib/models/settings";
 export class PythonService extends EventEmitter {
   private shell!: PythonShell; // Using definite assignment assertion
   private activeRecording = false;
-  private pythonEventListeners: {
-    [K in keyof PythonEventMap]?: ((data: PythonEventMap[K]) => void)[];
-  } = {};
 
   /**
    * Registers an event listener for the specified event
@@ -50,10 +45,7 @@ export class PythonService extends EventEmitter {
     eventName: K,
     callback: (data: PythonEventMap[K]) => void,
   ): void {
-    if (!this.pythonEventListeners[eventName]) {
-      this.pythonEventListeners[eventName] = [];
-    }
-    this.pythonEventListeners[eventName]?.push(callback);
+    this.on(eventName, callback);
   }
 
   /**
@@ -66,11 +58,7 @@ export class PythonService extends EventEmitter {
     eventName: K,
     data: PythonEventMap[K],
   ): void {
-    if (!this.pythonEventListeners[eventName]) return;
-
-    for (const callback of this.pythonEventListeners[eventName] || []) {
-      callback(data);
-    }
+    this.emit(eventName, data);
   }
 
   /**
@@ -79,15 +67,8 @@ export class PythonService extends EventEmitter {
    * @param config - Application configuration settings
    * @param settingsService - Service for handling application settings
    */
-  constructor(
-    private config: AppConfig,
-    private settingsService: SettingsService,
-  ) {
+  constructor(private config: AppConfig) {
     super();
-    this.settingsService.on(
-      "settings-changed",
-      this.handleSettingsChange.bind(this),
-    );
   }
 
   /**
@@ -166,7 +147,7 @@ export class PythonService extends EventEmitter {
         break;
       case "modes":
         this.emitPythonEvent(
-          PYTHON_SERVICE_EVENTS.MODES_UPDATE,
+          PYTHON_SERVICE_EVENTS.MODES,
           (message.data as ModesMessage).modes,
         );
         break;
@@ -214,7 +195,7 @@ export class PythonService extends EventEmitter {
   private handleProgressUpdate(progress: ProgressMessage) {
     if (progress.step === "init" && progress.status === "complete") {
       logger.info("Models initialization complete");
-      this.emit(PYTHON_SERVICE_EVENTS.MODELS_READY);
+      this.emitPythonEvent(PYTHON_SERVICE_EVENTS.MODELS_READY, void 0);
     }
   }
 
@@ -225,7 +206,7 @@ export class PythonService extends EventEmitter {
    */
   private handleStatusUpdate(status: ControllerStatusType) {
     logger.debug("Status update from Python backend:", status);
-    this.emit(PYTHON_SERVICE_EVENTS.STATUS_UPDATE, status);
+    this.emitPythonEvent(PYTHON_SERVICE_EVENTS.STATUS_UPDATE, status);
   }
 
   /**
@@ -235,16 +216,6 @@ export class PythonService extends EventEmitter {
     this.sendCommand({ action: "toggle" } as Command);
     this.activeRecording = !this.activeRecording;
     logger.info(`Recording ${this.activeRecording ? "started" : "stopped"}`);
-  }
-
-  /**
-   * Handles settings changes from the settings service
-   *
-   * @param settings - Updated application settings
-   */
-  private handleSettingsChange(settings: AppSettings) {
-    logger.debug("Settings changed:", settings);
-    logger.warn("Settings change handler not implemented yet.");
   }
 
   /**

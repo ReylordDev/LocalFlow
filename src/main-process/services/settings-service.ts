@@ -42,9 +42,6 @@ export const DEFAULT_SETTINGS: AppSettings = {
 export class SettingsService extends EventEmitter {
   private settings: AppSettings;
   private settingsPath: string;
-  private settingsEventListeners: {
-    [K in keyof SettingsEventMap]?: ((data: SettingsEventMap[K]) => void)[];
-  } = {};
 
   /**
    * Registers an event listener for the specified event
@@ -56,10 +53,7 @@ export class SettingsService extends EventEmitter {
     eventName: K,
     callback: (data: SettingsEventMap[K]) => void,
   ): void {
-    if (!this.settingsEventListeners[eventName]) {
-      this.settingsEventListeners[eventName] = [];
-    }
-    this.settingsEventListeners[eventName]?.push(callback);
+    this.on(eventName, callback);
   }
 
   /**
@@ -72,11 +66,7 @@ export class SettingsService extends EventEmitter {
     eventName: K,
     data: SettingsEventMap[K],
   ): void {
-    if (!this.settingsEventListeners[eventName]) return;
-
-    for (const callback of this.settingsEventListeners[eventName] || []) {
-      callback(data);
-    }
+    this.emit(eventName, data);
   }
 
   constructor(private config: AppConfig) {

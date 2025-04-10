@@ -58,6 +58,7 @@ def initialize_logger(
     # Log to file
     log_file = os.path.join(get_user_data_path(), "logs", "python.log")
     os.makedirs(os.path.dirname(log_file), exist_ok=True)
+    logger.info(f"Log file: {log_file}")
 
     logger.add(
         log_file,
