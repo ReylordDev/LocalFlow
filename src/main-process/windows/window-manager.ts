@@ -21,7 +21,7 @@ export class WindowManager extends EventEmitter {
   private mainWindow: BrowserWindow | undefined;
   private miniWindow: BrowserWindow | undefined;
   private startupWindow: BrowserWindow | undefined;
-  private recordingHistoryWindow: BrowserWindow | null = null;
+  private recordingHistoryWindow: BrowserWindow | undefined;
 
   /**
    * Creates a new instance of WindowManager
@@ -83,6 +83,7 @@ export class WindowManager extends EventEmitter {
     });
 
     Menu.setApplicationMenu(null);
+    this.mainWindow = mainWindow;
     return mainWindow;
   }
 
@@ -179,6 +180,7 @@ export class WindowManager extends EventEmitter {
     // and load the index.html of the app.
     miniWindow.loadURL(MINI_WEBPACK_ENTRY);
 
+    this.miniWindow = miniWindow;
     return miniWindow;
   }
 
@@ -296,7 +298,7 @@ export class WindowManager extends EventEmitter {
    *
    * @returns The startup browser window instance
    */
-  createStartupWindow = (): BrowserWindow => {
+  createStartupWindow(): BrowserWindow {
     logger.info("Creating startup window");
 
     const startupWindow = new BrowserWindow({
@@ -313,7 +315,7 @@ export class WindowManager extends EventEmitter {
 
     this.startupWindow = startupWindow;
     return startupWindow;
-  };
+  }
 
   /**
    * Hides the startup window
@@ -334,7 +336,7 @@ export class WindowManager extends EventEmitter {
    *
    * @returns The recording history browser window instance
    */
-  createRecordingHistoryWindow = (): BrowserWindow => {
+  createRecordingHistoryWindow(): BrowserWindow {
     if (
       this.recordingHistoryWindow &&
       !this.recordingHistoryWindow.isDestroyed()
@@ -365,12 +367,12 @@ export class WindowManager extends EventEmitter {
     // Add event listener for window close event
     recordingHistoryWindow.on("closed", () => {
       logger.debug("Recording history window closed");
-      this.recordingHistoryWindow = null;
+      this.recordingHistoryWindow = undefined;
     });
 
     this.recordingHistoryWindow = recordingHistoryWindow;
     return recordingHistoryWindow;
-  };
+  }
 
   /**
    * Sends a message to the recording history window

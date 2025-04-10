@@ -36,9 +36,13 @@ const HistoryWindow = () => {
   const [selectedResult, setSelectedResult] = useState<Result | null>(null);
 
   useEffect(() => {
+    console.log("Requesting all results from the database...");
     window.recordingHistory.requestAll();
+  }, []);
 
+  useEffect(() => {
     const unsubscribe = window.recordingHistory.onReceiveResults((results) => {
+      console.log("Received results from the database:", results);
       setHistory(results);
     });
 
@@ -115,10 +119,6 @@ function Sidebar({
     window.database.examples.addExample(result.mode.prompt.id, example);
     // perhaps show a toast or notification here
   };
-
-  console.log("History:", history);
-  console.log("Filtered history:", filteredHistory);
-  console.log("Search term:", searchTerm);
 
   return (
     <div className="flex h-screen w-80 shrink-0 flex-col border-r">

@@ -58,6 +58,7 @@ export default function Modes() {
 
   useEffect(() => {
     window.database.modes.requestAll();
+    console.debug("Requesting all modes");
   }, [index]);
 
   useEffect(() => {
