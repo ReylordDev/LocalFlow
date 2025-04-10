@@ -5,6 +5,9 @@ __pycache__
 recorder-output
 logs
 .env
+*.old
+*.bak
+
 
 # Logs
 logs
