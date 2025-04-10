@@ -199,18 +199,35 @@ export const CHANNELS = {
 };
 
 // Python service events for IPC communication
-export const PYTHON_SERVICE_EVENTS = {
-  MODELS_READY: "models-ready",
-  ERROR: "error",
-  TRANSCRIPTION: "transcription",
-  AUDIO_LEVEL: "audio-level",
-  DEVICES: "devices",
-  STATUS_UPDATE: "status-update",
-  MODES_UPDATE: "modes-update",
-  MODES: "modes",
-  RESULT: "result",
-  RESULTS: "results",
-  VOICE_MODELS: "voice-models",
-  LANGUAGE_MODELS: "language-models",
-  TEXT_REPLACEMENTS: "text-replacements",
+export enum PYTHON_SERVICE_EVENTS {
+  MODELS_READY = "models-ready",
+  ERROR = "error",
+  TRANSCRIPTION = "transcription",
+  AUDIO_LEVEL = "audio-level",
+  DEVICES = "devices",
+  STATUS_UPDATE = "status-update",
+  MODES_UPDATE = "modes-update",
+  MODES = "modes",
+  RESULT = "result",
+  RESULTS = "results",
+  VOICE_MODELS = "voice-models",
+  LANGUAGE_MODELS = "language-models",
+  TEXT_REPLACEMENTS = "text-replacements",
+}
+
+// Define the mapping between event names and their payload types
+export type PythonEventMap = {
+  [PYTHON_SERVICE_EVENTS.MODELS_READY]: void;
+  [PYTHON_SERVICE_EVENTS.ERROR]: Error;
+  [PYTHON_SERVICE_EVENTS.TRANSCRIPTION]: string;
+  [PYTHON_SERVICE_EVENTS.AUDIO_LEVEL]: number;
+  [PYTHON_SERVICE_EVENTS.DEVICES]: import("./database").Device[];
+  [PYTHON_SERVICE_EVENTS.STATUS_UPDATE]: import("./database").ControllerStatusType;
+  [PYTHON_SERVICE_EVENTS.MODES_UPDATE]: import("./database").Mode[];
+  [PYTHON_SERVICE_EVENTS.MODES]: import("./database").Mode[];
+  [PYTHON_SERVICE_EVENTS.RESULT]: import("./database").Result;
+  [PYTHON_SERVICE_EVENTS.RESULTS]: import("./database").Result[];
+  [PYTHON_SERVICE_EVENTS.VOICE_MODELS]: import("./database").VoiceModel[];
+  [PYTHON_SERVICE_EVENTS.LANGUAGE_MODELS]: import("./database").LanguageModel[];
+  [PYTHON_SERVICE_EVENTS.TEXT_REPLACEMENTS]: import("./database").TextReplacement[];
 };

@@ -38,7 +38,7 @@ export class TrayManager {
     this.pythonService.sendCommand({
       action: "get_modes",
     });
-    this.pythonService.on(PYTHON_SERVICE_EVENTS.MODES, (modes: Mode[]) => {
+    this.pythonService.onPythonEvent(PYTHON_SERVICE_EVENTS.MODES, (modes) => {
       if (!this.tray) {
         logger.error("Tray not initialized");
         return;

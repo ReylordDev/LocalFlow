@@ -65,22 +65,21 @@ export interface TextReplacementsMessage {
   text_replacements: TextReplacement[];
 }
 
+type MessageResultType =
+  | "transcription"
+  | "audio_level"
+  | "devices"
+  | "status"
+  | "modes"
+  | "result"
+  | "results"
+  | "modes_update"
+  | "voice_models"
+  | "language_models"
+  | "text_replacements";
+
 export interface Message {
-  type:
-    | "progress"
-    | "transcription"
-    | "audio_level"
-    | "exception"
-    | "devices"
-    | "error"
-    | "status"
-    | "modes"
-    | "result"
-    | "results"
-    | "modes_update"
-    | "voice_models"
-    | "language_models"
-    | "text_replacements";
+  type: MessageResultType | "progress" | "exception" | "error";
   data:
     | ProgressMessage
     | TranscriptionMessage

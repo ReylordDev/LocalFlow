@@ -1,21 +1,22 @@
 // See the Electron documentation for details on how to use preload scripts:
 // https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
 
-import { AppSettings } from "./lib/models/settings";
 import { CHANNEL_NAMES, CHANNELS } from "./lib/models/channels";
 import { contextBridge, ipcRenderer, IpcRendererEvent } from "electron";
-import {
-  ControllerStatusType,
-  Device,
-  LanguageModel,
-  Mode,
-  Result,
-  TextReplacement,
-  VoiceModel,
-} from "./lib/models/database";
 
 // Expose protected methods that allow the renderer process to use
 // the ipcRenderer without exposing the entire object
+
+// What about there is no arg?
+function genericListener<T>(channel: string, callback: (arg: T) => void) {
+  const listener = (_: IpcRendererEvent, arg: T) => {
+    callback(arg);
+  };
+  ipcRenderer.on(channel, listener);
+  return () => {
+    ipcRenderer.off(channel, listener);
+  };
+}
 
 export const exposeSettings = () => {
   contextBridge.exposeInMainWorld(CHANNEL_NAMES.SETTINGS, {
@@ -38,13 +39,7 @@ export const exposeSettings = () => {
       );
     },
     onSettingsChanged(callback) {
-      const listener = (_: IpcRendererEvent, settings: AppSettings) => {
-        callback(settings);
-      };
-      ipcRenderer.on(CHANNELS.SETTINGS.SETTINGS_CHANGED, listener);
-      return () => {
-        ipcRenderer.off(CHANNELS.SETTINGS.SETTINGS_CHANGED, listener);
-      };
+      return genericListener(CHANNELS.SETTINGS.SETTINGS_CHANGED, callback);
     },
     setOutput(outputConfig) {
       return ipcRenderer.send(CHANNELS.SETTINGS.SET_OUTPUT, outputConfig);
@@ -69,13 +64,7 @@ export const exposeDevice = () => {
       return ipcRenderer.send(CHANNELS.DEVICE.DEVICES_REQUEST);
     },
     onReceiveDevices: (callback) => {
-      const listener = (_: IpcRendererEvent, devices: Device[]) => {
-        callback(devices);
-      };
-      ipcRenderer.on(CHANNELS.DEVICE.DEVICES_RESPONSE, listener);
-      return () => {
-        ipcRenderer.off(CHANNELS.DEVICE.DEVICES_RESPONSE, listener);
-      };
+      return genericListener(CHANNELS.DEVICE.DEVICES_RESPONSE, callback);
     },
     set: (device) => {
       return ipcRenderer.send(CHANNELS.DEVICE.SET, device);
@@ -89,15 +78,8 @@ export const exposeDatabase = () => {
       requestAll: () => {
         return ipcRenderer.send(CHANNELS.DATABASE.MODES.MODES_REQUEST);
       },
-      onReceiveModes: (callback) => {
-        const listener = (_: IpcRendererEvent, modes: Mode[]) => {
-          callback(modes);
-        };
-        ipcRenderer.on(CHANNELS.DATABASE.MODES.MODES_RESPONSE, listener);
-        return () => {
-          ipcRenderer.off(CHANNELS.DATABASE.MODES.MODES_RESPONSE, listener);
-        };
-      },
+      onReceiveModes: (callback) =>
+        genericListener(CHANNELS.DATABASE.MODES.MODES_RESPONSE, callback),
       createMode: (mode) => {
         return ipcRenderer.send(CHANNELS.DATABASE.MODES.CREATE_MODE, mode);
       },
@@ -110,15 +92,8 @@ export const exposeDatabase = () => {
       activateMode(modeId) {
         return ipcRenderer.send(CHANNELS.DATABASE.MODES.ACTIVATE_MODE, modeId);
       },
-      onModesUpdate(callback) {
-        const listener = (_: IpcRendererEvent, modes: Mode[]) => {
-          callback(modes);
-        };
-        ipcRenderer.on(CHANNELS.DATABASE.MODES.MODES_UPDATE, listener);
-        return () => {
-          ipcRenderer.off(CHANNELS.DATABASE.MODES.MODES_UPDATE, listener);
-        };
-      },
+      onModesUpdate: (callback) =>
+        genericListener(CHANNELS.DATABASE.MODES.MODES_UPDATE, callback),
     },
     textReplacements: {
       requestAll: () => {
@@ -126,24 +101,11 @@ export const exposeDatabase = () => {
           CHANNELS.DATABASE.TEXT_REPLACEMENTS.TEXT_REPLACEMENTS_REQUEST,
         );
       },
-      onReceiveTextReplacements: (callback) => {
-        const listener = (
-          _: IpcRendererEvent,
-          textReplacements: TextReplacement[],
-        ) => {
-          callback(textReplacements);
-        };
-        ipcRenderer.on(
+      onReceiveTextReplacements: (callback) =>
+        genericListener(
           CHANNELS.DATABASE.TEXT_REPLACEMENTS.TEXT_REPLACEMENTS_RESPONSE,
-          listener,
-        );
-        return () => {
-          ipcRenderer.off(
-            CHANNELS.DATABASE.TEXT_REPLACEMENTS.TEXT_REPLACEMENTS_RESPONSE,
-            listener,
-          );
-        };
-      },
+          callback,
+        ),
       createTextReplacement: (textReplacement) => {
         ipcRenderer.send(
           CHANNELS.DATABASE.TEXT_REPLACEMENTS.CREATE_TEXT_REPLACEMENT,
@@ -180,21 +142,11 @@ export const exposeDatabase = () => {
           CHANNELS.DATABASE.VOICE_MODELS.VOICE_MODELS_REQUEST,
         );
       },
-      onReceiveVoiceModels: (callback) => {
-        const listener = (_: IpcRendererEvent, voiceModels: VoiceModel[]) => {
-          callback(voiceModels);
-        };
-        ipcRenderer.on(
+      onReceiveVoiceModels: (callback) =>
+        genericListener(
           CHANNELS.DATABASE.VOICE_MODELS.VOICE_MODELS_RESPONSE,
-          listener,
-        );
-        return () => {
-          ipcRenderer.off(
-            CHANNELS.DATABASE.VOICE_MODELS.VOICE_MODELS_RESPONSE,
-            listener,
-          );
-        };
-      },
+          callback,
+        ),
     },
     languageModels: {
       requestAll: () => {
@@ -202,24 +154,11 @@ export const exposeDatabase = () => {
           CHANNELS.DATABASE.LANGUAGE_MODELS.LANGUAGE_MODELS_REQUEST,
         );
       },
-      onReceiveLanguageModels: (callback) => {
-        const listener = (
-          _: IpcRendererEvent,
-          languageModels: LanguageModel[],
-        ) => {
-          callback(languageModels);
-        };
-        ipcRenderer.on(
+      onReceiveLanguageModels: (callback) =>
+        genericListener(
           CHANNELS.DATABASE.LANGUAGE_MODELS.LANGUAGE_MODELS_RESPONSE,
-          listener,
-        );
-        return () => {
-          ipcRenderer.off(
-            CHANNELS.DATABASE.LANGUAGE_MODELS.LANGUAGE_MODELS_RESPONSE,
-            listener,
-          );
-        };
-      },
+          callback,
+        ),
     },
   } satisfies Window["database"]);
 };
@@ -229,54 +168,18 @@ export const exposeMini = () => {
     requestAudioLevel: async () => {
       return ipcRenderer.send(CHANNELS.MINI.AUDIO_LEVEL_REQUEST);
     },
-    onReceiveAudioLevel: (callback) => {
-      const listener = (_: IpcRendererEvent, audio_level: number) => {
-        callback(audio_level);
-      };
-      ipcRenderer.on(CHANNELS.MINI.AUDIO_LEVEL_RESPONSE, listener);
-      return () => {
-        ipcRenderer.off(CHANNELS.MINI.AUDIO_LEVEL_RESPONSE, listener);
-      };
-    },
-    onStatusUpdate: (callback) => {
-      const listener = (_: IpcRendererEvent, status: ControllerStatusType) => {
-        callback(status);
-      };
-      ipcRenderer.on(CHANNELS.MINI.STATUS_UPDATE, listener);
-      return () => {
-        ipcRenderer.off(CHANNELS.MINI.STATUS_UPDATE, listener);
-      };
-    },
-    onResult(callback) {
-      const listener = (_: IpcRendererEvent, result: Result) => {
-        callback(result);
-      };
-      ipcRenderer.on(CHANNELS.MINI.RESULT, listener);
-      return () => {
-        ipcRenderer.off(CHANNELS.MINI.RESULT, listener);
-      };
-    },
-    onChangeModeShortcutPressed(callback) {
-      const listener = () => {
-        callback();
-      };
-      ipcRenderer.on(CHANNELS.MINI.CHANGE_MODE_SHORTCUT_PRESSED, listener);
-      return () => {
-        ipcRenderer.off(CHANNELS.MINI.CHANGE_MODE_SHORTCUT_PRESSED, listener);
-      };
-    },
+    onReceiveAudioLevel: (callback) =>
+      genericListener(CHANNELS.MINI.AUDIO_LEVEL_RESPONSE, callback),
+    onStatusUpdate: (callback) =>
+      genericListener(CHANNELS.MINI.STATUS_UPDATE, callback),
+    onResult: (callback) => genericListener(CHANNELS.MINI.RESULT, callback),
+    onChangeModeShortcutPressed: (callback) =>
+      genericListener(CHANNELS.MINI.CHANGE_MODE_SHORTCUT_PRESSED, callback),
     setMainContentHeight: (height: number) => {
       ipcRenderer.send(CHANNELS.MINI.SET_MAIN_CONTENT_HEIGHT, height);
     },
-    onTranscription(callback) {
-      const listener = (_: IpcRendererEvent, transcription: string) => {
-        callback(transcription);
-      };
-      ipcRenderer.on(CHANNELS.MINI.TRANSCRIPTION, listener);
-      return () => {
-        ipcRenderer.off(CHANNELS.MINI.TRANSCRIPTION, listener);
-      };
-    },
+    onTranscription: (callback) =>
+      genericListener(CHANNELS.MINI.TRANSCRIPTION, callback),
   } satisfies Window["mini"]);
 };
 
@@ -288,15 +191,8 @@ export const exposeRecordingHistory = () => {
     requestAll() {
       return ipcRenderer.send(CHANNELS.RECORDING_HISTORY.RESULTS_REQUEST);
     },
-    onReceiveResults(callback) {
-      const listener = (_: IpcRendererEvent, results: Result[]) => {
-        callback(results);
-      };
-      ipcRenderer.on(CHANNELS.RECORDING_HISTORY.RESULTS_RESPONSE, listener);
-      return () => {
-        ipcRenderer.off(CHANNELS.RECORDING_HISTORY.RESULTS_RESPONSE, listener);
-      };
-    },
+    onReceiveResults: (callback) =>
+      genericListener(CHANNELS.RECORDING_HISTORY.RESULTS_RESPONSE, callback),
   } satisfies Window["recordingHistory"]);
 };
 

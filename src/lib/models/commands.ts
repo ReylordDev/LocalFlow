@@ -33,12 +33,12 @@ export interface SelectModeCommand {
   mode_id: UUID;
 }
 
-export interface SelectResultCommand {
-  result_id: UUID;
-}
-
 export interface SelectDeviceCommand {
   index: number;
+}
+
+export interface SelectResultCommand {
+  result_id: UUID;
 }
 
 export interface SelectTextReplacementCommand {

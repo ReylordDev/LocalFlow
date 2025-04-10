@@ -14,12 +14,14 @@ import {
   VoiceModelsMessage,
   LanguageModelsMessage,
   TextReplacementsMessage,
-  TranscriptionMessage,
 } from "../../lib/models/messages";
 import { Command } from "../../lib/models/commands";
 import path from "path";
 import { SettingsService } from "./settings-service";
-import { PYTHON_SERVICE_EVENTS } from "../../lib/models/channels";
+import {
+  PYTHON_SERVICE_EVENTS,
+  PythonEventMap,
+} from "../../lib/models/channels";
 import { ControllerStatusType } from "../../lib/models/database";
 import { AppSettings } from "../../lib/models/settings";
 
@@ -34,6 +36,42 @@ import { AppSettings } from "../../lib/models/settings";
 export class PythonService extends EventEmitter {
   private shell!: PythonShell; // Using definite assignment assertion
   private activeRecording = false;
+  private pythonEventListeners: {
+    [K in keyof PythonEventMap]?: ((data: PythonEventMap[K]) => void)[];
+  } = {};
+
+  /**
+   * Registers an event listener for the specified event
+   *
+   * @param eventName - The name of the event to listen for
+   * @param callback - Function to call when the event is emitted
+   */
+  onPythonEvent<K extends keyof PythonEventMap>(
+    eventName: K,
+    callback: (data: PythonEventMap[K]) => void,
+  ): void {
+    if (!this.pythonEventListeners[eventName]) {
+      this.pythonEventListeners[eventName] = [];
+    }
+    this.pythonEventListeners[eventName]?.push(callback);
+  }
+
+  /**
+   * Emits an event with the specified name and data
+   *
+   * @param eventName - The name of the event to emit
+   * @param data - The data to pass to listeners (type depends on eventName)
+   */
+  emitPythonEvent<K extends keyof PythonEventMap>(
+    eventName: K,
+    data: PythonEventMap[K],
+  ): void {
+    if (!this.pythonEventListeners[eventName]) return;
+
+    for (const callback of this.pythonEventListeners[eventName] || []) {
+      callback(data);
+    }
+  }
 
   /**
    * Creates a new PythonService instance
@@ -105,74 +143,63 @@ export class PythonService extends EventEmitter {
         this.handleStatusUpdate((message.data as StatusMessage).status);
         break;
       case "transcription":
-        this.emit(
-          PYTHON_SERVICE_EVENTS.TRANSCRIPTION,
-          (message.data as TranscriptionMessage).transcription,
-        );
-        break;
-      case "audio_level":
-        this.emit(
+        this.emitPythonEvent(
           PYTHON_SERVICE_EVENTS.AUDIO_LEVEL,
           (message.data as AudioLevelMessage).audio_level,
         );
         break;
       case "devices":
-        this.emit(
+        this.emitPythonEvent(
           PYTHON_SERVICE_EVENTS.DEVICES,
           (message.data as DevicesMessage).devices,
         );
         break;
       case "error":
         logger.error("Error from Python backend:", message.data);
-        this.emit(
+        this.emitPythonEvent(
           PYTHON_SERVICE_EVENTS.ERROR,
-          (message.data as unknown as ErrorMessage).error,
+          new Error((message.data as ErrorMessage).error),
         );
         break;
       case "exception":
         logger.error("Exception from Python backend:", message.data);
         break;
       case "modes":
-        this.emit(
-          PYTHON_SERVICE_EVENTS.MODES,
-          (message.data as ModesMessage).modes,
-        );
-        break;
-      case "modes_update":
-        this.emit(
+        this.emitPythonEvent(
           PYTHON_SERVICE_EVENTS.MODES_UPDATE,
           (message.data as ModesMessage).modes,
         );
         break;
       case "result":
-        this.emit(
+        this.emitPythonEvent(
           PYTHON_SERVICE_EVENTS.RESULT,
           (message.data as ResultMessage).result,
         );
         break;
       case "results":
-        this.emit(
+        this.emitPythonEvent(
           PYTHON_SERVICE_EVENTS.RESULTS,
           (message.data as ResultsMessage).results,
         );
         break;
       case "voice_models":
-        this.emit(
+        this.emitPythonEvent(
           PYTHON_SERVICE_EVENTS.VOICE_MODELS,
           (message.data as VoiceModelsMessage).voice_models,
         );
         break;
       case "language_models":
-        this.emit(
+        this.emitPythonEvent(
           PYTHON_SERVICE_EVENTS.LANGUAGE_MODELS,
           (message.data as LanguageModelsMessage).language_models,
         );
         break;
       case "text_replacements":
-        this.emit(
+        this.emitPythonEvent(
           PYTHON_SERVICE_EVENTS.TEXT_REPLACEMENTS,
           (message.data as TextReplacementsMessage).text_replacements,
         );
+
         break;
       default:
         logger.warn("Unknown message type:", message.type);

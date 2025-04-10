@@ -42,8 +42,8 @@ export class AppConfig {
 
   get scriptPath() {
     return this.isPackaged
-      ? path.join(process.resourcesPath, "src-py", "controller.py")
-      : path.join(this.rootDir, "src-py", "controller.py");
+      ? path.join(process.resourcesPath, "src-py", "main.py")
+      : path.join(this.rootDir, "src-py", "main.py");
   }
 
   get settingsPath() {

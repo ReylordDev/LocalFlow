@@ -1,7 +1,30 @@
-from typing import Optional, Union
+from typing import Literal, Optional, Union
 from uuid import UUID
 from pydantic import BaseModel
 from models.db import ExampleBase, ModeCreate, ModeUpdate, TextReplacementBase
+
+Action = Literal[
+    "toggle",
+    "cancel",
+    "reset",
+    "audio_level",
+    "select_mode",
+    "get_devices",
+    "set_device",
+    "get_modes",
+    "create_mode",
+    "update_mode",
+    "delete_mode",
+    "switch_mode",
+    "get_results",
+    "delete_result",
+    "add_example",
+    "get_voice_models",
+    "get_language_models",
+    "get_text_replacements",
+    "create_text_replacement",
+    "delete_text_replacement",
+]
 
 
 class SelectModeCommand(BaseModel):
@@ -26,17 +49,14 @@ class AddExampleCommand(BaseModel):
 
 
 CommandDataType = Union[
-    None,
     SelectModeCommand,
     SelectDeviceCommand,
     SelectResultCommand,
-    SelectTextReplacementCommand,
-    AddExampleCommand,
     ModeCreate,
     ModeUpdate,
+    AddExampleCommand,
+    SelectTextReplacementCommand,
     TextReplacementBase,
-    str,
-    dict,
 ]
 
 

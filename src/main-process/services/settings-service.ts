@@ -8,6 +8,7 @@ import {
   AppSettings,
   AudioConfig,
   SETTINGS_SERVICE_EVENTS,
+  SettingsEventMap,
   KeyboardConfig,
   OutputConfig,
 } from "../../lib/models/settings";
@@ -41,6 +42,42 @@ export const DEFAULT_SETTINGS: AppSettings = {
 export class SettingsService extends EventEmitter {
   private settings: AppSettings;
   private settingsPath: string;
+  private settingsEventListeners: {
+    [K in keyof SettingsEventMap]?: ((data: SettingsEventMap[K]) => void)[];
+  } = {};
+
+  /**
+   * Registers an event listener for the specified event
+   *
+   * @param eventName - The name of the event to listen for
+   * @param callback - Function to call when the event is emitted
+   */
+  onSettingsEvent<K extends keyof SettingsEventMap>(
+    eventName: K,
+    callback: (data: SettingsEventMap[K]) => void,
+  ): void {
+    if (!this.settingsEventListeners[eventName]) {
+      this.settingsEventListeners[eventName] = [];
+    }
+    this.settingsEventListeners[eventName]?.push(callback);
+  }
+
+  /**
+   * Emits an event with the specified name and data
+   *
+   * @param eventName - The name of the event to emit
+   * @param data - The data to pass to listeners (type depends on eventName)
+   */
+  emitSettingsEvent<K extends keyof SettingsEventMap>(
+    eventName: K,
+    data: SettingsEventMap[K],
+  ): void {
+    if (!this.settingsEventListeners[eventName]) return;
+
+    for (const callback of this.settingsEventListeners[eventName] || []) {
+      callback(data);
+    }
+  }
 
   constructor(private config: AppConfig) {
     super();
@@ -64,7 +101,10 @@ export class SettingsService extends EventEmitter {
   private persistSettings() {
     if (this.settings === this.loadSettings()) return;
     fs.writeFileSync(this.settingsPath, JSON.stringify(this.settings));
-    this.emit(SETTINGS_SERVICE_EVENTS.SETTINGS_CHANGED, this.settings);
+    this.emitSettingsEvent(
+      SETTINGS_SERVICE_EVENTS.SETTINGS_CHANGED,
+      this.settings,
+    );
   }
 
   get currentSettings(): AppSettings {
@@ -85,7 +125,11 @@ export class SettingsService extends EventEmitter {
       );
       globalShortcut.register(
         this.settings.keyboard.toggleRecordingShortcut,
-        () => this.emit(SETTINGS_SERVICE_EVENTS.SHORTCUT_PRESSED.TOGGLE),
+        () =>
+          this.emitSettingsEvent(
+            SETTINGS_SERVICE_EVENTS.SHORTCUT_PRESSED,
+            "toggle",
+          ),
       );
     }
 
@@ -96,7 +140,11 @@ export class SettingsService extends EventEmitter {
       );
       globalShortcut.register(
         this.settings.keyboard.cancelRecordingShortcut,
-        () => this.emit(SETTINGS_SERVICE_EVENTS.SHORTCUT_PRESSED.CANCEL),
+        () =>
+          this.emitSettingsEvent(
+            SETTINGS_SERVICE_EVENTS.SHORTCUT_PRESSED,
+            "cancel",
+          ),
       );
     }
 
@@ -106,7 +154,10 @@ export class SettingsService extends EventEmitter {
         this.settings.keyboard.changeModeShortcut,
       );
       globalShortcut.register(this.settings.keyboard.changeModeShortcut, () =>
-        this.emit(SETTINGS_SERVICE_EVENTS.SHORTCUT_PRESSED.CHANGE_MODE),
+        this.emitSettingsEvent(
+          SETTINGS_SERVICE_EVENTS.SHORTCUT_PRESSED,
+          "change-mode",
+        ),
       );
     }
   }
