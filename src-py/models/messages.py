@@ -1,5 +1,5 @@
 import time
-from typing import Any, List, Literal, Union
+from typing import Any, List, Literal, Optional, Union
 from pydantic import BaseModel, Field
 
 
@@ -93,10 +93,12 @@ class Message(BaseModel):
     Attributes:
         type: The type of message
         data: The message data
+        request_id: Optional ID that links this message to a specific request
     """
 
     type: str
     data: MessageDataType
+    request_id: Optional[str] = None
 
 
 MessageType = Literal[

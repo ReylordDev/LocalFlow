@@ -14,6 +14,7 @@ import {
 } from "../../lib/models/database";
 import { CHANNELS } from "../../lib/models/channels";
 import { UUID } from "crypto";
+import { tryCatch } from "../../lib/utils";
 
 export function registerIpcHandlers(
   settingsService: SettingsService,
@@ -30,10 +31,13 @@ export function registerIpcHandlers(
     });
   });
 
-  ipcMain.on(CHANNELS.DATABASE.MODES.MODES_REQUEST, () => {
-    pythonService.sendCommand({
-      action: "get_modes",
-    });
+  // Using promise-based API for get_modes
+  ipcMain.handle(CHANNELS.DATABASE.MODES.MODES_REQUEST, async () => {
+    const { data, error } = await tryCatch(pythonService.getAllModes());
+    if (error) {
+      throw error;
+    }
+    return data;
   });
 
   ipcMain.on(CHANNELS.DATABASE.MODES.CREATE_MODE, (_, mode: ModeCreate) => {

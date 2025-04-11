@@ -35,14 +35,21 @@ const App = () => {
   }, []);
 
   useEffect(() => {
-    try {
-      window.database.modes.requestAll();
-    } catch (error) {
-      console.error("Failed to request modes:", error);
-      setModeError(
-        error instanceof Error ? error : new Error("Failed to request modes"),
-      );
-    }
+    window.database.modes
+      .fetchAllModes()
+      .then((modes) => {
+        console.debug("Fetched modes:", modes);
+        const activeMode = modes.find((mode) => mode.active);
+        setActiveMode(activeMode || null);
+        setModes(modes);
+        setModeError(null);
+      })
+      .catch((error) => {
+        console.error("Failed to request modes:", error);
+        setModeError(
+          error instanceof Error ? error : new Error("Failed to request modes"),
+        );
+      });
   }, []);
 
   const handleReceiveModes = useCallback((modes: Mode[]) => {
@@ -92,7 +99,7 @@ const App = () => {
           onClick={() => {
             setModeError(null);
             try {
-              window.database.modes.requestAll();
+              window.database.modes.fetchAllModes();
             } catch (error) {
               console.error("Failed to reload modes:", error);
               setModeError(

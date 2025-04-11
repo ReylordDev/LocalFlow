@@ -61,4 +61,5 @@ export interface Command {
     | AddExampleCommand
     | SelectTextReplacementCommand
     | TextReplacementBase;
+  request_id?: string;
 }

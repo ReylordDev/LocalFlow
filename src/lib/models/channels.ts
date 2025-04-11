@@ -48,7 +48,7 @@ declare global {
     };
     database: {
       modes: {
-        requestAll: () => void;
+        fetchAllModes: () => Promise<import("./database").Mode[]>;
         onReceiveModes: (
           callback: (modes: import("./database").Mode[]) => void,
         ) => () => void;

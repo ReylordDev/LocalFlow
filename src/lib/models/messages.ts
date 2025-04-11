@@ -95,4 +95,5 @@ export interface Message {
     | VoiceModelsMessage
     | LanguageModelsMessage
     | TextReplacementsMessage;
+  request_id?: string;
 }

@@ -3,6 +3,7 @@ from loguru import logger
 from api.ipc import print_message, print_nested_model, print_progress
 from utils.serialization import dump_instance
 from models.commands import (
+    Command,
     SelectModeCommand,
     SelectDeviceCommand,
     SelectResultCommand,
@@ -135,14 +136,16 @@ class Controller:
 
     def print_refreshed_modes(self):
         modes = list(self.database_manager.get_all_modes())
-
         print_nested_model(
             "modes", {"modes": [dump_instance(m.create_instance()) for m in modes]}
         )
 
     # TODO: Move each command into their own functions
-    def handle_command(self, command):
+    def handle_command(self, command: Command):
         logger.info(f"Received command: {command}")
+        # Extract request ID if present
+        request_id = command.request_id if command.request_id else None
+
         if command.action == "toggle":
             self.handle_toggle()
 
@@ -153,11 +156,14 @@ class Controller:
             print_message(
                 "audio_level",
                 AudioLevelMessage(audio_level=self.recorder.get_audio_level()),
+                request_id,
             )
 
         elif command.action == "select_mode":
             if not isinstance(command.data, SelectModeCommand):
-                print_message("error", ErrorMessage(error="Invalid command data"))
+                print_message(
+                    "error", ErrorMessage(error="Invalid command data"), request_id
+                )
                 return
             mode_id = command.data.mode_id
             mode = self.database_manager.get_mode(mode_id)
@@ -165,36 +171,45 @@ class Controller:
                 self.mode = mode
                 logger.info(f"Mode changed to: {mode.name}")
             else:
-                print_message("error", ErrorMessage(error="Mode not found"))
+                print_message("error", ErrorMessage(error="Mode not found"), request_id)
 
         elif command.action == "get_devices":
             print_message(
-                "devices", DevicesMessage(devices=self.recorder.get_devices())
+                "devices",
+                DevicesMessage(devices=self.recorder.get_devices()),
+                request_id,
             )
 
         elif command.action == "set_device":
             if not isinstance(command.data, SelectDeviceCommand):
-                print_message("error", ErrorMessage(error="Invalid command data"))
+                print_message(
+                    "error", ErrorMessage(error="Invalid command data"), request_id
+                )
                 return
             self.recorder.set_device(command.data.index)
 
         elif command.action == "get_modes":
             modes: list[Mode] = list(self.database_manager.get_all_modes())
-
             print_nested_model(
-                "modes", {"modes": [dump_instance(m.create_instance()) for m in modes]}
+                "modes",
+                {"modes": [dump_instance(m.create_instance()) for m in modes]},
+                request_id,
             )
 
         elif command.action == "create_mode":
             if not isinstance(command.data, ModeCreate):
-                print_message("error", ErrorMessage(error="Invalid command data"))
+                print_message(
+                    "error", ErrorMessage(error="Invalid command data"), request_id
+                )
                 return
             mode = command.data
             self.database_manager.create_mode(mode)
 
         elif command.action == "update_mode":
             if not isinstance(command.data, ModeUpdate):
-                print_message("error", ErrorMessage(error="Invalid command data"))
+                print_message(
+                    "error", ErrorMessage(error="Invalid command data"), request_id
+                )
                 return
             mode = command.data
             self.database_manager.update_mode(mode)
@@ -203,7 +218,9 @@ class Controller:
 
         elif command.action == "delete_mode":
             if not isinstance(command.data, SelectModeCommand):
-                print_message("error", ErrorMessage(error="Invalid command data"))
+                print_message(
+                    "error", ErrorMessage(error="Invalid command data"), request_id
+                )
                 return
             mode_id = command.data.mode_id
             self.database_manager.delete_mode(mode_id)
@@ -215,11 +232,14 @@ class Controller:
             print_nested_model(
                 "results",
                 {"results": [dump_instance(r.create_instance()) for r in results]},
+                request_id,
             )
 
         elif command.action == "delete_result":
             if not isinstance(command.data, SelectResultCommand):
-                print_message("error", ErrorMessage(error="Invalid command data"))
+                print_message(
+                    "error", ErrorMessage(error="Invalid command data"), request_id
+                )
                 return
             result_id = command.data.result_id
             self.database_manager.delete_result(result_id)
@@ -229,11 +249,14 @@ class Controller:
             print_nested_model(
                 "results",
                 {"results": [dump_instance(r.create_instance()) for r in results]},
+                request_id,
             )
 
         elif command.action == "add_example":
             if not isinstance(command.data, AddExampleCommand):
-                print_message("error", ErrorMessage(error="Invalid command data"))
+                print_message(
+                    "error", ErrorMessage(error="Invalid command data"), request_id
+                )
                 return
             payload = command.data
             self.database_manager.add_example(payload.prompt_id, payload.example)
@@ -245,6 +268,7 @@ class Controller:
                 VoiceModelMessage(
                     voice_models=voice_models,
                 ),
+                request_id,
             )
 
         elif command.action == "get_language_models":
@@ -254,6 +278,7 @@ class Controller:
                 LanguageModelMessage(
                     language_models=language_models,
                 ),
+                request_id,
             )
 
         elif command.action == "get_text_replacements":
@@ -261,22 +286,28 @@ class Controller:
             print_nested_model(
                 "text_replacements",
                 {"text_replacements": [tr.model_dump() for tr in text_replacements]},
+                request_id,
             )
 
         elif command.action == "create_text_replacement":
             if not isinstance(command.data, TextReplacementBase):
-                print_message("error", ErrorMessage(error="Invalid command data"))
+                print_message(
+                    "error", ErrorMessage(error="Invalid command data"), request_id
+                )
                 return
             _ = self.database_manager.create_global_text_replacement(command.data)
             text_replacements = list(self.database_manager.get_all_text_replacements())
             print_nested_model(
                 "text_replacements",
                 {"text_replacements": [tr.model_dump() for tr in text_replacements]},
+                request_id,
             )
 
         elif command.action == "delete_text_replacement":
             if not isinstance(command.data, SelectTextReplacementCommand):
-                print_message("error", ErrorMessage(error="Invalid command data"))
+                print_message(
+                    "error", ErrorMessage(error="Invalid command data"), request_id
+                )
                 return
             text_replacement_id = command.data.text_replacement_id
             self.database_manager.delete_text_replacement(text_replacement_id)
@@ -284,11 +315,14 @@ class Controller:
             print_nested_model(
                 "text_replacements",
                 {"text_replacements": [tr.model_dump() for tr in text_replacements]},
+                request_id,
             )
 
         elif command.action == "switch_mode":
             if not isinstance(command.data, SelectModeCommand):
-                print_message("error", ErrorMessage(error="Invalid command data"))
+                print_message(
+                    "error", ErrorMessage(error="Invalid command data"), request_id
+                )
                 return
             mode_id = command.data.mode_id
             self.database_manager.switch_mode(mode_id)

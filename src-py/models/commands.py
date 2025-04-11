@@ -70,7 +70,9 @@ class Command(BaseModel):
     Attributes:
         action: The action to be performed (e.g., "toggle", "cancel", etc.)
         data: Optional data associated with the command
+        request_id: Optional unique identifier for tracking requests and responses
     """
 
     action: str
     data: Optional[CommandDataType] = None
+    request_id: Optional[str] = None

@@ -18,7 +18,7 @@ import { Badge } from "../../components/ui/badge";
 import { Switch } from "../../components/ui/switch";
 import { Combobox } from "../../components/combobox";
 import { Input } from "../../components/ui/input";
-import { cn } from "../../lib/utils";
+import { cn, tryCatch } from "../../lib/utils";
 import { Textarea } from "../../components/ui/textarea";
 import {
   Dialog,
@@ -57,19 +57,26 @@ export default function Modes() {
   const [selectedMode, setSelectedMode] = useState<Mode | null>(null);
 
   useEffect(() => {
-    window.database.modes.requestAll();
-    console.debug("Requesting all modes");
+    window.database.modes
+      .fetchAllModes()
+      .then((modes) => {
+        console.log("Fetched Modes", modes);
+        setModes(modes);
+      })
+      .catch((error) => {
+        console.error("Error fetching modes:", error);
+      });
   }, [index]);
 
-  useEffect(() => {
-    const unsubscribe = window.database.modes.onReceiveModes(
-      (modes: Mode[]) => {
-        console.log("Received Modes", modes);
-        setModes(modes);
-      },
-    );
-    return () => unsubscribe();
-  }, [index]);
+  // useEffect(() => {
+  //   const unsubscribe = window.database.modes.onReceiveModes(
+  //     (modes: Mode[]) => {
+  //       console.log("Received Modes", modes);
+  //       setModes(modes);
+  //     },
+  //   );
+  //   return () => unsubscribe();
+  // }, [index]);
 
   if (index === 1) {
     return <ModeDetails mode={selectedMode} setIndex={setIndex} />;

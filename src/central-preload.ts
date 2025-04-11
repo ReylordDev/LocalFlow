@@ -1,8 +1,10 @@
 // See the Electron documentation for details on how to use preload scripts:
 // https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
 
+import { tryCatch } from "./lib/utils";
 import { CHANNEL_NAMES, CHANNELS } from "./lib/models/channels";
 import { contextBridge, ipcRenderer, IpcRendererEvent } from "electron";
+import { Mode } from "./lib/models/database";
 
 // Expose protected methods that allow the renderer process to use
 // the ipcRenderer without exposing the entire object
@@ -75,8 +77,15 @@ export const exposeDevice = () => {
 export const exposeDatabase = () => {
   contextBridge.exposeInMainWorld(CHANNEL_NAMES.DATABASE, {
     modes: {
-      requestAll: () => {
-        return ipcRenderer.send(CHANNELS.DATABASE.MODES.MODES_REQUEST);
+      // Convert to promise-based API with invoke
+      fetchAllModes: async () => {
+        const { data, error } = await tryCatch(
+          ipcRenderer.invoke(CHANNELS.DATABASE.MODES.MODES_REQUEST),
+        );
+        if (error) {
+          throw error;
+        }
+        return data as Mode[];
       },
       onReceiveModes: (callback) =>
         genericListener(CHANNELS.DATABASE.MODES.MODES_RESPONSE, callback),
