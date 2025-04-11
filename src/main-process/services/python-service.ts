@@ -15,19 +15,18 @@ import {
   LanguageModelsMessage,
   TextReplacementsMessage,
 } from "../../lib/models/messages";
-import { Command } from "../../lib/models/commands";
+import { Command, ResponseTypeFor } from "../../lib/models/commands";
 import path from "path";
 import {
   PYTHON_SERVICE_EVENTS,
   PythonEventMap,
 } from "../../lib/models/channels";
-import { ControllerStatusType, Mode } from "../../lib/models/database";
+import { ControllerStatusType } from "../../lib/models/database";
 
 // Define types for promise-based request handling
 interface PendingRequest {
   resolve: (value: any) => void;
   reject: (reason?: any) => void;
-  type: Message["type"]; // The expected response message type
 }
 
 /**
@@ -123,21 +122,18 @@ export class PythonService extends EventEmitter {
    * that resolves when a response with the specified type is received
    *
    * @param command - The command to send
-   * @param responseType - The expected response message type
    * @returns A promise that resolves with the response data
    */
-  async sendCommandWithResponse<T>(
-    command: Command,
-    responseType: Message["type"],
-  ): Promise<T> {
+  async sendCommandWithResponse<A extends Command["action"]>(
+    command: Command & { action: A },
+  ): Promise<ResponseTypeFor<A>> {
     const requestId = this.generateRequestId();
     command.request_id = requestId; // Attach the request ID to the command
 
-    const promise = new Promise<T>((resolve, reject) => {
+    const promise = new Promise<ResponseTypeFor<A>>((resolve, reject) => {
       this.pendingRequests.set(requestId, {
         resolve,
         reject,
-        type: responseType,
       });
 
       // Set a timeout to reject the promise if no response is received
@@ -145,7 +141,7 @@ export class PythonService extends EventEmitter {
         if (this.pendingRequests.has(requestId)) {
           const request = this.pendingRequests.get(requestId);
           if (request) {
-            request.reject(new Error(`Request timed out: ${responseType}`));
+            request.reject(new Error(`Request timed out: ${requestId}`));
             this.pendingRequests.delete(requestId);
           }
         }
@@ -175,7 +171,7 @@ export class PythonService extends EventEmitter {
     // Handle promise resolution if this is a response to a request
     if (message.request_id && this.pendingRequests.has(message.request_id)) {
       const request = this.pendingRequests.get(message.request_id);
-      if (request && request.type === message.type) {
+      if (request) {
         request.resolve(message.data);
         this.pendingRequests.delete(message.request_id);
         logger.debug(
@@ -295,18 +291,6 @@ export class PythonService extends EventEmitter {
   sendCommand(command: Command) {
     logger.debug("Sending command to Python:", command);
     this.shell.send(command);
-  }
-
-  /**
-   * Gets all modes from the database
-   * @returns Promise that resolves with an array of modes
-   */
-  async getAllModes(): Promise<Mode[]> {
-    const response = await this.sendCommandWithResponse<ModesMessage>(
-      { action: "get_modes" },
-      "modes",
-    );
-    return response.modes;
   }
 
   /**

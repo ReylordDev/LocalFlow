@@ -2,7 +2,12 @@
 // https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
 
 import { tryCatch } from "./lib/utils";
-import { CHANNEL_NAMES, CHANNELS } from "./lib/models/channels";
+import {
+  CHANNEL_NAMES,
+  ChannelMap,
+  CHANNELS,
+  CHANNELS_enum,
+} from "./lib/models/channels";
 import { contextBridge, ipcRenderer, IpcRendererEvent } from "electron";
 import { Mode } from "./lib/models/database";
 
@@ -74,19 +79,17 @@ export const exposeDevice = () => {
   } satisfies Window["device"]);
 };
 
+function invoke<C extends keyof ChannelMap>(
+  channel: C,
+  ...args: Parameters<ChannelMap[C]>
+): ReturnType<ChannelMap[C]> {
+  return ipcRenderer.invoke(channel, ...args) as ReturnType<ChannelMap[C]>;
+}
+
 export const exposeDatabase = () => {
   contextBridge.exposeInMainWorld(CHANNEL_NAMES.DATABASE, {
     modes: {
-      // Convert to promise-based API with invoke
-      fetchAllModes: async () => {
-        const { data, error } = await tryCatch(
-          ipcRenderer.invoke(CHANNELS.DATABASE.MODES.MODES_REQUEST),
-        );
-        if (error) {
-          throw error;
-        }
-        return data as Mode[];
-      },
+      fetchAllModes: () => invoke(CHANNELS_enum.fetchAllModes),
       onReceiveModes: (callback) =>
         genericListener(CHANNELS.DATABASE.MODES.MODES_RESPONSE, callback),
       createMode: (mode) => {

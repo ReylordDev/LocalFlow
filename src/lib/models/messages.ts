@@ -97,3 +97,7 @@ export interface Message {
     | TextReplacementsMessage;
   request_id?: string;
 }
+
+type MessageMap = {
+  [K in Action]: Message["data"];
+};

@@ -12,9 +12,19 @@ import {
   ModeUpdate,
   TextReplacementBase,
 } from "../../lib/models/database";
-import { CHANNELS } from "../../lib/models/channels";
+import { ChannelMap, CHANNELS, CHANNELS_enum } from "../../lib/models/channels";
 import { UUID } from "crypto";
 import { tryCatch } from "../../lib/utils";
+
+function handleIPC<C extends keyof ChannelMap>(
+  channel: C,
+  callback: (...args: Parameters<ChannelMap[C]>) => ReturnType<ChannelMap[C]>,
+) {
+  ipcMain.handle(channel, (_, ...args: Parameters<ChannelMap[C]>) => {
+    logger.log(`Received event: ${channel}`, args);
+    callback(...args);
+  });
+}
 
 export function registerIpcHandlers(
   settingsService: SettingsService,
@@ -31,14 +41,30 @@ export function registerIpcHandlers(
     });
   });
 
-  // Using promise-based API for get_modes
-  ipcMain.handle(CHANNELS.DATABASE.MODES.MODES_REQUEST, async () => {
-    const { data, error } = await tryCatch(pythonService.getAllModes());
+  handleIPC(CHANNELS_enum.fetchAllModes, async () => {
+    const { data, error } = await tryCatch(
+      pythonService.sendCommandWithResponse({
+        action: "get_modes",
+      }),
+    );
     if (error) {
       throw error;
     }
-    return data;
+    return data.modes;
   });
+
+  // // Using promise-based API for get_modes
+  // ipcMain.handle(CHANNELS_enum.fetchAllModes, async () => {
+  //   const { data, error } = await tryCatch(
+  //     pythonService.sendCommandWithResponse({
+  //       action: "get_modes",
+  //     }),
+  //   );
+  //   if (error) {
+  //     throw error;
+  //   }
+  //   return data.modes;
+  // });
 
   ipcMain.on(CHANNELS.DATABASE.MODES.CREATE_MODE, (_, mode: ModeCreate) => {
     pythonService.sendCommand({
@@ -57,18 +83,14 @@ export function registerIpcHandlers(
   ipcMain.on(CHANNELS.DATABASE.MODES.DELETE_MODE, (_, modeId: UUID) => {
     pythonService.sendCommand({
       action: "delete_mode",
-      data: {
-        mode_id: modeId,
-      },
+      data: modeId,
     });
   });
 
   ipcMain.on(CHANNELS.DATABASE.RESULTS.DELETE_RESULT, (_, resultId: UUID) => {
     pythonService.sendCommand({
       action: "delete_result",
-      data: {
-        result_id: resultId,
-      },
+      data: resultId,
     });
   });
 
@@ -135,7 +157,9 @@ export function registerIpcHandlers(
     (_, textReplacement: TextReplacementBase) => {
       pythonService.sendCommand({
         action: "create_text_replacement",
-        data: textReplacement,
+        data: {
+          text_replacement: textReplacement,
+        },
       });
     },
   );
@@ -145,9 +169,7 @@ export function registerIpcHandlers(
     (_, textReplacementId: UUID) => {
       pythonService.sendCommand({
         action: "delete_text_replacement",
-        data: {
-          text_replacement_id: textReplacementId,
-        },
+        data: textReplacementId,
       });
     },
   );
@@ -159,9 +181,7 @@ export function registerIpcHandlers(
   ipcMain.on(CHANNELS.DATABASE.MODES.ACTIVATE_MODE, (_, modeId: UUID) => {
     pythonService.sendCommand({
       action: "switch_mode",
-      data: {
-        mode_id: modeId,
-      },
+      data: modeId,
     });
   });
 }

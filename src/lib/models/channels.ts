@@ -48,7 +48,7 @@ declare global {
     };
     database: {
       modes: {
-        fetchAllModes: () => Promise<import("./database").Mode[]>;
+        fetchAllModes: ChannelMap[CHANNELS_enum.fetchAllModes];
         onReceiveModes: (
           callback: (modes: import("./database").Mode[]) => void,
         ) => () => void;
@@ -192,6 +192,14 @@ export const CHANNELS = {
     RESULTS_REQUEST: "recordingHistory:requestAll",
     RESULTS_RESPONSE: "recordingHistory:receiveResults",
   },
+};
+
+export enum CHANNELS_enum {
+  fetchAllModes = "database:modes:getAll",
+}
+
+export type ChannelMap = {
+  [CHANNELS_enum.fetchAllModes]: () => Promise<import("./database").Mode[]>;
 };
 
 // Python service events for IPC communication
