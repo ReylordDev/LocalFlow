@@ -70,13 +70,6 @@ function registerPythonEventHandlers() {
     );
   });
 
-  pythonService.onPythonEvent(PYTHON_SERVICE_EVENTS.DEVICES, (devices) => {
-    windowManager.sendMainWindowMessage(
-      CHANNELS_old.DEVICE.DEVICES_RESPONSE,
-      devices,
-    );
-  });
-
   pythonService.onPythonEvent(PYTHON_SERVICE_EVENTS.STATUS_UPDATE, (status) => {
     windowManager.sendMiniWindowMessage(
       CHANNELS_old.MINI.STATUS_UPDATE,
@@ -102,16 +95,6 @@ function registerPythonEventHandlers() {
     }
   });
 
-  pythonService.onPythonEvent(
-    PYTHON_SERVICE_EVENTS.TRANSCRIPTION,
-    (transcriptionMessage) => {
-      windowManager.sendMiniWindowMessage(
-        CHANNELS_old.MINI.TRANSCRIPTION,
-        transcriptionMessage,
-      );
-    },
-  );
-
   pythonService.onPythonEvent(PYTHON_SERVICE_EVENTS.MODES, (modes) => {
     windowManager.sendMainWindowMessage(
       CHANNELS_old.DATABASE.MODES.MODES_RESPONSE,
@@ -122,43 +105,6 @@ function registerPythonEventHandlers() {
       modes,
     );
   });
-
-  pythonService.onPythonEvent(PYTHON_SERVICE_EVENTS.RESULTS, (results) => {
-    windowManager.sendRecordingHistoryWindowMessage(
-      CHANNELS_old.RECORDING_HISTORY.RESULTS_RESPONSE,
-      results,
-    );
-  });
-
-  pythonService.onPythonEvent(
-    PYTHON_SERVICE_EVENTS.VOICE_MODELS,
-    (voiceModels) => {
-      windowManager.sendMainWindowMessage(
-        CHANNELS_old.DATABASE.VOICE_MODELS.VOICE_MODELS_RESPONSE,
-        voiceModels,
-      );
-    },
-  );
-
-  pythonService.onPythonEvent(
-    PYTHON_SERVICE_EVENTS.LANGUAGE_MODELS,
-    (languageModels) => {
-      windowManager.sendMainWindowMessage(
-        CHANNELS_old.DATABASE.LANGUAGE_MODELS.LANGUAGE_MODELS_RESPONSE,
-        languageModels,
-      );
-    },
-  );
-
-  pythonService.onPythonEvent(
-    PYTHON_SERVICE_EVENTS.TEXT_REPLACEMENTS,
-    (textReplacements) => {
-      windowManager.sendMainWindowMessage(
-        CHANNELS_old.DATABASE.TEXT_REPLACEMENTS.TEXT_REPLACEMENTS_RESPONSE,
-        textReplacements,
-      );
-    },
-  );
 }
 
 function registerSettingsEventHandlers() {

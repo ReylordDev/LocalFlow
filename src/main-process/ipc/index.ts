@@ -58,12 +58,6 @@ export function registerIpcHandlers(
     windowManager.createRecordingHistoryWindow();
   });
 
-  // ipcMain.on(CHANNELS_old.RECORDING_HISTORY.RESULTS_REQUEST, () => {
-  //   pythonService.sendCommand({
-  //     action: "get_results",
-  //   });
-  // });
-
   ipcMain.on(CHANNELS_old.CLIPBOARD.COPY, (_, text: string) => {
     logger.log("Copying to clipboard:", text);
     clipboard.writeText(text);

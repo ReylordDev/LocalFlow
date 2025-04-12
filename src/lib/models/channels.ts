@@ -279,30 +279,18 @@ export const CHANNELS_old = {
 export enum PYTHON_SERVICE_EVENTS {
   MODELS_READY = "models-ready",
   ERROR = "error",
-  TRANSCRIPTION = "transcription",
   AUDIO_LEVEL = "audio-level",
-  DEVICES = "devices",
   STATUS_UPDATE = "status-update",
   MODES = "modes",
   RESULT = "result",
-  RESULTS = "results",
-  VOICE_MODELS = "voice-models",
-  LANGUAGE_MODELS = "language-models",
-  TEXT_REPLACEMENTS = "text-replacements",
 }
 
 // Define the mapping between event names and their payload types
 export type PythonEventMap = {
   [PYTHON_SERVICE_EVENTS.MODELS_READY]: void;
   [PYTHON_SERVICE_EVENTS.ERROR]: Error;
-  [PYTHON_SERVICE_EVENTS.TRANSCRIPTION]: string;
   [PYTHON_SERVICE_EVENTS.AUDIO_LEVEL]: number;
-  [PYTHON_SERVICE_EVENTS.DEVICES]: Device[];
   [PYTHON_SERVICE_EVENTS.STATUS_UPDATE]: ControllerStatusType;
   [PYTHON_SERVICE_EVENTS.MODES]: Mode[];
   [PYTHON_SERVICE_EVENTS.RESULT]: Result;
-  [PYTHON_SERVICE_EVENTS.RESULTS]: Result[];
-  [PYTHON_SERVICE_EVENTS.VOICE_MODELS]: VoiceModel[];
-  [PYTHON_SERVICE_EVENTS.LANGUAGE_MODELS]: LanguageModel[];
-  [PYTHON_SERVICE_EVENTS.TEXT_REPLACEMENTS]: TextReplacement[];
 };

@@ -1,18 +1,28 @@
 import { PythonShell } from "python-shell";
 import { EventEmitter } from "events";
 import { AppConfig, logger } from "../utils/config";
-import { Message, ProgressMessage } from "../../lib/models/messages";
+import {
+  Message,
+  ProgressMessage,
+  StatusMessage,
+} from "../../lib/models/messages";
 import { Command, Request } from "../../lib/models/commands";
 import path from "path";
 import {
+  ChannelFunctionTypeMap,
+  ChannelType,
   PYTHON_SERVICE_EVENTS,
   PythonEventMap,
 } from "../../lib/models/channels";
 import { ControllerStatusType } from "../../lib/models/database";
 
 // Define types for promise-based request handling
-interface PendingRequest {
-  resolve: (value: Awaited<Request["_responseType"]>) => void;
+interface PendingRequest<C extends ChannelType> {
+  resolve: (
+    value:
+      | Awaited<ReturnType<ChannelFunctionTypeMap[C]>>
+      | ReturnType<ChannelFunctionTypeMap[C]>,
+  ) => void;
   reject: (reason?: unknown) => void;
 }
 
@@ -26,7 +36,7 @@ interface PendingRequest {
  */
 export class PythonService extends EventEmitter {
   private shell!: PythonShell; // Using definite assignment assertion
-  private pendingRequests: Map<string, PendingRequest> = new Map();
+  private pendingRequests: Map<string, PendingRequest<ChannelType>> = new Map();
   private requestId = 0;
 
   /**
@@ -103,13 +113,13 @@ export class PythonService extends EventEmitter {
     this.shell.on("message", this.handleMessage.bind(this));
   }
 
-  async sendPythonRequest(
-    request: Request,
-  ): Promise<Awaited<Request["_responseType"]>> {
-    const promise = new Promise<Awaited<Request["_responseType"]>>(
+  sendPythonRequest<C extends ChannelType>(request: Request & { channel: C }) {
+    const promise = new Promise<ReturnType<ChannelFunctionTypeMap[C]>>(
       (resolve, reject) => {
         this.pendingRequests.set(request.id, {
-          resolve,
+          resolve: (value) => {
+            resolve(value as ReturnType<ChannelFunctionTypeMap[C]>);
+          },
           reject,
         });
 
@@ -149,109 +159,58 @@ export class PythonService extends EventEmitter {
     return `req_${Date.now()}_${this.requestId++}`;
   }
 
-  /**
-   * Handles messages received from the Python process
-   * and routes them to the appropriate handler
-   *
-   * @param message - Message received from Python process
-   */
   private handleMessage(message: Message) {
-    // Handle promise resolution if this is a response to a request
-    if (message.request_id && this.pendingRequests.has(message.request_id)) {
-      const request = this.pendingRequests.get(message.request_id);
-      if (request) {
-        request.resolve(message.data);
-        this.pendingRequests.delete(message.request_id);
-        logger.debug(
-          `Resolved request ${message.request_id} with type ${message.data}`,
+    if (message.kind === "response") {
+      if (this.pendingRequests.has(message.request_id)) {
+        const pendingRequest = this.pendingRequests.get(message.request_id);
+        if (pendingRequest) {
+          pendingRequest.resolve(message.data);
+          this.pendingRequests.delete(message.request_id);
+          logger.debug(
+            `Resolved request ${message.request_id} with type ${message.data}`,
+          );
+          return;
+        }
+      } else {
+        logger.warn(
+          `Request ID ${message.request_id} not found in pending requests`,
         );
-        return;
       }
-    } else if (message.request_id) {
-      // If the request ID is not found in pending requests, log a warning
-      logger.warn(
-        `Request ID ${message.request_id} not found in pending requests`,
-      );
-    } else if (!message.request_id) {
-      // Handle messages without a request ID (e.g., progress updates, status updates)
-      logger.debug("Received message without request ID from Python:", message);
-      if (message.type && message.type === "progress") {
-        this.handleProgressUpdate(message);
-      } else if (message.type && message.type === "status") {
-        this.handleStatusUpdate(message.data.status);
+    } else if (message.kind === "update") {
+      // Handle updates from the Python process
+      switch (message.updateKind) {
+        case "progress":
+          this.handleProgressUpdate(message);
+          break;
+        case "status":
+          this.handleStatusUpdate(message.status);
+          break;
+        case "audio_level":
+          this.emitPythonEvent(
+            PYTHON_SERVICE_EVENTS.AUDIO_LEVEL,
+            message.audio_level,
+          );
+          break;
+        case "error":
+          logger.error("Error from Python backend:", message.error);
+          this.emitPythonEvent(
+            PYTHON_SERVICE_EVENTS.ERROR,
+            new Error(message.error),
+          );
+          break;
+        case "exception":
+          logger.error("Exception from Python backend:", message.exception);
+          break;
+        case "result":
+          logger.debug("Result from Python backend:", message.result);
+          this.emitPythonEvent(PYTHON_SERVICE_EVENTS.RESULT, message.result);
+          break;
+        default:
+          // eslint-disable-next-line no-case-declarations
+          const _exhaustiveCheck: never = message;
+          return _exhaustiveCheck; // Ensure all cases are handled
       }
     }
-    return;
-    // switch (message.type) {
-    //   case "progress":
-    //     this.handleProgressUpdate(message.type as ProgressMessage);
-    //     break;
-    //     this.handleStatusUpdate(message.data.status);
-    //   case "status":
-    //     this.handleStatusUpdate((message.type as StatusMessage).status);
-    //     break;
-    //   case "transcription":
-    //     this.emitPythonEvent(
-    //       PYTHON_SERVICE_EVENTS.AUDIO_LEVEL,
-    //       (message.type as AudioLevelMessage).audio_level,
-    //     );
-    //     break;
-    //   case "devices":
-    //     this.emitPythonEvent(
-    //       PYTHON_SERVICE_EVENTS.DEVICES,
-    //       (message.type as DevicesMessage).devices,
-    //     );
-    //     break;
-    //   case "error":
-    //     logger.error("Error from Python backend:", message.type);
-    //     this.emitPythonEvent(
-    //       PYTHON_SERVICE_EVENTS.ERROR,
-    //       new Error((message.type as ErrorMessage).error),
-    //     );
-    //     break;
-    //   case "exception":
-    //     logger.error("Exception from Python backend:", message.type);
-    //     break;
-    //   case "modes":
-    //     this.emitPythonEvent(
-    //       PYTHON_SERVICE_EVENTS.MODES,
-    //       (message.type as ModesMessage).modes,
-    //     );
-    //     break;
-    //   case "result":
-    //     this.emitPythonEvent(
-    //       PYTHON_SERVICE_EVENTS.RESULT,
-    //       (message.type as ResultMessage).result,
-    //     );
-    //     break;
-    //   case "results":
-    //     this.emitPythonEvent(
-    //       PYTHON_SERVICE_EVENTS.RESULTS,
-    //       (message.type as ResultsMessage).results,
-    //     );
-    //     break;
-    //   case "voice_models":
-    //     this.emitPythonEvent(
-    //       PYTHON_SERVICE_EVENTS.VOICE_MODELS,
-    //       (message.type as VoiceModelsMessage).voice_models,
-    //     );
-    //     break;
-    //   case "language_models":
-    //     this.emitPythonEvent(
-    //       PYTHON_SERVICE_EVENTS.LANGUAGE_MODELS,
-    //       (message.type as LanguageModelsMessage).language_models,
-    //     );
-    //     break;
-    //   case "text_replacements":
-    //     this.emitPythonEvent(
-    //       PYTHON_SERVICE_EVENTS.TEXT_REPLACEMENTS,
-    //       (message.type as TextReplacementsMessage).text_replacements,
-    //     );
-
-    //     break;
-    //   default:
-    //     logger.warn("Unknown message type:", message.data);
-    // }
   }
 
   /**

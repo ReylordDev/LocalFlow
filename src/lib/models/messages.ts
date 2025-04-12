@@ -1,82 +1,61 @@
 // Message types for Python to Electron IPC
-import { Action, ResponseTypeFor } from "./commands";
-import {
-  ControllerStatusType,
-  Device,
-  LanguageModel,
-  Mode,
-  Result,
-  TextReplacement,
-  VoiceModel,
-} from "./database";
+import { ChannelFunctionType, ChannelType } from "./channels";
+import { ControllerStatusType, Result } from "./database";
 
 export interface ProgressMessage {
-  step: Action | "init" | "recording" | "compression" | "transcription";
+  step: "init";
   status: "start" | "complete" | "error";
   timestamp: number;
+  updateKind: "progress";
 }
 
 export interface ExceptionMessage {
   exception: string;
   timestamp: number;
-}
-
-export interface TranscriptionMessage {
-  transcription: string;
+  updateKind: "exception";
 }
 
 export interface AudioLevelMessage {
   audio_level: number;
+  updateKind: "audio_level";
 }
 
 export interface ErrorMessage {
   error: string;
-}
-
-export interface DevicesMessage {
-  devices: Device[];
-}
-
-export interface ModesMessage {
-  modes: Mode[];
+  updateKind: "error";
 }
 
 export interface StatusMessage {
   status: ControllerStatusType;
+  updateKind: "status";
 }
 
 export interface ResultMessage {
   result: Result;
+  updateKind: "result";
 }
 
-export interface ResultsMessage {
-  results: Result[];
+export type MessageType =
+  | ProgressMessage
+  | ExceptionMessage
+  | AudioLevelMessage
+  | ErrorMessage
+  | StatusMessage
+  | ResultMessage;
+
+interface BaseResponse<C extends ChannelType> {
+  data: Awaited<ReturnType<ChannelFunctionType<C>>>;
+  channel: C;
+  request_id: string;
+  kind: "response";
 }
 
-export interface VoiceModelsMessage {
-  voice_models: VoiceModel[];
-}
+export type Response = {
+  [C in ChannelType]: BaseResponse<C>;
+}[ChannelType];
 
-export interface LanguageModelsMessage {
-  language_models: LanguageModel[];
-}
+export type Update = MessageType & {
+  kind: "update";
+};
 
-export interface TextReplacementsMessage {
-  text_replacements: TextReplacement[];
-}
-
-interface BaseMessage<A extends Action> {
-  data: ResponseTypeFor<A>;
-  type?: string;
-  request_id?: string;
-}
-
-// TODO: differentiate between a result and a info message
-export type Message = {
-  [A in Action]: BaseMessage<A> & {
-    progress: {
-      data: ProgressMessage;
-      type: "progress";
-    };
-  };
-}[Action];
+export type Message = Response | Update;
