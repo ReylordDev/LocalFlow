@@ -3,9 +3,9 @@
 
 import {
   CHANNEL_NAMES,
-  ChannelMap,
+  ChannelFunctionTypeMap,
+  CHANNELS_old,
   CHANNELS,
-  CHANNELS_enum,
 } from "./lib/models/channels";
 import { contextBridge, ipcRenderer, IpcRendererEvent } from "electron";
 
@@ -26,31 +26,34 @@ function genericListener<T>(channel: string, callback: (arg: T) => void) {
 export const exposeSettings = () => {
   contextBridge.exposeInMainWorld(CHANNEL_NAMES.SETTINGS, {
     getAll: async () => {
-      return ipcRenderer.invoke(CHANNELS.SETTINGS.GET);
+      return ipcRenderer.invoke(CHANNELS_old.SETTINGS.GET);
     },
     disableShortcut: async (shortcut) => {
-      return ipcRenderer.send(CHANNELS.SETTINGS.DISABLE_SHORTCUT, shortcut);
+      return ipcRenderer.send(CHANNELS_old.SETTINGS.DISABLE_SHORTCUT, shortcut);
     },
     setAudio(audioConfig) {
-      return ipcRenderer.send(CHANNELS.SETTINGS.SET_AUDIO, audioConfig);
+      return ipcRenderer.send(CHANNELS_old.SETTINGS.SET_AUDIO, audioConfig);
     },
     setKeyboard(keyboardConfig) {
-      return ipcRenderer.send(CHANNELS.SETTINGS.SET_KEYBOARD, keyboardConfig);
+      return ipcRenderer.send(
+        CHANNELS_old.SETTINGS.SET_KEYBOARD,
+        keyboardConfig,
+      );
     },
     setApplication(applicationConfig) {
       return ipcRenderer.send(
-        CHANNELS.SETTINGS.SET_APPLICATION,
+        CHANNELS_old.SETTINGS.SET_APPLICATION,
         applicationConfig,
       );
     },
     onSettingsChanged(callback) {
-      return genericListener(CHANNELS.SETTINGS.SETTINGS_CHANGED, callback);
+      return genericListener(CHANNELS_old.SETTINGS.SETTINGS_CHANGED, callback);
     },
     setOutput(outputConfig) {
-      return ipcRenderer.send(CHANNELS.SETTINGS.SET_OUTPUT, outputConfig);
+      return ipcRenderer.send(CHANNELS_old.SETTINGS.SET_OUTPUT, outputConfig);
     },
     getLocale() {
-      return ipcRenderer.invoke(CHANNELS.SETTINGS.GET_LOCALE);
+      return ipcRenderer.invoke(CHANNELS_old.SETTINGS.GET_LOCALE);
     },
   } satisfies Window["settings"]);
 };
@@ -58,7 +61,7 @@ export const exposeSettings = () => {
 export const exposeUrl = () => {
   contextBridge.exposeInMainWorld(CHANNEL_NAMES.URL, {
     open: (url) => {
-      ipcRenderer.send(CHANNELS.URL.OPEN, url);
+      ipcRenderer.send(CHANNELS_old.URL.OPEN, url);
     },
   } satisfies Window["url"]);
 };
@@ -66,95 +69,83 @@ export const exposeUrl = () => {
 export const exposeDevice = () => {
   contextBridge.exposeInMainWorld(CHANNEL_NAMES.DEVICE, {
     requestAll: () => {
-      return ipcRenderer.send(CHANNELS.DEVICE.DEVICES_REQUEST);
+      return ipcRenderer.send(CHANNELS_old.DEVICE.DEVICES_REQUEST);
     },
     onReceiveDevices: (callback) => {
-      return genericListener(CHANNELS.DEVICE.DEVICES_RESPONSE, callback);
+      return genericListener(CHANNELS_old.DEVICE.DEVICES_RESPONSE, callback);
     },
-    set: (device) => {
-      return ipcRenderer.send(CHANNELS.DEVICE.SET, device);
-    },
+    setDevice: (device) => invoke(CHANNELS.setDevice, device),
+    fetchAllDevices: () => invoke(CHANNELS.fetchAllDevices),
   } satisfies Window["device"]);
 };
 
-function invoke<C extends keyof ChannelMap>(
+function invoke<C extends keyof ChannelFunctionTypeMap>(
   channel: C,
-  ...args: Parameters<ChannelMap[C]>
-): ReturnType<ChannelMap[C]> {
-  return ipcRenderer.invoke(channel, ...args) as ReturnType<ChannelMap[C]>;
+  ...args: Parameters<ChannelFunctionTypeMap[C]>
+): ReturnType<ChannelFunctionTypeMap[C]> {
+  return ipcRenderer.invoke(channel, ...args) as ReturnType<
+    ChannelFunctionTypeMap[C]
+  >;
 }
 
 export const exposeDatabase = () => {
   contextBridge.exposeInMainWorld(CHANNEL_NAMES.DATABASE, {
     modes: {
-      fetchAllModes: () => invoke(CHANNELS_enum.fetchAllModes),
-      createMode: (modeCreate) => invoke(CHANNELS_enum.createMode, modeCreate),
-      updateMode: (mode) => invoke(CHANNELS_enum.updateMode, mode),
-      deleteMode: (modeId) => invoke(CHANNELS_enum.deleteMode, modeId),
-      activateMode: (modeId) => invoke(CHANNELS_enum.activateMode, modeId),
+      fetchAllModes: () => invoke(CHANNELS.fetchAllModes),
+      createMode: (modeCreate) => invoke(CHANNELS.createMode, modeCreate),
+      updateMode: (mode) => invoke(CHANNELS.updateMode, mode),
+      deleteMode: (modeId) => invoke(CHANNELS.deleteMode, modeId),
+      activateMode: (modeId) => invoke(CHANNELS.activateMode, modeId),
     },
     textReplacements: {
+      fetchAllTextReplacements: () => invoke(CHANNELS.fetchAllTextReplacements),
       requestAll: () => {
         ipcRenderer.send(
-          CHANNELS.DATABASE.TEXT_REPLACEMENTS.TEXT_REPLACEMENTS_REQUEST,
+          CHANNELS_old.DATABASE.TEXT_REPLACEMENTS.TEXT_REPLACEMENTS_REQUEST,
         );
       },
       onReceiveTextReplacements: (callback) =>
         genericListener(
-          CHANNELS.DATABASE.TEXT_REPLACEMENTS.TEXT_REPLACEMENTS_RESPONSE,
+          CHANNELS_old.DATABASE.TEXT_REPLACEMENTS.TEXT_REPLACEMENTS_RESPONSE,
           callback,
         ),
-      createTextReplacement: (textReplacement) => {
-        ipcRenderer.send(
-          CHANNELS.DATABASE.TEXT_REPLACEMENTS.CREATE_TEXT_REPLACEMENT,
-          textReplacement,
-        );
-      },
-      deleteTextReplacement: (textReplacementId) => {
-        ipcRenderer.send(
-          CHANNELS.DATABASE.TEXT_REPLACEMENTS.DELETE_TEXT_REPLACEMENT,
-          textReplacementId,
-        );
-      },
+      createTextReplacement: (textReplacement) =>
+        invoke(CHANNELS.createTextReplacement, textReplacement),
+      deleteTextReplacement: (textReplacementId) =>
+        invoke(CHANNELS.deleteTextReplacement, textReplacementId),
     },
     results: {
-      deleteResult(resultId) {
-        return ipcRenderer.send(
-          CHANNELS.DATABASE.RESULTS.DELETE_RESULT,
-          resultId,
-        );
-      },
+      deleteResult: (resultId) => invoke(CHANNELS.deleteResult, resultId),
+      fetchAllResults: () => invoke(CHANNELS.fetchAllResults),
     },
     examples: {
       addExample(promptId, example) {
-        return ipcRenderer.send(
-          CHANNELS.DATABASE.EXAMPLES.ADD_EXAMPLE,
-          promptId,
-          example,
-        );
+        return invoke(CHANNELS.addExample, promptId, example);
       },
     },
     voiceModels: {
+      fetchAllVoiceModels: () => invoke(CHANNELS.fetchAllVoiceModels),
       requestAll: () => {
         return ipcRenderer.send(
-          CHANNELS.DATABASE.VOICE_MODELS.VOICE_MODELS_REQUEST,
+          CHANNELS_old.DATABASE.VOICE_MODELS.VOICE_MODELS_REQUEST,
         );
       },
       onReceiveVoiceModels: (callback) =>
         genericListener(
-          CHANNELS.DATABASE.VOICE_MODELS.VOICE_MODELS_RESPONSE,
+          CHANNELS_old.DATABASE.VOICE_MODELS.VOICE_MODELS_RESPONSE,
           callback,
         ),
     },
     languageModels: {
+      fetchAllLanguageModels: () => invoke(CHANNELS.fetchAllLanguageModels),
       requestAll: () => {
         return ipcRenderer.send(
-          CHANNELS.DATABASE.LANGUAGE_MODELS.LANGUAGE_MODELS_REQUEST,
+          CHANNELS_old.DATABASE.LANGUAGE_MODELS.LANGUAGE_MODELS_REQUEST,
         );
       },
       onReceiveLanguageModels: (callback) =>
         genericListener(
-          CHANNELS.DATABASE.LANGUAGE_MODELS.LANGUAGE_MODELS_RESPONSE,
+          CHANNELS_old.DATABASE.LANGUAGE_MODELS.LANGUAGE_MODELS_RESPONSE,
           callback,
         ),
     },
@@ -164,40 +155,43 @@ export const exposeDatabase = () => {
 export const exposeMini = () => {
   contextBridge.exposeInMainWorld(CHANNEL_NAMES.MINI, {
     requestAudioLevel: async () => {
-      return ipcRenderer.send(CHANNELS.MINI.AUDIO_LEVEL_REQUEST);
+      return ipcRenderer.send(CHANNELS_old.MINI.AUDIO_LEVEL_REQUEST);
     },
     onReceiveAudioLevel: (callback) =>
-      genericListener(CHANNELS.MINI.AUDIO_LEVEL_RESPONSE, callback),
+      genericListener(CHANNELS_old.MINI.AUDIO_LEVEL_RESPONSE, callback),
     onStatusUpdate: (callback) =>
-      genericListener(CHANNELS.MINI.STATUS_UPDATE, callback),
-    onResult: (callback) => genericListener(CHANNELS.MINI.RESULT, callback),
+      genericListener(CHANNELS_old.MINI.STATUS_UPDATE, callback),
+    onResult: (callback) => genericListener(CHANNELS_old.MINI.RESULT, callback),
     onChangeModeShortcutPressed: (callback) =>
-      genericListener(CHANNELS.MINI.CHANGE_MODE_SHORTCUT_PRESSED, callback),
+      genericListener(CHANNELS_old.MINI.CHANGE_MODE_SHORTCUT_PRESSED, callback),
     setMainContentHeight: (height: number) => {
-      ipcRenderer.send(CHANNELS.MINI.SET_MAIN_CONTENT_HEIGHT, height);
+      ipcRenderer.send(CHANNELS_old.MINI.SET_MAIN_CONTENT_HEIGHT, height);
     },
     onTranscription: (callback) =>
-      genericListener(CHANNELS.MINI.TRANSCRIPTION, callback),
+      genericListener(CHANNELS_old.MINI.TRANSCRIPTION, callback),
   } satisfies Window["mini"]);
 };
 
 export const exposeRecordingHistory = () => {
   contextBridge.exposeInMainWorld(CHANNEL_NAMES.RECORDING_HISTORY, {
     openWindow: () => {
-      ipcRenderer.send(CHANNELS.RECORDING_HISTORY.OPEN_WINDOW);
+      ipcRenderer.send(CHANNELS_old.RECORDING_HISTORY.OPEN_WINDOW);
     },
     requestAll() {
-      return ipcRenderer.send(CHANNELS.RECORDING_HISTORY.RESULTS_REQUEST);
+      return ipcRenderer.send(CHANNELS_old.RECORDING_HISTORY.RESULTS_REQUEST);
     },
     onReceiveResults: (callback) =>
-      genericListener(CHANNELS.RECORDING_HISTORY.RESULTS_RESPONSE, callback),
+      genericListener(
+        CHANNELS_old.RECORDING_HISTORY.RESULTS_RESPONSE,
+        callback,
+      ),
   } satisfies Window["recordingHistory"]);
 };
 
 export const exposeClipboard = () => {
   contextBridge.exposeInMainWorld(CHANNEL_NAMES.CLIPBOARD, {
     copy: (text: string) => {
-      ipcRenderer.send(CHANNELS.CLIPBOARD.COPY, text);
+      ipcRenderer.send(CHANNELS_old.CLIPBOARD.COPY, text);
     },
   } satisfies Window["clipboard"]);
 };
@@ -205,7 +199,7 @@ export const exposeClipboard = () => {
 export const exposeFile = () => {
   contextBridge.exposeInMainWorld(CHANNEL_NAMES.FILE, {
     open: (location) => {
-      ipcRenderer.send(CHANNELS.FILE.OPEN, location);
+      ipcRenderer.send(CHANNELS_old.FILE.OPEN, location);
     },
   } satisfies Window["file"]);
 };

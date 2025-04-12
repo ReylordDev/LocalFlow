@@ -35,6 +35,7 @@ export class TrayManager {
     logger.info("Requesting modes from database for context menu");
     const contextMenu = this.updateContextMenu([]);
     this.tray.setContextMenu(contextMenu);
+    // TODO: outdated
     this.pythonService.sendCommand({
       action: "get_modes",
     });

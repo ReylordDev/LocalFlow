@@ -22,6 +22,84 @@ import {
 } from "./settings";
 import { UUID } from "crypto";
 
+enum ModeChannels {
+  fetchAllModes = "database:modes:getAll",
+  createMode = "database:modes:createMode",
+  updateMode = "database:modes:updateMode",
+  deleteMode = "database:modes:deleteMode",
+  activateMode = "database:modes:activateMode",
+}
+
+enum ResultChannels {
+  fetchAllResults = "database:results:getAll",
+  deleteResult = "database:results:deleteResult",
+}
+
+enum ExampleChannels {
+  addExample = "database:examples:addExample",
+}
+
+enum VoiceModelChannels {
+  fetchAllVoiceModels = "database:voiceModels:getAll",
+}
+
+enum LanguageModelChannels {
+  fetchAllLanguageModels = "database:languageModels:getAll",
+}
+
+enum TextReplacementChannels {
+  fetchAllTextReplacements = "database:textReplacements:getAll",
+  createTextReplacement = "database:textReplacements:create",
+  deleteTextReplacement = "database:textReplacements:delete",
+}
+
+enum DeviceChannels {
+  fetchAllDevices = "device:getAll",
+  setDevice = "device:set",
+}
+
+export enum CHANNELS {
+  fetchAllModes = ModeChannels.fetchAllModes,
+  createMode = ModeChannels.createMode,
+  updateMode = ModeChannels.updateMode,
+  deleteMode = ModeChannels.deleteMode,
+  activateMode = ModeChannels.activateMode,
+  deleteResult = ResultChannels.deleteResult,
+  addExample = ExampleChannels.addExample,
+  fetchAllResults = ResultChannels.fetchAllResults,
+  fetchAllVoiceModels = VoiceModelChannels.fetchAllVoiceModels,
+  fetchAllLanguageModels = LanguageModelChannels.fetchAllLanguageModels,
+  fetchAllTextReplacements = TextReplacementChannels.fetchAllTextReplacements,
+  createTextReplacement = TextReplacementChannels.createTextReplacement,
+  deleteTextReplacement = TextReplacementChannels.deleteTextReplacement,
+  fetchAllDevices = DeviceChannels.fetchAllDevices,
+  setDevice = DeviceChannels.setDevice,
+}
+
+export type ChannelFunctionTypeMap = {
+  [CHANNELS.fetchAllModes]: () => Promise<Mode[]>;
+  [CHANNELS.createMode]: (mode: ModeCreate) => Promise<Mode[]>;
+  [CHANNELS.updateMode]: (mode: ModeUpdate) => Promise<Mode[]>;
+  [CHANNELS.deleteMode]: (modeId: UUID) => Promise<Mode[]>;
+  [CHANNELS.activateMode]: (modeId: UUID) => Promise<Mode[]>;
+  [CHANNELS.deleteResult]: (resultId: UUID) => Promise<Result[]>;
+  [CHANNELS.addExample]: (promptId: UUID, example: ExampleBase) => void;
+  [CHANNELS.fetchAllResults]: () => Promise<Result[]>;
+  [CHANNELS.fetchAllVoiceModels]: () => Promise<VoiceModel[]>;
+  [CHANNELS.fetchAllLanguageModels]: () => Promise<LanguageModel[]>;
+  [CHANNELS.fetchAllTextReplacements]: () => Promise<TextReplacement[]>;
+  [CHANNELS.createTextReplacement]: (
+    textReplacement: TextReplacementBase,
+  ) => void;
+  [CHANNELS.deleteTextReplacement]: (textReplacementId: UUID) => void;
+  [CHANNELS.setDevice]: (device: Device) => void;
+  [CHANNELS.fetchAllDevices]: () => Promise<Device[]>;
+};
+
+export type ChannelType = keyof ChannelFunctionTypeMap;
+export type ChannelFunctionType<C extends ChannelType> =
+  ChannelFunctionTypeMap[C];
+
 declare global {
   interface Window {
     controller: {
@@ -58,41 +136,46 @@ declare global {
     device: {
       requestAll: () => void;
       onReceiveDevices: (callback: (devices: Device[]) => void) => () => void;
-      set: (device: Device) => void;
+      setDevice: ChannelFunctionTypeMap[CHANNELS.setDevice];
+      fetchAllDevices: ChannelFunctionTypeMap[CHANNELS.fetchAllDevices];
     };
     database: {
       modes: {
-        fetchAllModes: ChannelMap[CHANNELS_enum.fetchAllModes];
-        createMode: ChannelMap[CHANNELS_enum.createMode];
-        updateMode: ChannelMap[CHANNELS_enum.updateMode];
-        deleteMode: ChannelMap[CHANNELS_enum.deleteMode];
-        activateMode: ChannelMap[CHANNELS_enum.activateMode];
+        fetchAllModes: ChannelFunctionTypeMap[CHANNELS.fetchAllModes];
+        createMode: ChannelFunctionTypeMap[CHANNELS.createMode];
+        updateMode: ChannelFunctionTypeMap[CHANNELS.updateMode];
+        deleteMode: ChannelFunctionTypeMap[CHANNELS.deleteMode];
+        activateMode: ChannelFunctionTypeMap[CHANNELS.activateMode];
       };
       results: {
-        deleteResult: (resultId: UUID) => void;
+        fetchAllResults: ChannelFunctionTypeMap[CHANNELS.fetchAllResults];
+        deleteResult: ChannelFunctionTypeMap[CHANNELS.deleteResult];
       };
       examples: {
-        addExample: (promptId: UUID, example: ExampleBase) => void;
+        addExample: ChannelFunctionTypeMap[CHANNELS.addExample];
       };
       textReplacements: {
+        fetchAllTextReplacements: ChannelFunctionTypeMap[CHANNELS.fetchAllTextReplacements];
         requestAll: () => void;
         onReceiveTextReplacements: (
           callback: (textReplacements: TextReplacement[]) => void,
         ) => () => void;
-        createTextReplacement: (textReplacement: TextReplacementBase) => void;
-        deleteTextReplacement: (textReplacementId: UUID) => void;
+        createTextReplacement: ChannelFunctionTypeMap[CHANNELS.createTextReplacement];
+        deleteTextReplacement: ChannelFunctionTypeMap[CHANNELS.deleteTextReplacement];
       };
       voiceModels: {
         requestAll: () => void;
         onReceiveVoiceModels: (
           callback: (voiceModels: VoiceModel[]) => void,
         ) => () => void;
+        fetchAllVoiceModels: ChannelFunctionTypeMap[CHANNELS.fetchAllVoiceModels];
       };
       languageModels: {
         requestAll: () => void;
         onReceiveLanguageModels: (
           callback: (languageModels: LanguageModel[]) => void,
         ) => () => void;
+        fetchAllLanguageModels: ChannelFunctionTypeMap[CHANNELS.fetchAllLanguageModels];
       };
     };
     recordingHistory: {
@@ -120,7 +203,7 @@ export const CHANNEL_NAMES = {
   FILE: "file",
 };
 
-export const CHANNELS = {
+export const CHANNELS_old = {
   SETTINGS: {
     GET: "settings:get-all",
     DISABLE_SHORTCUT: "settings:disable-shortcut",
@@ -190,22 +273,6 @@ export const CHANNELS = {
     RESULTS_REQUEST: "recordingHistory:requestAll",
     RESULTS_RESPONSE: "recordingHistory:receiveResults",
   },
-};
-
-export enum CHANNELS_enum {
-  fetchAllModes = "database:modes:getAll",
-  createMode = "database:modes:createMode",
-  updateMode = "database:modes:updateMode",
-  deleteMode = "database:modes:deleteMode",
-  activateMode = "database:modes:activateMode",
-}
-
-export type ChannelMap = {
-  [CHANNELS_enum.fetchAllModes]: () => Promise<Mode[]>;
-  [CHANNELS_enum.createMode]: (mode: ModeCreate) => Promise<Mode[]>;
-  [CHANNELS_enum.updateMode]: (mode: ModeUpdate) => Promise<Mode[]>;
-  [CHANNELS_enum.deleteMode]: (modeId: UUID) => Promise<Mode[]>;
-  [CHANNELS_enum.activateMode]: (modeId: UUID) => Promise<Mode[]>;
 };
 
 // Python service events for IPC communication

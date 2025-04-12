@@ -6,7 +6,7 @@ import { TrayManager } from "./main-process/windows/tray-manager";
 import { registerIpcHandlers } from "./main-process/ipc";
 import { AppConfig, logger } from "./main-process/utils/config";
 import { SETTINGS_SERVICE_EVENTS } from "./lib/models/settings";
-import { CHANNELS, PYTHON_SERVICE_EVENTS } from "./lib/models/channels";
+import { CHANNELS_old, PYTHON_SERVICE_EVENTS } from "./lib/models/channels";
 
 // Handle setup events
 if (require("electron-squirrel-startup")) app.quit();
@@ -65,24 +65,27 @@ function registerPythonEventHandlers() {
 
   pythonService.onPythonEvent(PYTHON_SERVICE_EVENTS.AUDIO_LEVEL, (level) => {
     windowManager.sendMiniWindowMessage(
-      CHANNELS.MINI.AUDIO_LEVEL_RESPONSE,
+      CHANNELS_old.MINI.AUDIO_LEVEL_RESPONSE,
       level,
     );
   });
 
   pythonService.onPythonEvent(PYTHON_SERVICE_EVENTS.DEVICES, (devices) => {
     windowManager.sendMainWindowMessage(
-      CHANNELS.DEVICE.DEVICES_RESPONSE,
+      CHANNELS_old.DEVICE.DEVICES_RESPONSE,
       devices,
     );
   });
 
   pythonService.onPythonEvent(PYTHON_SERVICE_EVENTS.STATUS_UPDATE, (status) => {
-    windowManager.sendMiniWindowMessage(CHANNELS.MINI.STATUS_UPDATE, status);
+    windowManager.sendMiniWindowMessage(
+      CHANNELS_old.MINI.STATUS_UPDATE,
+      status,
+    );
   });
 
   pythonService.onPythonEvent(PYTHON_SERVICE_EVENTS.RESULT, (result) => {
-    windowManager.sendMiniWindowMessage(CHANNELS.MINI.RESULT, result);
+    windowManager.sendMiniWindowMessage(CHANNELS_old.MINI.RESULT, result);
     const text =
       result.mode.use_language_model && result.ai_result
         ? result.ai_result
@@ -103,7 +106,7 @@ function registerPythonEventHandlers() {
     PYTHON_SERVICE_EVENTS.TRANSCRIPTION,
     (transcriptionMessage) => {
       windowManager.sendMiniWindowMessage(
-        CHANNELS.MINI.TRANSCRIPTION,
+        CHANNELS_old.MINI.TRANSCRIPTION,
         transcriptionMessage,
       );
     },
@@ -111,18 +114,18 @@ function registerPythonEventHandlers() {
 
   pythonService.onPythonEvent(PYTHON_SERVICE_EVENTS.MODES, (modes) => {
     windowManager.sendMainWindowMessage(
-      CHANNELS.DATABASE.MODES.MODES_RESPONSE,
+      CHANNELS_old.DATABASE.MODES.MODES_RESPONSE,
       modes,
     );
     windowManager.sendMiniWindowMessage(
-      CHANNELS.DATABASE.MODES.MODES_RESPONSE,
+      CHANNELS_old.DATABASE.MODES.MODES_RESPONSE,
       modes,
     );
   });
 
   pythonService.onPythonEvent(PYTHON_SERVICE_EVENTS.RESULTS, (results) => {
     windowManager.sendRecordingHistoryWindowMessage(
-      CHANNELS.RECORDING_HISTORY.RESULTS_RESPONSE,
+      CHANNELS_old.RECORDING_HISTORY.RESULTS_RESPONSE,
       results,
     );
   });
@@ -131,7 +134,7 @@ function registerPythonEventHandlers() {
     PYTHON_SERVICE_EVENTS.VOICE_MODELS,
     (voiceModels) => {
       windowManager.sendMainWindowMessage(
-        CHANNELS.DATABASE.VOICE_MODELS.VOICE_MODELS_RESPONSE,
+        CHANNELS_old.DATABASE.VOICE_MODELS.VOICE_MODELS_RESPONSE,
         voiceModels,
       );
     },
@@ -141,7 +144,7 @@ function registerPythonEventHandlers() {
     PYTHON_SERVICE_EVENTS.LANGUAGE_MODELS,
     (languageModels) => {
       windowManager.sendMainWindowMessage(
-        CHANNELS.DATABASE.LANGUAGE_MODELS.LANGUAGE_MODELS_RESPONSE,
+        CHANNELS_old.DATABASE.LANGUAGE_MODELS.LANGUAGE_MODELS_RESPONSE,
         languageModels,
       );
     },
@@ -151,7 +154,7 @@ function registerPythonEventHandlers() {
     PYTHON_SERVICE_EVENTS.TEXT_REPLACEMENTS,
     (textReplacements) => {
       windowManager.sendMainWindowMessage(
-        CHANNELS.DATABASE.TEXT_REPLACEMENTS.TEXT_REPLACEMENTS_RESPONSE,
+        CHANNELS_old.DATABASE.TEXT_REPLACEMENTS.TEXT_REPLACEMENTS_RESPONSE,
         textReplacements,
       );
     },
@@ -163,7 +166,7 @@ function registerSettingsEventHandlers() {
     SETTINGS_SERVICE_EVENTS.SETTINGS_CHANGED,
     (settings) => {
       windowManager.sendMiniWindowMessage(
-        CHANNELS.SETTINGS.SETTINGS_CHANGED,
+        CHANNELS_old.SETTINGS.SETTINGS_CHANGED,
         settings,
       );
     },
@@ -176,7 +179,9 @@ function registerSettingsEventHandlers() {
         if (settingsService.currentSettings.application.enableRecordingWindow) {
           windowManager.showMiniWindow();
         }
-        pythonService.toggleRecording();
+        pythonService.sendCommand({
+          action: "toggle",
+        });
       }
       if (type === "cancel") {
         pythonService.sendCommand({
@@ -185,7 +190,7 @@ function registerSettingsEventHandlers() {
       }
       if (type === "change-mode") {
         windowManager.sendMiniWindowMessage(
-          CHANNELS.MINI.CHANGE_MODE_SHORTCUT_PRESSED,
+          CHANNELS_old.MINI.CHANGE_MODE_SHORTCUT_PRESSED,
         );
       }
     },

@@ -2,7 +2,7 @@ import { PythonShell } from "python-shell";
 import { EventEmitter } from "events";
 import { AppConfig, logger } from "../utils/config";
 import { Message, ProgressMessage } from "../../lib/models/messages";
-import { Action, Command, ResponseTypeFor } from "../../lib/models/commands";
+import { Command, Request } from "../../lib/models/commands";
 import path from "path";
 import {
   PYTHON_SERVICE_EVENTS,
@@ -11,8 +11,8 @@ import {
 import { ControllerStatusType } from "../../lib/models/database";
 
 // Define types for promise-based request handling
-interface PendingRequest<A extends Action> {
-  resolve: (value: ResponseTypeFor<A>) => void;
+interface PendingRequest {
+  resolve: (value: Awaited<Request["_responseType"]>) => void;
   reject: (reason?: unknown) => void;
 }
 
@@ -26,8 +26,7 @@ interface PendingRequest<A extends Action> {
  */
 export class PythonService extends EventEmitter {
   private shell!: PythonShell; // Using definite assignment assertion
-  private activeRecording = false;
-  private pendingRequests: Map<string, PendingRequest<Action>> = new Map();
+  private pendingRequests: Map<string, PendingRequest> = new Map();
   private requestId = 0;
 
   /**
@@ -104,45 +103,49 @@ export class PythonService extends EventEmitter {
     this.shell.on("message", this.handleMessage.bind(this));
   }
 
+  async sendPythonRequest(
+    request: Request,
+  ): Promise<Awaited<Request["_responseType"]>> {
+    const promise = new Promise<Awaited<Request["_responseType"]>>(
+      (resolve, reject) => {
+        this.pendingRequests.set(request.id, {
+          resolve,
+          reject,
+        });
+
+        // Set a timeout to reject the promise if no response is received
+        setTimeout(() => {
+          if (this.pendingRequests.has(request.id)) {
+            const pendingRequest = this.pendingRequests.get(request.id);
+            if (pendingRequest) {
+              pendingRequest.reject(
+                new Error(`Request timed out: ${request.id}`),
+              );
+              this.pendingRequests.delete(request.id);
+            }
+          }
+        }, 10000); // 10 second timeout
+      },
+    );
+
+    this.sendCommand(request);
+    return promise;
+  }
+
   /**
-   * Sends a command to the Python process and returns a promise
-   * that resolves when a response with the specified type is received
+   * Sends a command to the Python process
    *
    * @param command - The command to send
-   * @returns A promise that resolves with the response data
    */
-  async sendCommandWithResponse<A extends Command["action"]>(
-    command: Command & { action: A },
-  ): Promise<ResponseTypeFor<A>> {
-    const requestId = this.generateRequestId();
-    command.request_id = requestId; // Attach the request ID to the command
-
-    const promise = new Promise<ResponseTypeFor<A>>((resolve, reject) => {
-      this.pendingRequests.set(requestId, {
-        resolve,
-        reject,
-      });
-
-      // Set a timeout to reject the promise if no response is received
-      setTimeout(() => {
-        if (this.pendingRequests.has(requestId)) {
-          const request = this.pendingRequests.get(requestId);
-          if (request) {
-            request.reject(new Error(`Request timed out: ${requestId}`));
-            this.pendingRequests.delete(requestId);
-          }
-        }
-      }, 10000); // 10 second timeout
-    });
-
-    this.sendCommand(command);
-    return promise;
+  sendCommand(command: Command) {
+    logger.debug("Sending command to Python:", command);
+    this.shell.send(command);
   }
 
   /**
    * Generates a unique request ID
    */
-  private generateRequestId(): string {
+  generateRequestId(): string {
     return `req_${Date.now()}_${this.requestId++}`;
   }
 
@@ -271,25 +274,6 @@ export class PythonService extends EventEmitter {
   private handleStatusUpdate(status: ControllerStatusType) {
     logger.debug("Status update from Python backend:", status);
     this.emitPythonEvent(PYTHON_SERVICE_EVENTS.STATUS_UPDATE, status);
-  }
-
-  /**
-   * Toggles recording state and sends the toggle command to the Python process
-   */
-  toggleRecording() {
-    this.sendCommand({ action: "toggle" } as Command);
-    this.activeRecording = !this.activeRecording;
-    logger.info(`Recording ${this.activeRecording ? "started" : "stopped"}`);
-  }
-
-  /**
-   * Sends a command to the Python process
-   *
-   * @param command - The command to send
-   */
-  sendCommand(command: Command) {
-    logger.debug("Sending command to Python:", command);
-    this.shell.send(command);
   }
 
   /**
