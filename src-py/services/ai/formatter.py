@@ -9,7 +9,7 @@ from models.db import (
     Prompt,
 )
 from models.exceptions import OllamaOfflineException
-from models.messages import TranscriptionMessage
+from models.messages import TranscriptionUpdate
 from models.db import ActiveWindowContext, ApplicationContext
 import ollama
 
@@ -76,9 +76,7 @@ class AIProcessor:
             content = chunk.response
             if content:
                 message += content
-                print_message(
-                    "transcription", TranscriptionMessage(transcription=message)
-                )
+                print_message(TranscriptionUpdate(transcription=content))
 
         prompt_tokens = chunk.prompt_eval_count
         response_tokens = chunk.eval_count

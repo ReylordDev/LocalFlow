@@ -40,6 +40,7 @@ export class TrayManager {
       this.pythonService.sendPythonRequest({
         channel: CHANNELS.fetchAllModes,
         id: this.pythonService.generateRequestId(),
+        kind: "request",
       }),
     );
     if (error) {
@@ -89,6 +90,7 @@ export class TrayManager {
           this.pythonService.sendCommand({
             action: Action.TOGGLE,
             data: undefined,
+            kind: "command",
           }),
       },
       {
@@ -121,6 +123,7 @@ export class TrayManager {
             this.pythonService.sendCommand({
               action: Action.SWITCH_MODE,
               data: mode.id,
+              kind: "command",
             });
           },
         })),

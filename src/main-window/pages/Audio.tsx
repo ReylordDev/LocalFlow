@@ -1,7 +1,7 @@
 import { Separator } from "../../components/ui/separator";
 import { Switch } from "../../components/ui/switch";
 import { Combobox } from "../../components/combobox";
-import { cn } from "../../lib/utils";
+import { cn, tryCatch } from "../../lib/utils";
 import { Device } from "../../lib/models/database";
 import { useEffect, useState } from "react";
 
@@ -14,14 +14,15 @@ export default function AudioPage() {
   const [boostAudio, setBoostAudio] = useState(false);
 
   useEffect(() => {
-    window.device.requestAll();
-    const unsubscribe = window.device.onReceiveDevices((devices: Device[]) => {
-      console.log("Devices: ", devices);
-      setDevices(devices);
-    });
-    return () => {
-      unsubscribe();
+    const fetchDevices = async () => {
+      const { data, error } = await tryCatch(window.device.fetchAllDevices());
+      if (error) {
+        console.error("Error fetching devices: ", error);
+        return;
+      }
+      setDevices(data);
     };
+    fetchDevices();
   }, []);
 
   useEffect(() => {

@@ -35,18 +35,24 @@ export interface ResultMessage {
   updateKind: "result";
 }
 
+export interface TranscriptionMessage {
+  transcription: string;
+  updateKind: "transcription";
+}
+
 export type MessageType =
   | ProgressMessage
   | ExceptionMessage
   | AudioLevelMessage
   | ErrorMessage
   | StatusMessage
-  | ResultMessage;
+  | ResultMessage
+  | TranscriptionMessage;
 
 interface BaseResponse<C extends ChannelType> {
   data: Awaited<ReturnType<ChannelFunctionType<C>>>;
   channel: C;
-  request_id: string;
+  id: string;
   kind: "response";
 }
 

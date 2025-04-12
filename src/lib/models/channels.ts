@@ -92,8 +92,8 @@ export type ChannelFunctionTypeMap = {
     textReplacement: TextReplacementBase,
   ) => void;
   [CHANNELS.deleteTextReplacement]: (textReplacementId: UUID) => void;
-  [CHANNELS.setDevice]: (device: Device) => void;
   [CHANNELS.fetchAllDevices]: () => Promise<Device[]>;
+  [CHANNELS.setDevice]: (device: Device) => void;
 };
 
 export type ChannelType = keyof ChannelFunctionTypeMap;
@@ -283,6 +283,7 @@ export enum PYTHON_SERVICE_EVENTS {
   STATUS_UPDATE = "status-update",
   MODES = "modes",
   RESULT = "result",
+  TRANSCRIPTION = "transcription",
 }
 
 // Define the mapping between event names and their payload types
@@ -293,4 +294,5 @@ export type PythonEventMap = {
   [PYTHON_SERVICE_EVENTS.STATUS_UPDATE]: ControllerStatusType;
   [PYTHON_SERVICE_EVENTS.MODES]: Mode[];
   [PYTHON_SERVICE_EVENTS.RESULT]: Result;
+  [PYTHON_SERVICE_EVENTS.TRANSCRIPTION]: string;
 };

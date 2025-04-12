@@ -57,15 +57,19 @@ export default function Modes() {
   const [selectedMode, setSelectedMode] = useState<Mode | null>(null);
 
   useEffect(() => {
-    window.database.modes
-      .fetchAllModes()
-      .then((modes) => {
-        console.log("Fetched Modes", modes);
-        setModes(modes);
-      })
-      .catch((error) => {
+    async function fetchModes() {
+      const { data, error } = await tryCatch(
+        window.database.modes.fetchAllModes(),
+      );
+      if (error) {
         console.error("Error fetching modes:", error);
-      });
+        return;
+      }
+      console.log("Fetched Modes", data);
+      setModes(data);
+    }
+
+    fetchModes();
   }, [index]);
 
   // useEffect(() => {
@@ -203,25 +207,35 @@ const ModeDetails = ({
   }, [languageModels, languageModelName]);
 
   useEffect(() => {
-    window.database.voiceModels.requestAll();
-    const unsubscribe = window.database.voiceModels.onReceiveVoiceModels(
-      (voiceModels) => {
-        console.log("Received Voice Models", voiceModels);
-        setVoiceModels(voiceModels);
-      },
-    );
-    return () => unsubscribe();
+    async function fetchVoiceModels() {
+      const { data, error } = await tryCatch(
+        window.database.voiceModels.fetchAllVoiceModels(),
+      );
+      if (error) {
+        console.error("Error fetching voice models:", error);
+        return;
+      }
+      console.log("Fetched Voice Models", data);
+      setVoiceModels(data);
+    }
+
+    fetchVoiceModels();
   }, []);
 
   useEffect(() => {
-    window.database.languageModels.requestAll();
-    const unsubscribe = window.database.languageModels.onReceiveLanguageModels(
-      (languageModels) => {
-        console.log("Received Language Models", languageModels);
-        setLanguageModels(languageModels);
-      },
-    );
-    return () => unsubscribe();
+    async function fetchLanguageModels() {
+      const { data, error } = await tryCatch(
+        window.database.languageModels.fetchAllLanguageModels(),
+      );
+      if (error) {
+        console.error("Error fetching language models:", error);
+        return;
+      }
+      console.log("Fetched Language Models", data);
+      setLanguageModels(data);
+    }
+
+    fetchLanguageModels();
   }, []);
 
   const modelState = useMemo(() => {

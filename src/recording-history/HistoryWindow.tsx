@@ -1,7 +1,7 @@
 import { Copy, FolderClosed, PanelRightOpen, Search } from "lucide-react";
 import { ExampleBase, languageNameMap, Result } from "../lib/models/database";
 import { useEffect, useState } from "react";
-import { cn } from "../lib/utils";
+import { cn, tryCatch } from "../lib/utils";
 import { Button } from "../components/ui/button";
 import {
   Tabs,
@@ -36,19 +36,19 @@ const HistoryWindow = () => {
   const [selectedResult, setSelectedResult] = useState<Result | null>(null);
 
   useEffect(() => {
-    console.log("Requesting all results from the database...");
-    window.recordingHistory.requestAll();
-  }, []);
+    async function fetchHistory() {
+      const { data, error } = await tryCatch(
+        window.database.results.fetchAllResults(),
+      );
+      if (error) {
+        console.error("Error fetching history:", error);
+        return;
+      }
+      setHistory(data);
+      setSelectedResult(data[0] || null);
+    }
 
-  useEffect(() => {
-    const unsubscribe = window.recordingHistory.onReceiveResults((results) => {
-      console.log("Received results from the database:", results);
-      setHistory(results);
-    });
-
-    return () => {
-      unsubscribe();
-    };
+    fetchHistory();
   }, []);
 
   return (

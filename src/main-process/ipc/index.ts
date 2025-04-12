@@ -4,7 +4,6 @@ import { SettingsService } from "../services/settings-service";
 import { WindowManager } from "../windows/window-manager";
 import { logger } from "../utils/config";
 import { registerURLHandlers } from "./url";
-import { registerDeviceHandlers } from "./device";
 import { registerSettingsHandlers } from "./settings";
 import {
   ChannelFunctionTypeMap,
@@ -13,7 +12,7 @@ import {
   ChannelType,
 } from "../../lib/models/channels";
 import { tryCatch } from "../../lib/utils";
-import { Action, Request } from "../../lib/models/commands";
+import { Action } from "../../lib/models/commands";
 
 export function registerIpcHandlers(
   settingsService: SettingsService,
@@ -29,8 +28,9 @@ export function registerIpcHandlers(
           pythonService.sendPythonRequest({
             channel,
             id: pythonService.generateRequestId(),
-            data: args,
-          } as Request),
+            data: args[0],
+            kind: "request",
+          }),
         );
         if (error) {
           logger.error(`Error in ${channel}:`, error);
@@ -42,12 +42,13 @@ export function registerIpcHandlers(
   }
   registerSettingsHandlers(settingsService);
   registerURLHandlers();
-  registerDeviceHandlers(handlePythonIPC);
 
   ipcMain.on(CHANNELS_old.MINI.AUDIO_LEVEL_REQUEST, () => {
+    console.log("Remove this Audio Level request maybe");
     pythonService.sendCommand({
       action: Action.AUDIO_LEVEL,
       data: undefined,
+      kind: "command",
     });
   });
 

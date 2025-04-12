@@ -3,6 +3,7 @@ from loguru import logger
 from models.db import Result
 from api.ipc import print_nested_model
 from utils.serialization import dump_instance
+from models.messages import ResultUpdate
 
 
 class TranscriptionWorkflow:
@@ -75,7 +76,8 @@ class TranscriptionWorkflow:
 
         # Step 6: Return result
         self.controller.update_status("result")
-        print_nested_model(
-            "result", {"result": dump_instance(result.create_instance())}
-        )
+        response = ResultUpdate(result=result, updateKind="result")
+        dumped_response = response.model_dump()
+        dumped_response["result"] = dump_instance(result.create_instance())
+        print_nested_model(data=dumped_response)
         return True

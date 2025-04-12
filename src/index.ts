@@ -7,7 +7,7 @@ import { registerIpcHandlers } from "./main-process/ipc";
 import { AppConfig, logger } from "./main-process/utils/config";
 import { SETTINGS_SERVICE_EVENTS } from "./lib/models/settings";
 import { CHANNELS_old, PYTHON_SERVICE_EVENTS } from "./lib/models/channels";
-import { Action, ResponselessCommand } from "./lib/models/commands";
+import { Action } from "./lib/models/commands";
 
 // Handle setup events
 if (require("electron-squirrel-startup")) app.quit();
@@ -129,12 +129,14 @@ function registerSettingsEventHandlers() {
         pythonService.sendCommand({
           action: Action.TOGGLE,
           data: undefined,
+          kind: "command",
         });
       }
       if (type === "cancel") {
         pythonService.sendCommand({
           action: Action.CANCEL,
           data: undefined,
+          kind: "command",
         });
       }
       if (type === "change-mode") {

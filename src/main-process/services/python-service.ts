@@ -1,14 +1,11 @@
 import { PythonShell } from "python-shell";
 import { EventEmitter } from "events";
 import { AppConfig, logger } from "../utils/config";
+import { Message, ProgressMessage } from "../../lib/models/messages";
 import {
-  Message,
-  ProgressMessage,
-  StatusMessage,
-} from "../../lib/models/messages";
-import {
-  Command,
+  BaseRequest,
   Request,
+  Command,
   ResponselessCommand,
 } from "../../lib/models/commands";
 import path from "path";
@@ -117,12 +114,13 @@ export class PythonService extends EventEmitter {
     this.shell.on("message", this.handleMessage.bind(this));
   }
 
-  sendPythonRequest<C extends ChannelType>(request: Request & { channel: C }) {
+  sendPythonRequest<C extends ChannelType>(request: BaseRequest<C>) {
     const promise = new Promise<Awaited<ReturnType<ChannelFunctionTypeMap[C]>>>(
       (resolve, reject) => {
         this.pendingRequests.set(request.id, {
           // TODO: maybe this is bad
           resolve: (value) => {
+            console.debug(`Resolving request ${request.id} with value:`, value);
             resolve(value as Awaited<ReturnType<ChannelFunctionTypeMap[C]>>);
           },
           reject,
@@ -143,7 +141,7 @@ export class PythonService extends EventEmitter {
       },
     );
 
-    this.shell.send(request);
+    this.sendCommand(request as Request);
     return promise;
   }
 
@@ -152,9 +150,11 @@ export class PythonService extends EventEmitter {
    *
    * @param command - The command to send
    */
-  sendCommand(command: ResponselessCommand) {
+  sendCommand(command: ResponselessCommand | Request) {
     logger.debug("Sending command to Python:", command);
-    this.shell.send(command);
+    this.shell.send({
+      command,
+    });
   }
 
   /**
@@ -166,23 +166,23 @@ export class PythonService extends EventEmitter {
 
   private handleMessage(message: Message) {
     if (message.kind === "response") {
-      if (this.pendingRequests.has(message.request_id)) {
-        const pendingRequest = this.pendingRequests.get(message.request_id);
+      logger.debug("Received response from Python:", message);
+      if (this.pendingRequests.has(message.id)) {
+        const pendingRequest = this.pendingRequests.get(message.id);
         if (pendingRequest) {
           pendingRequest.resolve(message.data);
-          this.pendingRequests.delete(message.request_id);
+          this.pendingRequests.delete(message.id);
           logger.debug(
-            `Resolved request ${message.request_id} with type ${message.data}`,
+            `Resolved request ${message.id} with type ${message.data}`,
           );
           return;
         }
       } else {
-        logger.warn(
-          `Request ID ${message.request_id} not found in pending requests`,
-        );
+        logger.warn(`Request ID ${message.id} not found in pending requests`);
       }
     } else if (message.kind === "update") {
       // Handle updates from the Python process
+      logger.debug("Received update from Python:", message);
       switch (message.updateKind) {
         case "progress":
           this.handleProgressUpdate(message);
@@ -209,6 +209,12 @@ export class PythonService extends EventEmitter {
         case "result":
           logger.debug("Result from Python backend:", message.result);
           this.emitPythonEvent(PYTHON_SERVICE_EVENTS.RESULT, message.result);
+          break;
+        case "transcription":
+          this.emitPythonEvent(
+            PYTHON_SERVICE_EVENTS.TRANSCRIPTION,
+            message.transcription,
+          );
           break;
         default:
           // eslint-disable-next-line no-case-declarations

@@ -4,7 +4,7 @@ from loguru import logger
 from core.controller import Controller
 from models.commands import Command
 from api.ipc import print_message
-from models.messages import ErrorMessage
+from models.messages import ErrorUpdate
 from utils.logging import initialize_logger
 
 
@@ -19,7 +19,7 @@ def main():
             controller.handle_command(data)
         except ValidationError as e:
             logger.error(f"Invalid data: {e}")
-            print_message("error", ErrorMessage(error=f"Invalid data: {e}"))
+            print_message(ErrorUpdate(error="Invalid Data"))
             sys.stdout.flush()
 
 

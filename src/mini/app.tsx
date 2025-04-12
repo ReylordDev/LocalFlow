@@ -1,14 +1,13 @@
 import { createRoot } from "react-dom/client";
 import SpeechVocalization from "../components/SpeechVocalization";
-import { useCallback, useEffect, useState } from "react";
-import { AlertCircle, AudioWaveform, Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { AudioWaveform, Loader2 } from "lucide-react";
 import { ControllerStatusType, Mode } from "../lib/models/database";
 import { Separator } from "../components/ui/separator";
 import { useSettings } from "../hooks/use-settings";
 import { ShortcutDisplay } from "../components/shortcut";
-import { cn, formatTimer } from "../lib/utils";
+import { cn, formatTimer, tryCatch } from "../lib/utils";
 import { RadioGroup, RadioGroupItem } from "../components/ui/radio-group";
-import { ErrorBoundary } from "../components/error-boundary";
 
 /**
  * Mini window application component
@@ -20,7 +19,6 @@ const App = () => {
   const [activeMode, setActiveMode] = useState<Mode | null>(null);
   const [modes, setModes] = useState<Mode[]>([]);
   const [modePickerOpen, setModePickerOpen] = useState(false);
-  const [modeError, setModeError] = useState<Error | null>(null);
 
   useEffect(() => {
     const unsubscribe = window.mini.onStatusUpdate((status) => {
@@ -35,21 +33,21 @@ const App = () => {
   }, []);
 
   useEffect(() => {
-    window.database.modes
-      .fetchAllModes()
-      .then((modes) => {
-        console.debug("Fetched modes:", modes);
-        const activeMode = modes.find((mode) => mode.active);
-        setActiveMode(activeMode || null);
-        setModes(modes);
-        setModeError(null);
-      })
-      .catch((error) => {
-        console.error("Failed to request modes:", error);
-        setModeError(
-          error instanceof Error ? error : new Error("Failed to request modes"),
-        );
-      });
+    async function fetchModes() {
+      const { data, error } = await tryCatch(
+        window.database.modes.fetchAllModes(),
+      );
+      if (error) {
+        console.error("Error fetching modes:", error);
+        return;
+      }
+      console.log("Fetched Modes", data);
+      const activeMode = data.find((mode) => mode.active);
+      setActiveMode(activeMode || null);
+      setModes(data);
+    }
+
+    fetchModes();
   }, []);
 
   useEffect(() => {
@@ -62,35 +60,6 @@ const App = () => {
     };
   }, []);
 
-  // Display error if we have one
-  if (modeError) {
-    return (
-      <div className="flex h-screen w-full flex-col items-center justify-center bg-zinc-50 p-4 text-center">
-        <AlertCircle className="mb-2 size-8 text-rose-500" />
-        <h2 className="mb-1 text-lg font-semibold">Mode Loading Error</h2>
-        <p className="text-sm text-zinc-600">{modeError.message}</p>
-        <button
-          className="mt-4 rounded bg-zinc-200 px-4 py-2 text-sm hover:bg-zinc-300"
-          onClick={() => {
-            setModeError(null);
-            try {
-              window.database.modes.fetchAllModes();
-            } catch (error) {
-              console.error("Failed to reload modes:", error);
-              setModeError(
-                error instanceof Error
-                  ? error
-                  : new Error("Failed to reload modes"),
-              );
-            }
-          }}
-        >
-          Retry
-        </button>
-      </div>
-    );
-  }
-
   if (!settings) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-zinc-50">
@@ -101,79 +70,69 @@ const App = () => {
 
   // Main component rendering
   return (
-    <ErrorBoundary
-      onError={(error, errorInfo) => {
-        console.error("Error caught by ErrorBoundary:", error, errorInfo);
-      }}
-    >
-      <div className="flex h-screen w-full select-none flex-col justify-end bg-transparent font-sans">
-        <div className="drag flex w-full flex-col items-center justify-end rounded-3xl border border-zinc-500 bg-zinc-50">
-          {!modePickerOpen ? (
-            <ErrorBoundary>
-              <MainContentDisplay status={status} />
-            </ErrorBoundary>
-          ) : (
-            <ErrorBoundary>
-              <ModePicker
-                modes={modes}
-                setActiveMode={setActiveMode}
-                setModePickerOpen={setModePickerOpen}
-              />
-            </ErrorBoundary>
-          )}
-          <div className="flex h-14 w-full shrink-0 items-center justify-between rounded-b-3xl border-t border-t-zinc-200 bg-zinc-100 text-zinc-600">
-            <div className="pl-8">
-              <StatusDisplay status={status} />
-            </div>
-            <TimerDisplay status={status} />
-            {!modePickerOpen ? (
-              <div className="flex h-6 items-center space-x-6 pr-8">
-                <div className="flex items-center gap-4">
-                  {activeMode ? activeMode.name : ""}
-                  <ShortcutDisplay
-                    shortcut={settings.keyboard.changeModeShortcut}
-                  />
-                </div>
-                <Separator orientation="vertical" decorative />
-                <div className="flex items-center gap-4">
-                  {status === "idle" || status === "result" ? "Start" : "Stop"}
-                  <ShortcutDisplay
-                    shortcut={settings.keyboard.toggleRecordingShortcut}
-                  />
-                </div>
-                <Separator orientation="vertical" decorative />
-                <div className="flex items-center gap-4">
-                  {status === "result" ? "Reset" : "Cancel"}
-                  <ShortcutDisplay
-                    shortcut={settings.keyboard.cancelRecordingShortcut}
-                  />
-                </div>
-              </div>
-            ) : (
-              <div className="flex h-6 items-center space-x-6 pr-8">
-                <div className="flex items-center gap-4">
-                  Navigate
-                  <ShortcutDisplay shortcut={"Up"} />
-                  <ShortcutDisplay shortcut={"Down"} />
-                </div>
-                <Separator orientation="vertical" decorative />
-                <div className="flex items-center gap-4">
-                  Select Mode
-                  <ShortcutDisplay shortcut={"Enter"} />
-                </div>
-                <Separator orientation="vertical" decorative />
-                <div className="flex items-center gap-4">
-                  Cancel
-                  <ShortcutDisplay
-                    shortcut={settings.keyboard.changeModeShortcut}
-                  />
-                </div>
-              </div>
-            )}
+    <div className="flex h-screen w-full select-none flex-col justify-end bg-transparent font-sans">
+      <div className="drag flex w-full flex-col items-center justify-end rounded-3xl border border-zinc-500 bg-zinc-50">
+        {!modePickerOpen ? (
+          <MainContentDisplay status={status} />
+        ) : (
+          <ModePicker
+            modes={modes}
+            setActiveMode={setActiveMode}
+            setModePickerOpen={setModePickerOpen}
+          />
+        )}
+        <div className="flex h-14 w-full shrink-0 items-center justify-between rounded-b-3xl border-t border-t-zinc-200 bg-zinc-100 text-zinc-600">
+          <div className="pl-8">
+            <StatusDisplay status={status} />
           </div>
+          <TimerDisplay status={status} />
+          {!modePickerOpen ? (
+            <div className="flex h-6 items-center space-x-6 pr-8">
+              <div className="flex items-center gap-4">
+                {activeMode ? activeMode.name : ""}
+                <ShortcutDisplay
+                  shortcut={settings.keyboard.changeModeShortcut}
+                />
+              </div>
+              <Separator orientation="vertical" decorative />
+              <div className="flex items-center gap-4">
+                {status === "idle" || status === "result" ? "Start" : "Stop"}
+                <ShortcutDisplay
+                  shortcut={settings.keyboard.toggleRecordingShortcut}
+                />
+              </div>
+              <Separator orientation="vertical" decorative />
+              <div className="flex items-center gap-4">
+                {status === "result" ? "Reset" : "Cancel"}
+                <ShortcutDisplay
+                  shortcut={settings.keyboard.cancelRecordingShortcut}
+                />
+              </div>
+            </div>
+          ) : (
+            <div className="flex h-6 items-center space-x-6 pr-8">
+              <div className="flex items-center gap-4">
+                Navigate
+                <ShortcutDisplay shortcut={"Up"} />
+                <ShortcutDisplay shortcut={"Down"} />
+              </div>
+              <Separator orientation="vertical" decorative />
+              <div className="flex items-center gap-4">
+                Select Mode
+                <ShortcutDisplay shortcut={"Enter"} />
+              </div>
+              <Separator orientation="vertical" decorative />
+              <div className="flex items-center gap-4">
+                Cancel
+                <ShortcutDisplay
+                  shortcut={settings.keyboard.changeModeShortcut}
+                />
+              </div>
+            </div>
+          )}
         </div>
       </div>
-    </ErrorBoundary>
+    </div>
   );
 };
 

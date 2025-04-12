@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-import json
 import sys
 from loguru import logger
 
@@ -25,13 +24,11 @@ def main():
         for line in sys.stdin:
             try:
                 # Parse the command from stdin
-                command_json = json.loads(line)
-                command = Command.model_validate(command_json)
+                logger.debug(f"Received line: {line.strip()}")
+                command = Command.model_validate_json(line.strip())
 
                 # Process the command
                 controller.handle_command(command)
-            except json.JSONDecodeError as e:
-                logger.error(f"Invalid JSON: {e}")
             except Exception as e:
                 logger.error(f"Error handling command: {e}")
                 logger.exception(e)
