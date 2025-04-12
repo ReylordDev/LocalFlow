@@ -4,7 +4,9 @@ import { WindowManager } from "./window-manager";
 import { AppConfig, logger } from "../utils/config";
 import path from "path";
 import { Mode } from "../../lib/models/database";
-import { PYTHON_SERVICE_EVENTS } from "../../lib/models/channels";
+import { CHANNELS } from "../../lib/models/channels";
+import { Action } from "../../lib/models/commands";
+import { tryCatch } from "../../lib/utils";
 
 /**
  * Manages the system tray icon and its context menu functionality.
@@ -23,7 +25,7 @@ export class TrayManager {
    * Initializes the system tray icon and sets up event listeners.
    * Creates the tray icon, sets up click handlers, and initializes the context menu.
    */
-  initialize() {
+  async initialize() {
     const icon = this.createTrayIcon();
     this.tray = new Tray(icon);
     this.tray.setToolTip("LocalFlow");
@@ -32,22 +34,21 @@ export class TrayManager {
       this.windowManager.toggleMiniWindow();
     });
 
-    logger.info("Requesting modes from database for context menu");
     const contextMenu = this.updateContextMenu([]);
     this.tray.setContextMenu(contextMenu);
-    // TODO: outdated
-    this.pythonService.sendCommand({
-      action: "get_modes",
-    });
-    this.pythonService.onPythonEvent(PYTHON_SERVICE_EVENTS.MODES, (modes) => {
-      if (!this.tray) {
-        logger.error("Tray not initialized");
-        return;
-      }
-      logger.info("Received modes from database for context menu");
-      const contextMenu = this.updateContextMenu(modes);
-      this.tray.setContextMenu(contextMenu);
-    });
+    const { data, error } = await tryCatch(
+      this.pythonService.sendPythonRequest({
+        channel: CHANNELS.fetchAllModes,
+        id: this.pythonService.generateRequestId(),
+      }),
+    );
+    if (error) {
+      logger.error("Error fetching modes:", error);
+      return;
+    }
+    const modes = data;
+    this.updateContextMenu(modes);
+    this.tray.setContextMenu(contextMenu);
   }
 
   /**
@@ -84,7 +85,11 @@ export class TrayManager {
     const contextMenu = Menu.buildFromTemplate([
       {
         label: "Start/Stop Recording",
-        click: () => this.pythonService.toggleRecording(),
+        click: () =>
+          this.pythonService.sendCommand({
+            action: Action.TOGGLE,
+            data: undefined,
+          }),
       },
       {
         label: "Transcribe File",
@@ -114,7 +119,7 @@ export class TrayManager {
           click: () => {
             logger.info(`Switching to mode: ${mode.name}`);
             this.pythonService.sendCommand({
-              action: "switch_mode",
+              action: Action.SWITCH_MODE,
               data: mode.id,
             });
           },

@@ -13,7 +13,7 @@ import {
   ChannelType,
 } from "../../lib/models/channels";
 import { tryCatch } from "../../lib/utils";
-import { Request } from "../../lib/models/commands";
+import { Action, Request } from "../../lib/models/commands";
 
 export function registerIpcHandlers(
   settingsService: SettingsService,
@@ -46,7 +46,8 @@ export function registerIpcHandlers(
 
   ipcMain.on(CHANNELS_old.MINI.AUDIO_LEVEL_REQUEST, () => {
     pythonService.sendCommand({
-      action: "audio_level",
+      action: Action.AUDIO_LEVEL,
+      data: undefined,
     });
   });
 

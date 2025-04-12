@@ -6,7 +6,11 @@ import {
   ProgressMessage,
   StatusMessage,
 } from "../../lib/models/messages";
-import { Command, Request } from "../../lib/models/commands";
+import {
+  Command,
+  Request,
+  ResponselessCommand,
+} from "../../lib/models/commands";
 import path from "path";
 import {
   ChannelFunctionTypeMap,
@@ -114,11 +118,12 @@ export class PythonService extends EventEmitter {
   }
 
   sendPythonRequest<C extends ChannelType>(request: Request & { channel: C }) {
-    const promise = new Promise<ReturnType<ChannelFunctionTypeMap[C]>>(
+    const promise = new Promise<Awaited<ReturnType<ChannelFunctionTypeMap[C]>>>(
       (resolve, reject) => {
         this.pendingRequests.set(request.id, {
+          // TODO: maybe this is bad
           resolve: (value) => {
-            resolve(value as ReturnType<ChannelFunctionTypeMap[C]>);
+            resolve(value as Awaited<ReturnType<ChannelFunctionTypeMap[C]>>);
           },
           reject,
         });
@@ -138,7 +143,7 @@ export class PythonService extends EventEmitter {
       },
     );
 
-    this.sendCommand(request);
+    this.shell.send(request);
     return promise;
   }
 
@@ -147,7 +152,7 @@ export class PythonService extends EventEmitter {
    *
    * @param command - The command to send
    */
-  sendCommand(command: Command) {
+  sendCommand(command: ResponselessCommand) {
     logger.debug("Sending command to Python:", command);
     this.shell.send(command);
   }
