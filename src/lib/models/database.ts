@@ -1,6 +1,7 @@
 // Database models for storage and data manipulation
 import { UUID } from "crypto";
 
+// This is also technically not in the database
 export type ControllerStatusType =
   | "idle"
   | "recording"
@@ -37,6 +38,7 @@ export const languageNameMap: Record<LanguageType, string> = {
 
 export type VoiceModelType = "large-v3-turbo" | "large-v3" | "distil-large-v3";
 
+// Device is not technically in the database
 export interface Device {
   index: number;
   name: string;

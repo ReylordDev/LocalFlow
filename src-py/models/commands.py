@@ -27,20 +27,8 @@ Action = Literal[
 ]
 
 
-class SelectModeCommand(BaseModel):
-    mode_id: UUID
-
-
 class SelectDeviceCommand(BaseModel):
     index: int
-
-
-class SelectResultCommand(BaseModel):
-    result_id: UUID
-
-
-class SelectTextReplacementCommand(BaseModel):
-    text_replacement_id: UUID
 
 
 class AddExampleCommand(BaseModel):
@@ -48,15 +36,18 @@ class AddExampleCommand(BaseModel):
     example: ExampleBase
 
 
+class CreateTextReplacementCommand(BaseModel):
+    text_replacement: TextReplacementBase
+
+
 CommandDataType = Union[
-    SelectModeCommand,
     SelectDeviceCommand,
-    SelectResultCommand,
     ModeCreate,
     ModeUpdate,
     AddExampleCommand,
-    SelectTextReplacementCommand,
+    CreateTextReplacementCommand,
     TextReplacementBase,
+    UUID,
 ]
 
 
@@ -73,6 +64,6 @@ class Command(BaseModel):
         request_id: Optional unique identifier for tracking requests and responses
     """
 
-    action: str
+    action: Action
     data: Optional[CommandDataType] = None
     request_id: Optional[str] = None

@@ -1,5 +1,5 @@
 // Message types for Python to Electron IPC
-import { Action } from "./commands";
+import { Action, ResponseTypeFor } from "./commands";
 import {
   ControllerStatusType,
   Device,
@@ -65,39 +65,18 @@ export interface TextReplacementsMessage {
   text_replacements: TextReplacement[];
 }
 
-export interface Message {
-  type:
-    | "progress"
-    | "exception"
-    | "error"
-    | "transcription"
-    | "audio_level"
-    | "devices"
-    | "status"
-    | "modes"
-    | "result"
-    | "results"
-    | "modes_update"
-    | "voice_models"
-    | "language_models"
-    | "text_replacements";
-  data:
-    | ProgressMessage
-    | TranscriptionMessage
-    | AudioLevelMessage
-    | ExceptionMessage
-    | DevicesMessage
-    | ErrorMessage
-    | StatusMessage
-    | ModesMessage
-    | ResultMessage
-    | ResultsMessage
-    | VoiceModelsMessage
-    | LanguageModelsMessage
-    | TextReplacementsMessage;
+interface BaseMessage<A extends Action> {
+  data: ResponseTypeFor<A>;
+  type?: string;
   request_id?: string;
 }
 
-type MessageMap = {
-  [K in Action]: Message["data"];
-};
+// TODO: differentiate between a result and a info message
+export type Message = {
+  [A in Action]: BaseMessage<A> & {
+    progress: {
+      data: ProgressMessage;
+      type: "progress";
+    };
+  };
+}[Action];

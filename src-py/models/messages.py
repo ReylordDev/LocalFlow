@@ -1,43 +1,49 @@
 import time
-from typing import Any, List, Literal, Optional, Union
+from typing import List, Literal, Optional, Union
 from pydantic import BaseModel, Field
+from models.commands import Action
+from models.db import (
+    LanguageModel,
+    Mode,
+    Result,
+    TextReplacement,
+    VoiceModel,
+)
 
-
-ControllerStatusType = Literal[
-    "idle",
-    "recording",
-    "compressing",
-    "loading_voice_model",
-    "transcribing",
-    "loading_language_model",
-    "generating_ai_result",
-    "saving",
-    "result",
-    "error",
+# Utility types
+StatusType = Literal["start", "complete", "error"]
+StepType = Union[
+    Action,
+    Literal[
+        "init",
+        "recording",
+        "compression",
+        "transcription",
+    ],
 ]
 
 
-class StatusMessage(BaseModel):
-    status: ControllerStatusType
-
-
 class ProgressMessage(BaseModel):
-    step: str
-    status: str
+    step: StepType
+    status: StatusType
     timestamp: float = Field(default_factory=time.time)
 
 
-class AudioLevelMessage(BaseModel):
-    audio_level: float
+class ExceptionMessage(BaseModel):
+    exception: str
+    timestamp: float = Field(default_factory=time.time)
 
 
 class TranscriptionMessage(BaseModel):
     transcription: str
 
 
-class ExceptionMessage(BaseModel):
-    exception: str
-    timestamp: float = Field(default_factory=time.time)
+class AudioLevelMessage(BaseModel):
+    audio_level: float
+
+
+class ErrorMessage(BaseModel):
+    error: str
 
 
 class Device(BaseModel):
@@ -58,16 +64,46 @@ class DevicesMessage(BaseModel):
     devices: List[Device]
 
 
-class ErrorMessage(BaseModel):
-    error: str
+class ModesMessage(BaseModel):
+    modes: List[Mode]
 
 
-class VoiceModelMessage(BaseModel):
-    voice_models: Any
+ControllerStatusType = Literal[
+    "idle",
+    "recording",
+    "compressing",
+    "loading_voice_model",
+    "transcribing",
+    "loading_language_model",
+    "generating_ai_result",
+    "saving",
+    "result",
+    "error",
+]
 
 
-class LanguageModelMessage(BaseModel):
-    language_models: Any
+class StatusMessage(BaseModel):
+    status: ControllerStatusType
+
+
+class ResultMessage(BaseModel):
+    result: Result
+
+
+class ResultsMessage(BaseModel):
+    results: list[Result]
+
+
+class VoiceModelsMessage(BaseModel):
+    voice_models: list[VoiceModel]
+
+
+class LanguageModelsMessage(BaseModel):
+    language_models: list[LanguageModel]
+
+
+class TextReplacementsMessage(BaseModel):
+    text_replacements: List[TextReplacement]
 
 
 MessageDataType = Union[
@@ -78,9 +114,12 @@ MessageDataType = Union[
     ExceptionMessage,
     DevicesMessage,
     ErrorMessage,
-    VoiceModelMessage,
-    LanguageModelMessage,
-    dict,
+    ModesMessage,
+    ResultMessage,
+    ResultsMessage,
+    VoiceModelsMessage,
+    LanguageModelsMessage,
+    TextReplacementsMessage,
 ]
 
 
@@ -96,57 +135,6 @@ class Message(BaseModel):
         request_id: Optional ID that links this message to a specific request
     """
 
-    type: str
-    data: MessageDataType
+    type: Optional[str] = None  # inaccurate, maybe combine with request_id
+    data: MessageDataType  # inaccurate
     request_id: Optional[str] = None
-
-
-MessageType = Literal[
-    "progress",
-    "transcription",
-    "audio_level",
-    "exception",
-    "devices",
-    "error",
-    "status",
-    "modes",
-    "modes_update",
-    "result",
-    "results",
-    "voice_models",
-    "language_models",
-    "text_replacements",
-]
-
-StatusType = Literal["start", "complete", "error"]
-ActionType = Literal[
-    "toggle",
-    "cancel",
-    "reset",
-    "audio_level",
-    "select_mode",
-    "get_devices",
-    "set_device",
-    "get_modes",
-    "create_mode",
-    "update_mode",
-    "delete_mode",
-    "switch_mode",
-    "get_results",
-    "delete_result",
-    "add_example",
-    "get_voice_models",
-    "get_language_models",
-    "get_text_replacements",
-    "create_text_replacement",
-    "delete_text_replacement",
-]
-StepType = Union[
-    ActionType,
-    Literal[
-        "init",
-        "recording",
-        "compression",
-        "transcription",
-    ],
-]

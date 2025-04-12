@@ -1,23 +1,41 @@
 // IPC channel constants for communication between renderer and main processes
 
+import {
+  ControllerStatusType,
+  Device,
+  ModeCreate,
+  ModeUpdate,
+  ExampleBase,
+  TextReplacement,
+  TextReplacementBase,
+  VoiceModel,
+  LanguageModel,
+  Result,
+  Mode,
+} from "./database";
+import {
+  ApplicationConfig,
+  AppSettings,
+  AudioConfig,
+  KeyboardConfig,
+  OutputConfig,
+} from "./settings";
+import { UUID } from "crypto";
+
 declare global {
   interface Window {
     controller: {
       toggleRecording: () => void;
     };
     settings: {
-      getAll: () => Promise<import("./settings").AppSettings>;
+      getAll: () => Promise<AppSettings>;
       disableShortcut: (shortcut: string) => void;
-      setAudio: (audioConfig: import("./settings").AudioConfig) => void;
-      setKeyboard: (
-        keyboardConfig: import("./settings").KeyboardConfig,
-      ) => void;
-      setApplication: (
-        applicationConfig: import("./settings").ApplicationConfig,
-      ) => void;
-      setOutput: (outputConfig: import("./settings").OutputConfig) => void;
+      setAudio: (audioConfig: AudioConfig) => void;
+      setKeyboard: (keyboardConfig: KeyboardConfig) => void;
+      setApplication: (applicationConfig: ApplicationConfig) => void;
+      setOutput: (outputConfig: OutputConfig) => void;
       onSettingsChanged: (
-        callback: (settings: import("./settings").AppSettings) => void,
+        callback: (settings: AppSettings) => void,
       ) => () => void;
       getLocale: () => Promise<string>;
     };
@@ -30,77 +48,57 @@ declare global {
         callback: (audioLevel: number) => void,
       ) => () => void;
       onStatusUpdate: (
-        callback: (status: import("./database").ControllerStatusType) => void,
+        callback: (status: ControllerStatusType) => void,
       ) => () => void;
-      onResult: (
-        callback: (result: import("./database").Result) => void,
-      ) => () => void;
+      onResult: (callback: (result: Result) => void) => () => void;
       onTranscription(callback: (transcription: string) => void): () => void;
       onChangeModeShortcutPressed: (callback: () => void) => () => void;
       setMainContentHeight: (height: number) => void;
     };
     device: {
       requestAll: () => void;
-      onReceiveDevices: (
-        callback: (devices: import("./database").Device[]) => void,
-      ) => () => void;
-      set: (device: import("./database").Device) => void;
+      onReceiveDevices: (callback: (devices: Device[]) => void) => () => void;
+      set: (device: Device) => void;
     };
     database: {
       modes: {
         fetchAllModes: ChannelMap[CHANNELS_enum.fetchAllModes];
-        onReceiveModes: (
-          callback: (modes: import("./database").Mode[]) => void,
-        ) => () => void;
-        createMode: (mode: import("./database").ModeCreate) => void;
-        updateMode: (mode: import("./database").ModeUpdate) => void;
-        deleteMode: (modeId: import("crypto").UUID) => void;
-        activateMode: (modeId: import("crypto").UUID) => void;
+        createMode: ChannelMap[CHANNELS_enum.createMode];
+        updateMode: ChannelMap[CHANNELS_enum.updateMode];
+        deleteMode: ChannelMap[CHANNELS_enum.deleteMode];
+        activateMode: ChannelMap[CHANNELS_enum.activateMode];
       };
       results: {
-        deleteResult: (resultId: import("crypto").UUID) => void;
+        deleteResult: (resultId: UUID) => void;
       };
       examples: {
-        addExample: (
-          promptId: import("crypto").UUID,
-          example: import("./database").ExampleBase,
-        ) => void;
+        addExample: (promptId: UUID, example: ExampleBase) => void;
       };
       textReplacements: {
         requestAll: () => void;
         onReceiveTextReplacements: (
-          callback: (
-            textReplacements: import("./database").TextReplacement[],
-          ) => void,
+          callback: (textReplacements: TextReplacement[]) => void,
         ) => () => void;
-        createTextReplacement: (
-          textReplacement: import("./database").TextReplacementBase,
-        ) => void;
-        deleteTextReplacement: (
-          textReplacementId: import("crypto").UUID,
-        ) => void;
+        createTextReplacement: (textReplacement: TextReplacementBase) => void;
+        deleteTextReplacement: (textReplacementId: UUID) => void;
       };
       voiceModels: {
         requestAll: () => void;
         onReceiveVoiceModels: (
-          callback: (voiceModels: import("./database").VoiceModel[]) => void,
+          callback: (voiceModels: VoiceModel[]) => void,
         ) => () => void;
       };
       languageModels: {
         requestAll: () => void;
         onReceiveLanguageModels: (
-          callback: (
-            languageModels: import("./database").LanguageModel[],
-          ) => void,
+          callback: (languageModels: LanguageModel[]) => void,
         ) => () => void;
       };
     };
     recordingHistory: {
       openWindow: () => void;
       requestAll: () => void;
-      onReceiveResults: (
-        callback: (results: import("./database").Result[]) => void,
-      ) => () => void;
+      onReceiveResults: (callback: (results: Result[]) => void) => () => void;
     };
     clipboard: {
       copy: (text: string) => void;
@@ -196,10 +194,18 @@ export const CHANNELS = {
 
 export enum CHANNELS_enum {
   fetchAllModes = "database:modes:getAll",
+  createMode = "database:modes:createMode",
+  updateMode = "database:modes:updateMode",
+  deleteMode = "database:modes:deleteMode",
+  activateMode = "database:modes:activateMode",
 }
 
 export type ChannelMap = {
-  [CHANNELS_enum.fetchAllModes]: () => Promise<import("./database").Mode[]>;
+  [CHANNELS_enum.fetchAllModes]: () => Promise<Mode[]>;
+  [CHANNELS_enum.createMode]: (mode: ModeCreate) => Promise<Mode[]>;
+  [CHANNELS_enum.updateMode]: (mode: ModeUpdate) => Promise<Mode[]>;
+  [CHANNELS_enum.deleteMode]: (modeId: UUID) => Promise<Mode[]>;
+  [CHANNELS_enum.activateMode]: (modeId: UUID) => Promise<Mode[]>;
 };
 
 // Python service events for IPC communication
@@ -224,12 +230,12 @@ export type PythonEventMap = {
   [PYTHON_SERVICE_EVENTS.ERROR]: Error;
   [PYTHON_SERVICE_EVENTS.TRANSCRIPTION]: string;
   [PYTHON_SERVICE_EVENTS.AUDIO_LEVEL]: number;
-  [PYTHON_SERVICE_EVENTS.DEVICES]: import("./database").Device[];
-  [PYTHON_SERVICE_EVENTS.STATUS_UPDATE]: import("./database").ControllerStatusType;
-  [PYTHON_SERVICE_EVENTS.MODES]: import("./database").Mode[];
-  [PYTHON_SERVICE_EVENTS.RESULT]: import("./database").Result;
-  [PYTHON_SERVICE_EVENTS.RESULTS]: import("./database").Result[];
-  [PYTHON_SERVICE_EVENTS.VOICE_MODELS]: import("./database").VoiceModel[];
-  [PYTHON_SERVICE_EVENTS.LANGUAGE_MODELS]: import("./database").LanguageModel[];
-  [PYTHON_SERVICE_EVENTS.TEXT_REPLACEMENTS]: import("./database").TextReplacement[];
+  [PYTHON_SERVICE_EVENTS.DEVICES]: Device[];
+  [PYTHON_SERVICE_EVENTS.STATUS_UPDATE]: ControllerStatusType;
+  [PYTHON_SERVICE_EVENTS.MODES]: Mode[];
+  [PYTHON_SERVICE_EVENTS.RESULT]: Result;
+  [PYTHON_SERVICE_EVENTS.RESULTS]: Result[];
+  [PYTHON_SERVICE_EVENTS.VOICE_MODELS]: VoiceModel[];
+  [PYTHON_SERVICE_EVENTS.LANGUAGE_MODELS]: LanguageModel[];
+  [PYTHON_SERVICE_EVENTS.TEXT_REPLACEMENTS]: TextReplacement[];
 };

@@ -52,31 +52,6 @@ const App = () => {
       });
   }, []);
 
-  const handleReceiveModes = useCallback((modes: Mode[]) => {
-    try {
-      const activeMode = modes.find((mode) => mode.active);
-      setActiveMode(activeMode || null);
-      setModes(modes);
-      setModeError(null);
-    } catch (error) {
-      console.error("Error processing modes:", error);
-      setModeError(
-        error instanceof Error ? error : new Error("Error processing modes"),
-      );
-    }
-  }, []);
-
-  useEffect(() => {
-    const unsubscribe = window.database.modes.onReceiveModes((modes) => {
-      console.debug("Received modes:", modes);
-      handleReceiveModes(modes);
-    });
-
-    return () => {
-      unsubscribe();
-    };
-  }, [handleReceiveModes]);
-
   useEffect(() => {
     const unsubscribe = window.mini.onChangeModeShortcutPressed(() => {
       console.debug("Change mode shortcut pressed");

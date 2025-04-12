@@ -41,10 +41,11 @@ export function registerIpcHandlers(
     });
   });
 
+  // Possbile abstraction
   handleIPC(CHANNELS_enum.fetchAllModes, async () => {
     const { data, error } = await tryCatch(
       pythonService.sendCommandWithResponse({
-        action: "get_modes",
+        action: "get_modes", //TODO: this can be typed better
       }),
     );
     if (error) {
@@ -53,38 +54,43 @@ export function registerIpcHandlers(
     return data.modes;
   });
 
-  // // Using promise-based API for get_modes
-  // ipcMain.handle(CHANNELS_enum.fetchAllModes, async () => {
-  //   const { data, error } = await tryCatch(
-  //     pythonService.sendCommandWithResponse({
-  //       action: "get_modes",
-  //     }),
-  //   );
-  //   if (error) {
-  //     throw error;
-  //   }
-  //   return data.modes;
-  // });
-
-  ipcMain.on(CHANNELS.DATABASE.MODES.CREATE_MODE, (_, mode: ModeCreate) => {
-    pythonService.sendCommand({
-      action: "create_mode",
-      data: mode,
-    });
+  handleIPC(CHANNELS_enum.createMode, async (mode) => {
+    const { data, error } = await tryCatch(
+      pythonService.sendCommandWithResponse({
+        action: "create_mode",
+        data: mode,
+      }),
+    );
+    if (error) {
+      throw error;
+    }
+    return data.modes;
   });
 
-  ipcMain.on(CHANNELS.DATABASE.MODES.UPDATE_MODE, (_, mode: ModeUpdate) => {
-    pythonService.sendCommand({
-      action: "update_mode",
-      data: mode,
-    });
+  handleIPC(CHANNELS_enum.updateMode, async (mode) => {
+    const { data, error } = await tryCatch(
+      pythonService.sendCommandWithResponse({
+        action: "update_mode",
+        data: mode,
+      }),
+    );
+    if (error) {
+      throw error;
+    }
+    return data.modes;
   });
 
-  ipcMain.on(CHANNELS.DATABASE.MODES.DELETE_MODE, (_, modeId: UUID) => {
-    pythonService.sendCommand({
-      action: "delete_mode",
-      data: modeId,
-    });
+  handleIPC(CHANNELS_enum.deleteMode, async (modeId) => {
+    const { data, error } = await tryCatch(
+      pythonService.sendCommandWithResponse({
+        action: "delete_mode",
+        data: modeId,
+      }),
+    );
+    if (error) {
+      throw error;
+    }
+    return data.modes;
   });
 
   ipcMain.on(CHANNELS.DATABASE.RESULTS.DELETE_RESULT, (_, resultId: UUID) => {

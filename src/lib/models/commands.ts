@@ -1,6 +1,7 @@
 // Command types for Electron to Python IPC
 import { UUID } from "crypto";
 import {
+  Device,
   ExampleBase,
   ModeCreate,
   ModeUpdate,
@@ -34,7 +35,7 @@ type CommandStructureMap = {
   audio_level: { param: undefined; response: AudioLevelMessage };
   select_mode: { param: UUID; response: StatusMessage };
   get_devices: { param: undefined; response: DevicesMessage };
-  set_device: { param: UUID; response: StatusMessage };
+  set_device: { param: Device; response: StatusMessage };
   get_modes: { param: undefined; response: ModesMessage };
   create_mode: { param: ModeCreate; response: ModesMessage };
   update_mode: { param: ModeUpdate; response: ModesMessage };

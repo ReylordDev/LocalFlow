@@ -1,7 +1,6 @@
 // See the Electron documentation for details on how to use preload scripts:
 // https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
 
-import { tryCatch } from "./lib/utils";
 import {
   CHANNEL_NAMES,
   ChannelMap,
@@ -9,7 +8,6 @@ import {
   CHANNELS_enum,
 } from "./lib/models/channels";
 import { contextBridge, ipcRenderer, IpcRendererEvent } from "electron";
-import { Mode } from "./lib/models/database";
 
 // Expose protected methods that allow the renderer process to use
 // the ipcRenderer without exposing the entire object
@@ -90,20 +88,10 @@ export const exposeDatabase = () => {
   contextBridge.exposeInMainWorld(CHANNEL_NAMES.DATABASE, {
     modes: {
       fetchAllModes: () => invoke(CHANNELS_enum.fetchAllModes),
-      onReceiveModes: (callback) =>
-        genericListener(CHANNELS.DATABASE.MODES.MODES_RESPONSE, callback),
-      createMode: (mode) => {
-        return ipcRenderer.send(CHANNELS.DATABASE.MODES.CREATE_MODE, mode);
-      },
-      updateMode(mode) {
-        return ipcRenderer.send(CHANNELS.DATABASE.MODES.UPDATE_MODE, mode);
-      },
-      deleteMode(modeId) {
-        return ipcRenderer.send(CHANNELS.DATABASE.MODES.DELETE_MODE, modeId);
-      },
-      activateMode(modeId) {
-        return ipcRenderer.send(CHANNELS.DATABASE.MODES.ACTIVATE_MODE, modeId);
-      },
+      createMode: (modeCreate) => invoke(CHANNELS_enum.createMode, modeCreate),
+      updateMode: (mode) => invoke(CHANNELS_enum.updateMode, mode),
+      deleteMode: (modeId) => invoke(CHANNELS_enum.deleteMode, modeId),
+      activateMode: (modeId) => invoke(CHANNELS_enum.activateMode, modeId),
     },
     textReplacements: {
       requestAll: () => {

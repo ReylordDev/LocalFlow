@@ -114,9 +114,7 @@ export class TrayManager {
             logger.info(`Switching to mode: ${mode.name}`);
             this.pythonService.sendCommand({
               action: "switch_mode",
-              data: {
-                mode_id: mode.id,
-              },
+              data: mode.id,
             });
           },
         })),

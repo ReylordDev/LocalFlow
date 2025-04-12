@@ -1,12 +1,10 @@
-import json
-import sys
 from time import time
+from typing import Optional
 from pydantic_core import to_json
 
 from loguru import logger
 from models.messages import (
     MessageDataType,
-    MessageType,
     ProgressMessage,
     Message,
     StatusType,
@@ -26,11 +24,17 @@ def print_progress(
         request_id: Optional request ID for the progress message
     """
     progress_message = ProgressMessage(step=step, status=status, timestamp=timestamp)
-    print_message("progress", progress_message, request_id)
+    print_message(
+        message_data=progress_message,
+        request_id=request_id,
+        type_name="progress",
+    )
 
 
 def print_message(
-    type_name: MessageType, message_data: MessageDataType, request_id: str | None = None
+    message_data: MessageDataType,
+    request_id: str | None = None,
+    type_name: Optional[str] = None,
 ):
     """Print a message to stdout for IPC
 
@@ -47,7 +51,7 @@ def print_message(
 
 
 def print_nested_model(
-    type_name: MessageType, data: dict, request_id: str | None = None
+    data: dict, request_id: str | None = None, type_name: Optional[str] = None
 ):
     """
     Print a nested model (with existing serialized objects) as a message
