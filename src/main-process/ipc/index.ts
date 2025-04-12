@@ -2,7 +2,6 @@ import { ipcMain, clipboard, shell, app } from "electron";
 import { PythonService } from "../services/python-service";
 import { SettingsService } from "../services/settings-service";
 import { WindowManager } from "../windows/window-manager";
-import { logger } from "../utils/config";
 import { registerURLHandlers } from "./url";
 import { registerSettingsHandlers } from "./settings";
 import {
@@ -23,7 +22,7 @@ export function registerIpcHandlers(
     ipcMain.handle(
       channel,
       async (_, ...args: Parameters<ChannelFunctionTypeMap[C]>) => {
-        logger.log(`Received event: ${channel}`, args);
+        console.log(`Received event: ${channel}`, args);
         const { data, error } = await tryCatch(
           pythonService.sendPythonRequest({
             channel,
@@ -33,7 +32,7 @@ export function registerIpcHandlers(
           }),
         );
         if (error) {
-          logger.error(`Error in ${channel}:`, error);
+          console.error(`Error in ${channel}:`, error);
           throw error;
         }
         return data;
@@ -61,12 +60,12 @@ export function registerIpcHandlers(
   });
 
   ipcMain.on(CHANNELS_old.CLIPBOARD.COPY, (_, text: string) => {
-    logger.log("Copying to clipboard:", text);
+    console.log("Copying to clipboard:", text);
     clipboard.writeText(text);
   });
 
   ipcMain.on(CHANNELS_old.FILE.OPEN, (_, location: string) => {
-    logger.log("Opening file:", location);
+    console.log("Opening file:", location);
     shell.openPath(location);
   });
 

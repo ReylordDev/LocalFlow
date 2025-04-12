@@ -2,9 +2,6 @@ import path from "path";
 import { app } from "electron";
 import log from "electron-log";
 
-// Unified logger that handles both packaged and development environments
-export const logger = app.isPackaged ? log : console;
-
 export class AppConfig {
   readonly isPackaged: boolean;
   readonly isDev: boolean;
@@ -18,6 +15,7 @@ export class AppConfig {
       ? process.resourcesPath
       : path.join(__dirname, "..", "..");
     this.dataDir = this.isPackaged ? app.getPath("userData") : this.rootDir;
+    this.initializeLogger();
     app.setAppLogsPath(path.join(this.dataDir, "logs"));
   }
 
@@ -48,5 +46,15 @@ export class AppConfig {
 
   get settingsPath() {
     return path.join(this.dataDir, "settings.json");
+  }
+
+  initializeLogger() {
+    log.initialize();
+    if (!app.isPackaged) {
+      log.transports.file.resolvePathFn = () => {
+        return path.join(this.rootDir, "logs", "electron.log");
+      };
+    }
+    Object.assign(console, log.functions);
   }
 }

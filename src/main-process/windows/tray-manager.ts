@@ -1,7 +1,7 @@
 import { Tray, Menu, NativeImage, nativeImage, app } from "electron";
 import { PythonService } from "../services/python-service";
 import { WindowManager } from "./window-manager";
-import { AppConfig, logger } from "../utils/config";
+import { AppConfig } from "../utils/config";
 import path from "path";
 import { Mode } from "../../lib/models/database";
 import { CHANNELS } from "../../lib/models/channels";
@@ -44,7 +44,7 @@ export class TrayManager {
       }),
     );
     if (error) {
-      logger.error("Error fetching modes:", error);
+      console.error("Error fetching modes:", error);
       return;
     }
     const modes = data;
@@ -95,7 +95,7 @@ export class TrayManager {
       },
       {
         label: "Transcribe File",
-        click: () => logger.info("Transcribe File clicked"),
+        click: () => console.info("Transcribe File clicked"),
       },
       {
         label: "History",
@@ -119,7 +119,7 @@ export class TrayManager {
           type: "radio",
           checked: mode.active,
           click: () => {
-            logger.info(`Switching to mode: ${mode.name}`);
+            console.info(`Switching to mode: ${mode.name}`);
             this.pythonService.sendCommand({
               action: Action.SWITCH_MODE,
               data: mode.id,

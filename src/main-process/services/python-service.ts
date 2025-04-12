@@ -1,11 +1,10 @@
 import { PythonShell } from "python-shell";
 import { EventEmitter } from "events";
-import { AppConfig, logger } from "../utils/config";
+import { AppConfig } from "../utils/config";
 import { Message, ProgressMessage } from "../../lib/models/messages";
 import {
   BaseRequest,
   Request,
-  Command,
   ResponselessCommand,
 } from "../../lib/models/commands";
 import path from "path";
@@ -95,16 +94,16 @@ export class PythonService extends EventEmitter {
         PYTHONUTF8: "1",
       },
     });
-    logger.info("Python shell initialized");
-    logger.debug("Script path:", this.config.scriptPath);
-    logger.debug("Python path:", this.config.pythonPath);
-    logger.debug(
+    console.info("Python shell initialized");
+    console.debug("Script path:", this.config.scriptPath);
+    console.debug("Python path:", this.config.pythonPath);
+    console.debug(
       "Working directory:",
       this.config.isPackaged
         ? path.join(process.resourcesPath, "src-py")
         : this.config.rootDir,
     );
-    logger.debug("Environment variables:", {
+    console.debug("Environment variables:", {
       PRODUCTION: String(!this.config.isDev),
       USER_DATA_PATH: this.config.dataDir,
       LOG_LEVEL: this.config.isDev ? "DEBUG" : "INFO",
@@ -151,7 +150,7 @@ export class PythonService extends EventEmitter {
    * @param command - The command to send
    */
   sendCommand(command: ResponselessCommand | Request) {
-    logger.debug("Sending command to Python:", command);
+    console.debug("Sending command to Python:", command);
     this.shell.send({
       command,
     });
@@ -166,23 +165,23 @@ export class PythonService extends EventEmitter {
 
   private handleMessage(message: Message) {
     if (message.kind === "response") {
-      logger.debug("Received response from Python:", message);
+      console.debug("Received response from Python:", message);
       if (this.pendingRequests.has(message.id)) {
         const pendingRequest = this.pendingRequests.get(message.id);
         if (pendingRequest) {
           pendingRequest.resolve(message.data);
           this.pendingRequests.delete(message.id);
-          logger.debug(
+          console.debug(
             `Resolved request ${message.id} with type ${message.data}`,
           );
           return;
         }
       } else {
-        logger.warn(`Request ID ${message.id} not found in pending requests`);
+        console.warn(`Request ID ${message.id} not found in pending requests`);
       }
     } else if (message.kind === "update") {
       // Handle updates from the Python process
-      logger.debug("Received update from Python:", message);
+      console.debug("Received update from Python:", message);
       switch (message.updateKind) {
         case "progress":
           this.handleProgressUpdate(message);
@@ -197,17 +196,17 @@ export class PythonService extends EventEmitter {
           );
           break;
         case "error":
-          logger.error("Error from Python backend:", message.error);
+          console.error("Error from Python backend:", message.error);
           this.emitPythonEvent(
             PYTHON_SERVICE_EVENTS.ERROR,
             new Error(message.error),
           );
           break;
         case "exception":
-          logger.error("Exception from Python backend:", message.exception);
+          console.error("Exception from Python backend:", message.exception);
           break;
         case "result":
-          logger.debug("Result from Python backend:", message.result);
+          console.debug("Result from Python backend:", message.result);
           this.emitPythonEvent(PYTHON_SERVICE_EVENTS.RESULT, message.result);
           break;
         case "transcription":
@@ -231,7 +230,7 @@ export class PythonService extends EventEmitter {
    */
   private handleProgressUpdate(progress: ProgressMessage) {
     if (progress.step === "init" && progress.status === "complete") {
-      logger.info("Models initialization complete");
+      console.info("Models initialization complete");
       this.emitPythonEvent(PYTHON_SERVICE_EVENTS.MODELS_READY, void 0);
     }
   }
@@ -242,7 +241,7 @@ export class PythonService extends EventEmitter {
    * @param status - Current status of the Python controller
    */
   private handleStatusUpdate(status: ControllerStatusType) {
-    logger.debug("Status update from Python backend:", status);
+    console.debug("Status update from Python backend:", status);
     this.emitPythonEvent(PYTHON_SERVICE_EVENTS.STATUS_UPDATE, status);
   }
 
@@ -250,7 +249,7 @@ export class PythonService extends EventEmitter {
    * Shuts down the Python process
    */
   shutdown() {
-    logger.info("Shutting down Python service");
+    console.info("Shutting down Python service");
     this.shell.kill();
   }
 }

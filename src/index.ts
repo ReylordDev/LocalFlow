@@ -4,7 +4,7 @@ import { SettingsService } from "./main-process/services/settings-service";
 import { WindowManager } from "./main-process/windows/window-manager";
 import { TrayManager } from "./main-process/windows/tray-manager";
 import { registerIpcHandlers } from "./main-process/ipc";
-import { AppConfig, logger } from "./main-process/utils/config";
+import { AppConfig } from "./main-process/utils/config";
 import { SETTINGS_SERVICE_EVENTS } from "./lib/models/settings";
 import { CHANNELS_old, PYTHON_SERVICE_EVENTS } from "./lib/models/channels";
 import { Action } from "./lib/models/commands";
@@ -56,7 +56,7 @@ function registerPythonEventHandlers() {
   });
 
   pythonService.onPythonEvent(PYTHON_SERVICE_EVENTS.ERROR, (error) => {
-    logger.error(error);
+    console.error(error);
     new Notification({
       title: "Critical Error",
       body: error.message,

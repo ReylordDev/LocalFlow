@@ -1,6 +1,6 @@
 import { BrowserWindow, Menu, screen } from "electron";
 import { EventEmitter } from "events";
-import { AppConfig, logger } from "../utils/config";
+import { AppConfig } from "../utils/config";
 import { CHANNELS_old } from "../../lib/models/channels";
 import { SettingsService } from "../services/settings-service";
 
@@ -51,11 +51,11 @@ export class WindowManager extends EventEmitter {
       show: false,
     });
 
-    logger.info("Creating main application window");
+    console.info("Creating main application window");
 
     mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
     if (this.config.isDev) {
-      logger.debug("Development mode enabled, opening DevTools");
+      console.debug("Development mode enabled, opening DevTools");
       mainWindow.webContents.openDevTools();
     }
 
@@ -92,10 +92,10 @@ export class WindowManager extends EventEmitter {
    */
   showMainWindow(): void {
     if (this.mainWindow && !this.mainWindow.isDestroyed()) {
-      logger.debug("Showing existing main window");
+      console.debug("Showing existing main window");
       this.mainWindow.show();
     } else {
-      logger.info(
+      console.info(
         "Main window does not exist, creating and showing new window",
       );
       this.mainWindow = this.createMainWindow();
@@ -108,7 +108,7 @@ export class WindowManager extends EventEmitter {
    */
   toggleMainWindow() {
     if (!this.mainWindow || this.mainWindow.isDestroyed()) {
-      logger.warn(
+      console.warn(
         "Main window is destroyed or not created yet. Creating a new instance.",
       );
       this.mainWindow = this.createMainWindow();
@@ -117,10 +117,10 @@ export class WindowManager extends EventEmitter {
     }
 
     if (this.mainWindow.isVisible()) {
-      logger.debug("Hiding main window");
+      console.debug("Hiding main window");
       this.mainWindow.hide();
     } else {
-      logger.debug("Showing main window");
+      console.debug("Showing main window");
       this.mainWindow.show();
     }
   }
@@ -152,7 +152,7 @@ export class WindowManager extends EventEmitter {
     const centerX = screenWidth / 2 - width / 2;
     const centerY = screenHeight - height - edgeGap;
 
-    logger.info("Creating mini-mode window");
+    console.info("Creating mini-mode window");
 
     const miniWindow = new BrowserWindow({
       frame: false,
@@ -171,7 +171,7 @@ export class WindowManager extends EventEmitter {
     miniWindow.hide();
 
     if (this.config.isDev) {
-      logger.debug(
+      console.debug(
         "Development mode enabled, opening DevTools for mini window",
       );
       miniWindow.webContents.openDevTools();
@@ -189,10 +189,10 @@ export class WindowManager extends EventEmitter {
    */
   showMiniWindow(): void {
     if (this.miniWindow && !this.miniWindow.isDestroyed()) {
-      logger.debug("Showing existing mini window");
+      console.debug("Showing existing mini window");
       this.miniWindow.showInactive();
     } else {
-      logger.info(
+      console.info(
         "Mini window does not exist, creating and showing new window",
       );
       this.miniWindow = this.createMiniWindow();
@@ -205,11 +205,11 @@ export class WindowManager extends EventEmitter {
    */
   hideMiniWindow(): void {
     if (this.miniWindow && !this.miniWindow.isDestroyed()) {
-      logger.debug("Hiding mini window");
+      console.debug("Hiding mini window");
       this.sendMiniWindowMessage(CHANNELS_old.MINI.STATUS_UPDATE, "idle");
       this.miniWindow.hide();
     } else {
-      logger.debug(
+      console.debug(
         "Cannot hide mini window: window is destroyed or not created",
       );
     }
@@ -221,14 +221,14 @@ export class WindowManager extends EventEmitter {
   toggleMiniWindow() {
     if (this.miniWindow && !this.miniWindow.isDestroyed()) {
       if (this.miniWindow.isVisible()) {
-        logger.debug("Hiding mini window");
+        console.debug("Hiding mini window");
         this.hideMiniWindow();
       } else {
-        logger.debug("Showing mini window");
+        console.debug("Showing mini window");
         this.showMiniWindow();
       }
     } else {
-      logger.info(
+      console.info(
         "Mini window is destroyed or not created yet. Creating a new instance.",
       );
       this.showMiniWindow();
@@ -272,8 +272,8 @@ export class WindowManager extends EventEmitter {
       const previousHeight = this.miniWindow.getContentSize()[1];
       const deltaHeight = miniWindowHeight - previousHeight;
 
-      // Replace console.log statements with appropriate logger levels
-      logger.debug("Mini window resize details", {
+      // Replace console.log statements with appropriate console levels
+      console.debug("Mini window resize details", {
         previousY: this.miniWindow.getBounds().y,
         mainContentHeight: height,
         miniWindowHeight,
@@ -287,7 +287,7 @@ export class WindowManager extends EventEmitter {
         height: miniWindowHeight,
       });
     } else {
-      logger.warn(
+      console.warn(
         "Cannot set mini window height: window is destroyed or not created",
       );
     }
@@ -299,7 +299,7 @@ export class WindowManager extends EventEmitter {
    * @returns The startup browser window instance
    */
   createStartupWindow(): BrowserWindow {
-    logger.info("Creating startup window");
+    console.info("Creating startup window");
 
     const startupWindow = new BrowserWindow({
       width: 600,
@@ -322,10 +322,10 @@ export class WindowManager extends EventEmitter {
    */
   hideStartupWindow = (): void => {
     if (this.startupWindow && !this.startupWindow.isDestroyed()) {
-      logger.debug("Hiding startup window");
+      console.debug("Hiding startup window");
       this.startupWindow.hide();
     } else {
-      logger.debug(
+      console.debug(
         "Cannot hide startup window: window is destroyed or not created",
       );
     }
@@ -341,14 +341,14 @@ export class WindowManager extends EventEmitter {
       this.recordingHistoryWindow &&
       !this.recordingHistoryWindow.isDestroyed()
     ) {
-      logger.debug(
+      console.debug(
         "Recording history window already exists, showing existing instance",
       );
       this.recordingHistoryWindow.show();
       return this.recordingHistoryWindow;
     }
 
-    logger.info("Creating new recording history window");
+    console.info("Creating new recording history window");
     const recordingHistoryWindow = new BrowserWindow({
       height: 1024,
       width: 1440,
@@ -366,7 +366,7 @@ export class WindowManager extends EventEmitter {
 
     // Add event listener for window close event
     recordingHistoryWindow.on("closed", () => {
-      logger.debug("Recording history window closed");
+      console.debug("Recording history window closed");
       this.recordingHistoryWindow = undefined;
     });
 
@@ -407,20 +407,20 @@ export class WindowManager extends EventEmitter {
    * Cleans up and destroys all windows
    */
   cleanup() {
-    logger.info("Cleaning up and destroying all windows");
+    console.info("Cleaning up and destroying all windows");
 
     if (this.mainWindow && !this.mainWindow.isDestroyed()) {
-      logger.debug("Destroying main window");
+      console.debug("Destroying main window");
       this.mainWindow.destroy();
     }
 
     if (this.miniWindow && !this.miniWindow.isDestroyed()) {
-      logger.debug("Destroying mini window");
+      console.debug("Destroying mini window");
       this.miniWindow.destroy();
     }
 
     if (this.startupWindow && !this.startupWindow.isDestroyed()) {
-      logger.debug("Destroying startup window");
+      console.debug("Destroying startup window");
       this.startupWindow.destroy();
     }
 
@@ -428,7 +428,7 @@ export class WindowManager extends EventEmitter {
       this.recordingHistoryWindow &&
       !this.recordingHistoryWindow.isDestroyed()
     ) {
-      logger.debug("Destroying recording history window");
+      console.debug("Destroying recording history window");
       this.recordingHistoryWindow.destroy();
     }
   }

@@ -68,12 +68,6 @@ export const exposeUrl = () => {
 
 export const exposeDevice = () => {
   contextBridge.exposeInMainWorld(CHANNEL_NAMES.DEVICE, {
-    requestAll: () => {
-      return ipcRenderer.send(CHANNELS_old.DEVICE.DEVICES_REQUEST);
-    },
-    onReceiveDevices: (callback) => {
-      return genericListener(CHANNELS_old.DEVICE.DEVICES_RESPONSE, callback);
-    },
     setDevice: (device) => invoke(CHANNELS.setDevice, device),
     fetchAllDevices: () => invoke(CHANNELS.fetchAllDevices),
   } satisfies Window["device"]);
@@ -99,16 +93,6 @@ export const exposeDatabase = () => {
     },
     textReplacements: {
       fetchAllTextReplacements: () => invoke(CHANNELS.fetchAllTextReplacements),
-      requestAll: () => {
-        ipcRenderer.send(
-          CHANNELS_old.DATABASE.TEXT_REPLACEMENTS.TEXT_REPLACEMENTS_REQUEST,
-        );
-      },
-      onReceiveTextReplacements: (callback) =>
-        genericListener(
-          CHANNELS_old.DATABASE.TEXT_REPLACEMENTS.TEXT_REPLACEMENTS_RESPONSE,
-          callback,
-        ),
       createTextReplacement: (textReplacement) =>
         invoke(CHANNELS.createTextReplacement, textReplacement),
       deleteTextReplacement: (textReplacementId) =>
@@ -125,29 +109,9 @@ export const exposeDatabase = () => {
     },
     voiceModels: {
       fetchAllVoiceModels: () => invoke(CHANNELS.fetchAllVoiceModels),
-      requestAll: () => {
-        return ipcRenderer.send(
-          CHANNELS_old.DATABASE.VOICE_MODELS.VOICE_MODELS_REQUEST,
-        );
-      },
-      onReceiveVoiceModels: (callback) =>
-        genericListener(
-          CHANNELS_old.DATABASE.VOICE_MODELS.VOICE_MODELS_RESPONSE,
-          callback,
-        ),
     },
     languageModels: {
       fetchAllLanguageModels: () => invoke(CHANNELS.fetchAllLanguageModels),
-      requestAll: () => {
-        return ipcRenderer.send(
-          CHANNELS_old.DATABASE.LANGUAGE_MODELS.LANGUAGE_MODELS_REQUEST,
-        );
-      },
-      onReceiveLanguageModels: (callback) =>
-        genericListener(
-          CHANNELS_old.DATABASE.LANGUAGE_MODELS.LANGUAGE_MODELS_RESPONSE,
-          callback,
-        ),
     },
   } satisfies Window["database"]);
 };

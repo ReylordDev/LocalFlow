@@ -134,8 +134,6 @@ declare global {
       setMainContentHeight: (height: number) => void;
     };
     device: {
-      requestAll: () => void;
-      onReceiveDevices: (callback: (devices: Device[]) => void) => () => void;
       setDevice: ChannelFunctionTypeMap[CHANNELS.setDevice];
       fetchAllDevices: ChannelFunctionTypeMap[CHANNELS.fetchAllDevices];
     };
@@ -156,25 +154,13 @@ declare global {
       };
       textReplacements: {
         fetchAllTextReplacements: ChannelFunctionTypeMap[CHANNELS.fetchAllTextReplacements];
-        requestAll: () => void;
-        onReceiveTextReplacements: (
-          callback: (textReplacements: TextReplacement[]) => void,
-        ) => () => void;
         createTextReplacement: ChannelFunctionTypeMap[CHANNELS.createTextReplacement];
         deleteTextReplacement: ChannelFunctionTypeMap[CHANNELS.deleteTextReplacement];
       };
       voiceModels: {
-        requestAll: () => void;
-        onReceiveVoiceModels: (
-          callback: (voiceModels: VoiceModel[]) => void,
-        ) => () => void;
         fetchAllVoiceModels: ChannelFunctionTypeMap[CHANNELS.fetchAllVoiceModels];
       };
       languageModels: {
-        requestAll: () => void;
-        onReceiveLanguageModels: (
-          callback: (languageModels: LanguageModel[]) => void,
-        ) => () => void;
         fetchAllLanguageModels: ChannelFunctionTypeMap[CHANNELS.fetchAllLanguageModels];
       };
     };

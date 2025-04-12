@@ -7,7 +7,7 @@ import {
   TextReplacementBase,
 } from "../../lib/models/database";
 import { Trash2 } from "lucide-react";
-import { cn } from "../../lib/utils";
+import { cn, tryCatch } from "../../lib/utils";
 
 const menuItemClass = "justify-between items-center flex px-4 min-h-[50px]";
 
@@ -22,17 +22,19 @@ export default function TextReplacements() {
     });
 
   useEffect(() => {
-    window.database.textReplacements.requestAll();
-  }, []);
-
-  useEffect(() => {
-    const unsubscribe =
-      window.database.textReplacements.onReceiveTextReplacements(
-        (replacements: TextReplacement[]) => {
-          setTextReplacements(replacements.filter((r) => r.mode_id === null));
-        },
+    async function fetchTextReplacements() {
+      const { data, error } = await tryCatch(
+        window.database.textReplacements.fetchAllTextReplacements(),
       );
-    return () => unsubscribe();
+      if (error) {
+        console.error("Error fetching text replacements:", error);
+        return;
+      }
+      console.log("Fetched Text Replacements", data);
+      setTextReplacements(data);
+    }
+
+    fetchTextReplacements();
   }, []);
 
   return (
