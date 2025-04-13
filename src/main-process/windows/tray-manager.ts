@@ -4,7 +4,7 @@ import { WindowManager } from "./window-manager";
 import { AppConfig } from "../utils/config";
 import path from "path";
 import { Mode } from "../../lib/models/database";
-import { CHANNELS } from "../../lib/models/channels";
+import { PythonChannels } from "../../lib/models/channels";
 import { Action } from "../../lib/models/commands";
 import { tryCatch } from "../../lib/utils";
 
@@ -38,7 +38,7 @@ export class TrayManager {
     this.tray.setContextMenu(contextMenu);
     const { data, error } = await tryCatch(
       this.pythonService.sendPythonRequest({
-        channel: CHANNELS.fetchAllModes,
+        channel: PythonChannels.fetchAllModes,
         id: this.pythonService.generateRequestId(),
         kind: "request",
       }),

@@ -2,15 +2,50 @@
 // https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
 
 import {
-  CHANNEL_NAMES,
-  ChannelFunctionTypeMap,
-  CHANNELS_old,
-  CHANNELS,
+  ChannelNames,
+  PythonChannels,
+  Channel,
+  ChannelFunction,
+  ElectronChannels,
 } from "./lib/models/channels";
 import { contextBridge, ipcRenderer, IpcRendererEvent } from "electron";
 
 // Expose protected methods that allow the renderer process to use
 // the ipcRenderer without exposing the entire object
+
+/**
+ * Invokes an IPC channel and returns the result.
+ *
+ * This function uses electron's ipcRenderer.invoke to send a message to the main process
+ * and returns a promised response. The function is type-safe, ensuring that the arguments and return type
+ * match the channel's expected types.
+ *
+ * @param channel - The IPC channel to invoke
+ * @param args - Arguments to pass along the channel
+ * @returns A promise that resolves with the result from the main process
+ */
+function invoke<C extends Channel>(
+  channel: C,
+  ...args: Parameters<ChannelFunction<C>>
+): ReturnType<ChannelFunction<C>> {
+  return ipcRenderer.invoke(channel, ...args) as ReturnType<ChannelFunction<C>>;
+}
+
+/**
+ * Sends a message from the renderer process to the main process via the specified IPC channel.
+ *
+ * This function does not expect a response from the main process.
+ *
+ * @param channel - The IPC channel to send the message through.
+ * @param args - The arguments to pass with the message, typed according to the channel.
+ * @returns void
+ */
+function send<C extends Channel>(
+  channel: C,
+  ...args: Parameters<ChannelFunction<C>>
+): void {
+  ipcRenderer.send(channel, ...args);
+}
 
 // What about there is no arg?
 function genericListener<T>(channel: string, callback: (arg: T) => void) {
@@ -24,146 +59,102 @@ function genericListener<T>(channel: string, callback: (arg: T) => void) {
 }
 
 export const exposeSettings = () => {
-  contextBridge.exposeInMainWorld(CHANNEL_NAMES.SETTINGS, {
-    getAll: async () => {
-      return ipcRenderer.invoke(CHANNELS_old.SETTINGS.GET);
-    },
-    disableShortcut: async (shortcut) => {
-      return ipcRenderer.send(CHANNELS_old.SETTINGS.DISABLE_SHORTCUT, shortcut);
-    },
-    setAudio(audioConfig) {
-      return ipcRenderer.send(CHANNELS_old.SETTINGS.SET_AUDIO, audioConfig);
-    },
-    setKeyboard(keyboardConfig) {
-      return ipcRenderer.send(
-        CHANNELS_old.SETTINGS.SET_KEYBOARD,
-        keyboardConfig,
-      );
-    },
-    setApplication(applicationConfig) {
-      return ipcRenderer.send(
-        CHANNELS_old.SETTINGS.SET_APPLICATION,
-        applicationConfig,
-      );
-    },
-    onSettingsChanged(callback) {
-      return genericListener(CHANNELS_old.SETTINGS.SETTINGS_CHANGED, callback);
-    },
-    setOutput(outputConfig) {
-      return ipcRenderer.send(CHANNELS_old.SETTINGS.SET_OUTPUT, outputConfig);
-    },
-    getLocale() {
-      return ipcRenderer.invoke(CHANNELS_old.SETTINGS.GET_LOCALE);
-    },
+  contextBridge.exposeInMainWorld(ChannelNames.SETTINGS, {
+    getAll: async () => invoke(ElectronChannels.getAllSettings),
+    disableShortcut: async (shortcut) =>
+      send(ElectronChannels.disableShortcut, shortcut),
+    setAudio: (audioConfig) => send(ElectronChannels.setAudio, audioConfig),
+    setKeyboard: (keyboardConfig) =>
+      send(ElectronChannels.setKeyboard, keyboardConfig),
+    setApplication: (applicationConfig) =>
+      send(ElectronChannels.setApplication, applicationConfig),
+    onSettingsChanged: (callback) =>
+      genericListener(ElectronChannels.onSettingsChanged, callback),
+    setOutput: (outputConfig) => send(ElectronChannels.setOutput, outputConfig),
+    getLocale: async () => invoke(ElectronChannels.getLocale),
   } satisfies Window["settings"]);
 };
 
 export const exposeUrl = () => {
-  contextBridge.exposeInMainWorld(CHANNEL_NAMES.URL, {
-    open: (url) => {
-      ipcRenderer.send(CHANNELS_old.URL.OPEN, url);
-    },
+  contextBridge.exposeInMainWorld(ChannelNames.URL, {
+    open: (url) => send(ElectronChannels.openURL, url),
   } satisfies Window["url"]);
 };
 
 export const exposeDevice = () => {
-  contextBridge.exposeInMainWorld(CHANNEL_NAMES.DEVICE, {
-    setDevice: (device) => invoke(CHANNELS.setDevice, device),
-    fetchAllDevices: () => invoke(CHANNELS.fetchAllDevices),
+  contextBridge.exposeInMainWorld(ChannelNames.DEVICE, {
+    setDevice: (device) => invoke(PythonChannels.setDevice, device),
+    fetchAllDevices: () => invoke(PythonChannels.fetchAllDevices),
   } satisfies Window["device"]);
 };
 
-function invoke<C extends keyof ChannelFunctionTypeMap>(
-  channel: C,
-  ...args: Parameters<ChannelFunctionTypeMap[C]>
-): ReturnType<ChannelFunctionTypeMap[C]> {
-  return ipcRenderer.invoke(channel, ...args) as ReturnType<
-    ChannelFunctionTypeMap[C]
-  >;
-}
-
 export const exposeDatabase = () => {
-  contextBridge.exposeInMainWorld(CHANNEL_NAMES.DATABASE, {
+  contextBridge.exposeInMainWorld(ChannelNames.DATABASE, {
     modes: {
-      fetchAllModes: () => invoke(CHANNELS.fetchAllModes),
-      createMode: (modeCreate) => invoke(CHANNELS.createMode, modeCreate),
-      updateMode: (mode) => invoke(CHANNELS.updateMode, mode),
-      deleteMode: (modeId) => invoke(CHANNELS.deleteMode, modeId),
-      activateMode: (modeId) => invoke(CHANNELS.activateMode, modeId),
+      fetchAllModes: () => invoke(PythonChannels.fetchAllModes),
+      createMode: (modeCreate) => invoke(PythonChannels.createMode, modeCreate),
+      updateMode: (mode) => invoke(PythonChannels.updateMode, mode),
+      deleteMode: (modeId) => invoke(PythonChannels.deleteMode, modeId),
+      activateMode: (modeId) => invoke(PythonChannels.activateMode, modeId),
     },
     textReplacements: {
-      fetchAllTextReplacements: () => invoke(CHANNELS.fetchAllTextReplacements),
+      fetchAllTextReplacements: () =>
+        invoke(PythonChannels.fetchAllTextReplacements),
       createTextReplacement: (textReplacement) =>
-        invoke(CHANNELS.createTextReplacement, textReplacement),
+        invoke(PythonChannels.createTextReplacement, textReplacement),
       deleteTextReplacement: (textReplacementId) =>
-        invoke(CHANNELS.deleteTextReplacement, textReplacementId),
+        invoke(PythonChannels.deleteTextReplacement, textReplacementId),
     },
     results: {
-      deleteResult: (resultId) => invoke(CHANNELS.deleteResult, resultId),
-      fetchAllResults: () => invoke(CHANNELS.fetchAllResults),
+      deleteResult: (resultId) => invoke(PythonChannels.deleteResult, resultId),
+      fetchAllResults: () => invoke(PythonChannels.fetchAllResults),
     },
     examples: {
-      addExample(promptId, example) {
-        return invoke(CHANNELS.addExample, promptId, example);
-      },
+      addExample: (promptId, example) =>
+        invoke(PythonChannels.addExample, promptId, example),
     },
     voiceModels: {
-      fetchAllVoiceModels: () => invoke(CHANNELS.fetchAllVoiceModels),
+      fetchAllVoiceModels: () => invoke(PythonChannels.fetchAllVoiceModels),
     },
     languageModels: {
-      fetchAllLanguageModels: () => invoke(CHANNELS.fetchAllLanguageModels),
+      fetchAllLanguageModels: () =>
+        invoke(PythonChannels.fetchAllLanguageModels),
     },
   } satisfies Window["database"]);
 };
 
 export const exposeMini = () => {
-  contextBridge.exposeInMainWorld(CHANNEL_NAMES.MINI, {
-    requestAudioLevel: async () => {
-      return ipcRenderer.send(CHANNELS_old.MINI.AUDIO_LEVEL_REQUEST);
-    },
+  contextBridge.exposeInMainWorld(ChannelNames.MINI, {
+    requestAudioLevel: async () => send(ElectronChannels.requestAudioLevel),
     onReceiveAudioLevel: (callback) =>
-      genericListener(CHANNELS_old.MINI.AUDIO_LEVEL_RESPONSE, callback),
+      genericListener(ElectronChannels.onReceiveAudioLevel, callback),
     onStatusUpdate: (callback) =>
-      genericListener(CHANNELS_old.MINI.STATUS_UPDATE, callback),
-    onResult: (callback) => genericListener(CHANNELS_old.MINI.RESULT, callback),
+      genericListener(ElectronChannels.onStatusUpdate, callback),
+    onResult: (callback) =>
+      genericListener(ElectronChannels.onResult, callback),
     onChangeModeShortcutPressed: (callback) =>
-      genericListener(CHANNELS_old.MINI.CHANGE_MODE_SHORTCUT_PRESSED, callback),
-    setMainContentHeight: (height: number) => {
-      ipcRenderer.send(CHANNELS_old.MINI.SET_MAIN_CONTENT_HEIGHT, height);
-    },
+      genericListener(ElectronChannels.onChangeModeShortcutPressed, callback),
+    setMainContentHeight: (height: number) =>
+      send(ElectronChannels.setMainContentHeight, height),
     onTranscription: (callback) =>
-      genericListener(CHANNELS_old.MINI.TRANSCRIPTION, callback),
+      genericListener(ElectronChannels.onTranscription, callback),
   } satisfies Window["mini"]);
 };
 
 export const exposeRecordingHistory = () => {
-  contextBridge.exposeInMainWorld(CHANNEL_NAMES.RECORDING_HISTORY, {
-    openWindow: () => {
-      ipcRenderer.send(CHANNELS_old.RECORDING_HISTORY.OPEN_WINDOW);
-    },
-    requestAll() {
-      return ipcRenderer.send(CHANNELS_old.RECORDING_HISTORY.RESULTS_REQUEST);
-    },
-    onReceiveResults: (callback) =>
-      genericListener(
-        CHANNELS_old.RECORDING_HISTORY.RESULTS_RESPONSE,
-        callback,
-      ),
-  } satisfies Window["recordingHistory"]);
+  contextBridge.exposeInMainWorld(ChannelNames.HISTORY_WINDOW, {
+    openWindow: () => send(ElectronChannels.openHistoryWindow),
+  } satisfies Window["historyWindow"]);
 };
 
 export const exposeClipboard = () => {
-  contextBridge.exposeInMainWorld(CHANNEL_NAMES.CLIPBOARD, {
-    copy: (text: string) => {
-      ipcRenderer.send(CHANNELS_old.CLIPBOARD.COPY, text);
-    },
+  contextBridge.exposeInMainWorld(ChannelNames.CLIPBOARD, {
+    copy: (text: string) => send(ElectronChannels.copy, text),
   } satisfies Window["clipboard"]);
 };
 
 export const exposeFile = () => {
-  contextBridge.exposeInMainWorld(CHANNEL_NAMES.FILE, {
-    open: (location) => {
-      ipcRenderer.send(CHANNELS_old.FILE.OPEN, location);
-    },
+  contextBridge.exposeInMainWorld(ChannelNames.FILE, {
+    open: (location) => send(ElectronChannels.openFile, location),
   } satisfies Window["file"]);
 };

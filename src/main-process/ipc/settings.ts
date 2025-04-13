@@ -6,39 +6,36 @@ import {
   KeyboardConfig,
   OutputConfig,
 } from "../../lib/models/settings";
-import { CHANNELS_old } from "../../lib/models/channels";
+import { ElectronChannels } from "../../lib/models/channels";
 
 export function registerSettingsHandlers(settingsService: SettingsService) {
-  ipcMain.handle(CHANNELS_old.SETTINGS.GET, () => {
+  ipcMain.handle(ElectronChannels.getAllSettings, () => {
     return settingsService.currentSettings;
   });
 
-  ipcMain.on(CHANNELS_old.SETTINGS.DISABLE_SHORTCUT, (_, shortcut: string) => {
+  ipcMain.on(ElectronChannels.disableShortcut, (_, shortcut: string) => {
     settingsService.disableShortcut(shortcut);
   });
 
-  ipcMain.on(CHANNELS_old.SETTINGS.SET_AUDIO, (_, audioConfig: AudioConfig) => {
+  ipcMain.on(ElectronChannels.setAudio, (_, audioConfig: AudioConfig) => {
     settingsService.updateAudioConfig(audioConfig);
   });
 
   ipcMain.on(
-    CHANNELS_old.SETTINGS.SET_KEYBOARD,
+    ElectronChannels.setKeyboard,
     (_, keyboardConfig: KeyboardConfig) => {
       settingsService.updateKeyboardConfig(keyboardConfig);
     },
   );
 
   ipcMain.on(
-    CHANNELS_old.SETTINGS.SET_APPLICATION,
+    ElectronChannels.setApplication,
     (_, applicationConfig: ApplicationConfig) => {
       settingsService.updateApplicationConfig(applicationConfig);
     },
   );
 
-  ipcMain.on(
-    CHANNELS_old.SETTINGS.SET_OUTPUT,
-    (_, outputConfig: OutputConfig) => {
-      settingsService.updateOutputConfig(outputConfig);
-    },
-  );
+  ipcMain.on(ElectronChannels.setOutput, (_, outputConfig: OutputConfig) => {
+    settingsService.updateOutputConfig(outputConfig);
+  });
 }

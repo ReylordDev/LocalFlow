@@ -1,7 +1,7 @@
 import { BrowserWindow, Menu, screen } from "electron";
 import { EventEmitter } from "events";
 import { AppConfig } from "../utils/config";
-import { CHANNELS_old } from "../../lib/models/channels";
+import { ElectronChannels } from "../../lib/models/channels";
 import { SettingsService } from "../services/settings-service";
 
 declare const MAIN_WINDOW_WEBPACK_ENTRY: string;
@@ -206,7 +206,7 @@ export class WindowManager extends EventEmitter {
   hideMiniWindow(): void {
     if (this.miniWindow && !this.miniWindow.isDestroyed()) {
       console.debug("Hiding mini window");
-      this.sendMiniWindowMessage(CHANNELS_old.MINI.STATUS_UPDATE, "idle");
+      this.sendMiniWindowMessage(ElectronChannels.onStatusUpdate, "idle");
       this.miniWindow.hide();
     } else {
       console.debug(

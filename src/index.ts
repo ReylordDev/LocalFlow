@@ -5,8 +5,8 @@ import { WindowManager } from "./main-process/windows/window-manager";
 import { TrayManager } from "./main-process/windows/tray-manager";
 import { registerIpcHandlers } from "./main-process/ipc";
 import { AppConfig } from "./main-process/utils/config";
-import { SETTINGS_SERVICE_EVENTS } from "./lib/models/settings";
-import { CHANNELS_old, PYTHON_SERVICE_EVENTS } from "./lib/models/channels";
+import { SETTINGS_SERVICE_EVENTS as SettingsEvents } from "./lib/models/settings";
+import { ElectronChannels, PythonEvents } from "./lib/models/channels";
 import { Action } from "./lib/models/commands";
 
 // Handle setup events
@@ -47,7 +47,7 @@ app.on("quit", () => {
 });
 
 function registerPythonEventHandlers() {
-  pythonService.onPythonEvent(PYTHON_SERVICE_EVENTS.MODELS_READY, () => {
+  pythonService.onPythonEvent(PythonEvents.MODELS_READY, () => {
     windowManager.hideStartupWindow();
     windowManager.createMainWindow();
     windowManager.createMiniWindow();
@@ -55,7 +55,7 @@ function registerPythonEventHandlers() {
     trayManager.initialize();
   });
 
-  pythonService.onPythonEvent(PYTHON_SERVICE_EVENTS.ERROR, (error) => {
+  pythonService.onPythonEvent(PythonEvents.ERROR, (error) => {
     console.error(error);
     new Notification({
       title: "Critical Error",
@@ -64,22 +64,22 @@ function registerPythonEventHandlers() {
     app.quit();
   });
 
-  pythonService.onPythonEvent(PYTHON_SERVICE_EVENTS.AUDIO_LEVEL, (level) => {
+  pythonService.onPythonEvent(PythonEvents.AUDIO_LEVEL, (level) => {
     windowManager.sendMiniWindowMessage(
-      CHANNELS_old.MINI.AUDIO_LEVEL_RESPONSE,
+      ElectronChannels.onReceiveAudioLevel,
       level,
     );
   });
 
-  pythonService.onPythonEvent(PYTHON_SERVICE_EVENTS.STATUS_UPDATE, (status) => {
+  pythonService.onPythonEvent(PythonEvents.STATUS_UPDATE, (status) => {
     windowManager.sendMiniWindowMessage(
-      CHANNELS_old.MINI.STATUS_UPDATE,
+      ElectronChannels.onStatusUpdate,
       status,
     );
   });
 
-  pythonService.onPythonEvent(PYTHON_SERVICE_EVENTS.RESULT, (result) => {
-    windowManager.sendMiniWindowMessage(CHANNELS_old.MINI.RESULT, result);
+  pythonService.onPythonEvent(PythonEvents.RESULT, (result) => {
+    windowManager.sendMiniWindowMessage(ElectronChannels.onResult, result);
     const text =
       result.mode.use_language_model && result.ai_result
         ? result.ai_result
@@ -96,54 +96,45 @@ function registerPythonEventHandlers() {
     }
   });
 
-  pythonService.onPythonEvent(PYTHON_SERVICE_EVENTS.MODES, (modes) => {
-    windowManager.sendMainWindowMessage(
-      CHANNELS_old.DATABASE.MODES.MODES_RESPONSE,
-      modes,
-    );
-    windowManager.sendMiniWindowMessage(
-      CHANNELS_old.DATABASE.MODES.MODES_RESPONSE,
-      modes,
-    );
+  pythonService.onPythonEvent(PythonEvents.MODES, (modes) => {
+    console.warn("I don't think this is supposed to exit anymore:", modes);
+    // TODO: how to send modes update to mini window?
   });
 }
 
 function registerSettingsEventHandlers() {
   settingsService.onSettingsEvent(
-    SETTINGS_SERVICE_EVENTS.SETTINGS_CHANGED,
+    SettingsEvents.SETTINGS_CHANGED,
     (settings) => {
       windowManager.sendMiniWindowMessage(
-        CHANNELS_old.SETTINGS.SETTINGS_CHANGED,
+        ElectronChannels.onSettingsChanged,
         settings,
       );
     },
   );
 
-  settingsService.onSettingsEvent(
-    SETTINGS_SERVICE_EVENTS.SHORTCUT_PRESSED,
-    (type) => {
-      if (type === "toggle") {
-        if (settingsService.currentSettings.application.enableRecordingWindow) {
-          windowManager.showMiniWindow();
-        }
-        pythonService.sendCommand({
-          action: Action.TOGGLE,
-          data: undefined,
-          kind: "command",
-        });
+  settingsService.onSettingsEvent(SettingsEvents.SHORTCUT_PRESSED, (type) => {
+    if (type === "toggle") {
+      if (settingsService.currentSettings.application.enableRecordingWindow) {
+        windowManager.showMiniWindow();
       }
-      if (type === "cancel") {
-        pythonService.sendCommand({
-          action: Action.CANCEL,
-          data: undefined,
-          kind: "command",
-        });
-      }
-      if (type === "change-mode") {
-        windowManager.sendMiniWindowMessage(
-          CHANNELS_old.MINI.CHANGE_MODE_SHORTCUT_PRESSED,
-        );
-      }
-    },
-  );
+      pythonService.sendCommand({
+        action: Action.TOGGLE,
+        data: undefined,
+        kind: "command",
+      });
+    }
+    if (type === "cancel") {
+      pythonService.sendCommand({
+        action: Action.CANCEL,
+        data: undefined,
+        kind: "command",
+      });
+    }
+    if (type === "change-mode") {
+      windowManager.sendMiniWindowMessage(
+        ElectronChannels.onChangeModeShortcutPressed,
+      );
+    }
+  });
 }

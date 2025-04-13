@@ -1,6 +1,6 @@
 // Command types for Electron to Python IPC
 import { UUID } from "crypto";
-import { ChannelFunctionType, ChannelType } from "./channels";
+import { PythonChannelFunction, PythonChannel } from "./channels";
 
 export enum Action {
   TOGGLE = "toggle",
@@ -9,16 +9,16 @@ export enum Action {
   SWITCH_MODE = "switch_mode",
 }
 
-export type BaseRequest<C extends ChannelType> = {
+export type BaseRequest<C extends PythonChannel> = {
   channel: C;
-  data?: Parameters<ChannelFunctionType<C>>;
+  data?: Parameters<PythonChannelFunction<C>>;
   id: string;
   kind: "request";
 };
 
 export type Request = {
-  [C in ChannelType]: BaseRequest<C>;
-}[ChannelType];
+  [C in PythonChannel]: BaseRequest<C>;
+}[PythonChannel];
 
 export type ActionDataMap = {
   [Action.TOGGLE]: undefined;

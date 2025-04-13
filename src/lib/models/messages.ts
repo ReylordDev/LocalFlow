@@ -1,5 +1,5 @@
 // Message types for Python to Electron IPC
-import { ChannelFunctionType, ChannelType } from "./channels";
+import { PythonChannelFunction, PythonChannel } from "./channels";
 import { ControllerStatusType, Result } from "./database";
 
 export interface ProgressMessage {
@@ -49,16 +49,16 @@ export type MessageType =
   | ResultMessage
   | TranscriptionMessage;
 
-interface BaseResponse<C extends ChannelType> {
-  data: Awaited<ReturnType<ChannelFunctionType<C>>>;
+interface BaseResponse<C extends PythonChannel> {
+  data: Awaited<ReturnType<PythonChannelFunction<C>>>;
   channel: C;
   id: string;
   kind: "response";
 }
 
 export type Response = {
-  [C in ChannelType]: BaseResponse<C>;
-}[ChannelType];
+  [C in PythonChannel]: BaseResponse<C>;
+}[PythonChannel];
 
 export type Update = MessageType & {
   kind: "update";

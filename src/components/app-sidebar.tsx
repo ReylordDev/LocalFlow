@@ -54,8 +54,7 @@ export function AppSidebar({
   const handleSidebarClick = (identifier: string, item: SidebarItem) => {
     if (item.external) {
       if (identifier === "Recording History") {
-        // TODO: Open the recording history
-        window.recordingHistory.openWindow();
+        window.historyWindow.openWindow();
       }
       setPage(identifier as Page);
     } else {

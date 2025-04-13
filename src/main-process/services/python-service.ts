@@ -9,19 +9,19 @@ import {
 } from "../../lib/models/commands";
 import path from "path";
 import {
-  ChannelFunctionTypeMap,
-  ChannelType,
-  PYTHON_SERVICE_EVENTS,
+  PythonChannel,
+  PythonEvents,
   PythonEventMap,
+  PythonChannelFunction,
 } from "../../lib/models/channels";
 import { ControllerStatusType } from "../../lib/models/database";
 
 // Define types for promise-based request handling
-interface PendingRequest<C extends ChannelType> {
+interface PendingRequest<C extends PythonChannel> {
   resolve: (
     value:
-      | Awaited<ReturnType<ChannelFunctionTypeMap[C]>>
-      | ReturnType<ChannelFunctionTypeMap[C]>,
+      | Awaited<ReturnType<PythonChannelFunction<C>>>
+      | ReturnType<PythonChannelFunction<C>>,
   ) => void;
   reject: (reason?: unknown) => void;
 }
@@ -36,7 +36,8 @@ interface PendingRequest<C extends ChannelType> {
  */
 export class PythonService extends EventEmitter {
   private shell!: PythonShell; // Using definite assignment assertion
-  private pendingRequests: Map<string, PendingRequest<ChannelType>> = new Map();
+  private pendingRequests: Map<string, PendingRequest<PythonChannel>> =
+    new Map();
   private requestId = 0;
 
   /**
@@ -113,14 +114,14 @@ export class PythonService extends EventEmitter {
     this.shell.on("message", this.handleMessage.bind(this));
   }
 
-  sendPythonRequest<C extends ChannelType>(request: BaseRequest<C>) {
-    const promise = new Promise<Awaited<ReturnType<ChannelFunctionTypeMap[C]>>>(
+  sendPythonRequest<C extends PythonChannel>(request: BaseRequest<C>) {
+    const promise = new Promise<Awaited<ReturnType<PythonChannelFunction<C>>>>(
       (resolve, reject) => {
         this.pendingRequests.set(request.id, {
           // TODO: maybe this is bad
           resolve: (value) => {
             console.debug(`Resolving request ${request.id} with value:`, value);
-            resolve(value as Awaited<ReturnType<ChannelFunctionTypeMap[C]>>);
+            resolve(value as Awaited<ReturnType<PythonChannelFunction<C>>>);
           },
           reject,
         });
@@ -190,28 +191,22 @@ export class PythonService extends EventEmitter {
           this.handleStatusUpdate(message.status);
           break;
         case "audio_level":
-          this.emitPythonEvent(
-            PYTHON_SERVICE_EVENTS.AUDIO_LEVEL,
-            message.audio_level,
-          );
+          this.emitPythonEvent(PythonEvents.AUDIO_LEVEL, message.audio_level);
           break;
         case "error":
           console.error("Error from Python backend:", message.error);
-          this.emitPythonEvent(
-            PYTHON_SERVICE_EVENTS.ERROR,
-            new Error(message.error),
-          );
+          this.emitPythonEvent(PythonEvents.ERROR, new Error(message.error));
           break;
         case "exception":
           console.error("Exception from Python backend:", message.exception);
           break;
         case "result":
           console.debug("Result from Python backend:", message.result);
-          this.emitPythonEvent(PYTHON_SERVICE_EVENTS.RESULT, message.result);
+          this.emitPythonEvent(PythonEvents.RESULT, message.result);
           break;
         case "transcription":
           this.emitPythonEvent(
-            PYTHON_SERVICE_EVENTS.TRANSCRIPTION,
+            PythonEvents.TRANSCRIPTION,
             message.transcription,
           );
           break;
@@ -231,7 +226,7 @@ export class PythonService extends EventEmitter {
   private handleProgressUpdate(progress: ProgressMessage) {
     if (progress.step === "init" && progress.status === "complete") {
       console.info("Models initialization complete");
-      this.emitPythonEvent(PYTHON_SERVICE_EVENTS.MODELS_READY, void 0);
+      this.emitPythonEvent(PythonEvents.MODELS_READY, void 0);
     }
   }
 
@@ -242,7 +237,7 @@ export class PythonService extends EventEmitter {
    */
   private handleStatusUpdate(status: ControllerStatusType) {
     console.debug("Status update from Python backend:", status);
-    this.emitPythonEvent(PYTHON_SERVICE_EVENTS.STATUS_UPDATE, status);
+    this.emitPythonEvent(PythonEvents.STATUS_UPDATE, status);
   }
 
   /**

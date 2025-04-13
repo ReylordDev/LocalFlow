@@ -22,247 +22,260 @@ import {
 } from "./settings";
 import { UUID } from "crypto";
 
-enum ModeChannels {
+/**
+ * Enum representing IPC channels for communication between the Electron Processes and the Python Backend
+ */
+export enum PythonChannels {
+  // Mode channels
   fetchAllModes = "database:modes:getAll",
   createMode = "database:modes:createMode",
   updateMode = "database:modes:updateMode",
   deleteMode = "database:modes:deleteMode",
   activateMode = "database:modes:activateMode",
-}
 
-enum ResultChannels {
+  // Result channels
   fetchAllResults = "database:results:getAll",
   deleteResult = "database:results:deleteResult",
-}
 
-enum ExampleChannels {
+  // Example channels
   addExample = "database:examples:addExample",
-}
 
-enum VoiceModelChannels {
+  // VoiceModel channels
   fetchAllVoiceModels = "database:voiceModels:getAll",
-}
 
-enum LanguageModelChannels {
+  // LanguageModel channels
   fetchAllLanguageModels = "database:languageModels:getAll",
-}
 
-enum TextReplacementChannels {
+  // TextReplacement channels
   fetchAllTextReplacements = "database:textReplacements:getAll",
   createTextReplacement = "database:textReplacements:create",
   deleteTextReplacement = "database:textReplacements:delete",
-}
 
-enum DeviceChannels {
+  // Device channels
   fetchAllDevices = "device:getAll",
   setDevice = "device:set",
 }
 
-export enum CHANNELS {
-  fetchAllModes = ModeChannels.fetchAllModes,
-  createMode = ModeChannels.createMode,
-  updateMode = ModeChannels.updateMode,
-  deleteMode = ModeChannels.deleteMode,
-  activateMode = ModeChannels.activateMode,
-  deleteResult = ResultChannels.deleteResult,
-  addExample = ExampleChannels.addExample,
-  fetchAllResults = ResultChannels.fetchAllResults,
-  fetchAllVoiceModels = VoiceModelChannels.fetchAllVoiceModels,
-  fetchAllLanguageModels = LanguageModelChannels.fetchAllLanguageModels,
-  fetchAllTextReplacements = TextReplacementChannels.fetchAllTextReplacements,
-  createTextReplacement = TextReplacementChannels.createTextReplacement,
-  deleteTextReplacement = TextReplacementChannels.deleteTextReplacement,
-  fetchAllDevices = DeviceChannels.fetchAllDevices,
-  setDevice = DeviceChannels.setDevice,
-}
+type PythonChannelMap = {
+  // Mode channels
+  [PythonChannels.fetchAllModes]: () => Promise<Mode[]>;
+  [PythonChannels.createMode]: (mode: ModeCreate) => Promise<Mode[]>;
+  [PythonChannels.updateMode]: (mode: ModeUpdate) => Promise<Mode[]>;
+  [PythonChannels.deleteMode]: (modeId: UUID) => Promise<Mode[]>;
+  [PythonChannels.activateMode]: (modeId: UUID) => Promise<Mode[]>;
 
-export type ChannelFunctionTypeMap = {
-  [CHANNELS.fetchAllModes]: () => Promise<Mode[]>;
-  [CHANNELS.createMode]: (mode: ModeCreate) => Promise<Mode[]>;
-  [CHANNELS.updateMode]: (mode: ModeUpdate) => Promise<Mode[]>;
-  [CHANNELS.deleteMode]: (modeId: UUID) => Promise<Mode[]>;
-  [CHANNELS.activateMode]: (modeId: UUID) => Promise<Mode[]>;
-  [CHANNELS.deleteResult]: (resultId: UUID) => Promise<Result[]>;
-  [CHANNELS.addExample]: (promptId: UUID, example: ExampleBase) => void;
-  [CHANNELS.fetchAllResults]: () => Promise<Result[]>;
-  [CHANNELS.fetchAllVoiceModels]: () => Promise<VoiceModel[]>;
-  [CHANNELS.fetchAllLanguageModels]: () => Promise<LanguageModel[]>;
-  [CHANNELS.fetchAllTextReplacements]: () => Promise<TextReplacement[]>;
-  [CHANNELS.createTextReplacement]: (
+  // Result channels
+  [PythonChannels.deleteResult]: (resultId: UUID) => Promise<Result[]>;
+  [PythonChannels.fetchAllResults]: () => Promise<Result[]>;
+
+  // Example channels
+  [PythonChannels.addExample]: (promptId: UUID, example: ExampleBase) => void;
+
+  // VoiceModel channels
+  [PythonChannels.fetchAllVoiceModels]: () => Promise<VoiceModel[]>;
+
+  // LanguageModel channels
+  [PythonChannels.fetchAllLanguageModels]: () => Promise<LanguageModel[]>;
+
+  // TextReplacement channels
+  [PythonChannels.fetchAllTextReplacements]: () => Promise<TextReplacement[]>;
+  [PythonChannels.createTextReplacement]: (
     textReplacement: TextReplacementBase,
   ) => void;
-  [CHANNELS.deleteTextReplacement]: (textReplacementId: UUID) => void;
-  [CHANNELS.fetchAllDevices]: () => Promise<Device[]>;
-  [CHANNELS.setDevice]: (device: Device) => void;
+  [PythonChannels.deleteTextReplacement]: (textReplacementId: UUID) => void;
+
+  // Device channels
+  [PythonChannels.fetchAllDevices]: () => Promise<Device[]>;
+  [PythonChannels.setDevice]: (device: Device) => void;
 };
 
-export type ChannelType = keyof ChannelFunctionTypeMap;
-export type ChannelFunctionType<C extends ChannelType> =
-  ChannelFunctionTypeMap[C];
+export type PythonChannel = keyof PythonChannelMap;
+export type PythonChannelFunction<C extends PythonChannel> =
+  PythonChannelMap[C];
+
+/**
+ * Enum representing IPC channels for intra-Electron communication between the main and renderer processes.
+ */
+export enum ElectronChannels {
+  // Settings channels
+  getAllSettings = "settings:get-all",
+  disableShortcut = "settings:disable-shortcut",
+  setAudio = "settings:set-audio",
+  setKeyboard = "settings:set-keyboard",
+  setApplication = "settings:set-application",
+  setOutput = "settings:set-output",
+  onSettingsChanged = "settings:changed",
+  getLocale = "settings:get-locale",
+
+  // Controller channels
+  toggleRecording = "controller:toggle-recording",
+
+  // URL channels
+  openURL = "url:open",
+
+  // Mini channels
+  requestAudioLevel = "mini:requestAudioLevel",
+  onReceiveAudioLevel = "mini:receiveAudioLevel",
+  onStatusUpdate = "mini:status-update",
+  onResult = "mini:result",
+  onTranscription = "mini:transcription",
+  onChangeModeShortcutPressed = "mini:change-mode-shortcut-pressed",
+  setMainContentHeight = "mini:setMainContentHeight",
+
+  // Recording History channels
+  openHistoryWindow = "recordingHistory:openWindow",
+
+  // Clipboard channels
+  copy = "clipboard:copy",
+
+  // File channels
+  openFile = "file:open",
+}
+
+type ElectronChannelMap = {
+  // Settings channels
+  [ElectronChannels.getAllSettings]: () => Promise<AppSettings>;
+  [ElectronChannels.disableShortcut]: (shortcut: string) => void;
+  [ElectronChannels.setAudio]: (audioConfig: AudioConfig) => void;
+  [ElectronChannels.setKeyboard]: (keyboardConfig: KeyboardConfig) => void;
+  [ElectronChannels.setApplication]: (
+    applicationConfig: ApplicationConfig,
+  ) => void;
+  [ElectronChannels.setOutput]: (outputConfig: OutputConfig) => void;
+  [ElectronChannels.onSettingsChanged]: (
+    callback: (settings: AppSettings) => void,
+  ) => () => void;
+  [ElectronChannels.getLocale]: () => Promise<string>;
+
+  // Controller channels
+  [ElectronChannels.toggleRecording]: () => void;
+
+  // URL channels
+  [ElectronChannels.openURL]: (url: string) => void;
+
+  // Mini channels
+  [ElectronChannels.requestAudioLevel]: () => void;
+  [ElectronChannels.onReceiveAudioLevel]: (
+    callback: (audioLevel: number) => void,
+  ) => () => void;
+  [ElectronChannels.onStatusUpdate]: (
+    callback: (status: ControllerStatusType) => void,
+  ) => () => void;
+  [ElectronChannels.onResult]: (
+    callback: (result: Result) => void,
+  ) => () => void;
+  [ElectronChannels.onTranscription]: (
+    callback: (transcription: string) => void,
+  ) => () => void;
+  [ElectronChannels.onChangeModeShortcutPressed]: (
+    callback: (shortcut: string) => void,
+  ) => () => void;
+  [ElectronChannels.setMainContentHeight]: (height: number) => void;
+
+  // Recording History channels
+  [ElectronChannels.openHistoryWindow]: () => void;
+
+  // Clipboard channels
+  [ElectronChannels.copy]: (text: string) => void;
+
+  // File channels
+  [ElectronChannels.openFile]: (path: string) => void;
+};
+
+export type ElectronChannel = keyof ElectronChannelMap;
+export type ElectronChannelFunction<C extends ElectronChannel> =
+  ElectronChannelMap[C];
+
+export type Channel = PythonChannel | ElectronChannel;
+export type ChannelFunction<C extends Channel> = C extends PythonChannel
+  ? PythonChannelFunction<C>
+  : C extends ElectronChannel
+    ? ElectronChannelFunction<C>
+    : never;
 
 declare global {
   interface Window {
     controller: {
-      toggleRecording: () => void;
+      toggleRecording: ElectronChannelMap[ElectronChannels.toggleRecording];
     };
     settings: {
-      getAll: () => Promise<AppSettings>;
-      disableShortcut: (shortcut: string) => void;
-      setAudio: (audioConfig: AudioConfig) => void;
-      setKeyboard: (keyboardConfig: KeyboardConfig) => void;
-      setApplication: (applicationConfig: ApplicationConfig) => void;
-      setOutput: (outputConfig: OutputConfig) => void;
-      onSettingsChanged: (
-        callback: (settings: AppSettings) => void,
-      ) => () => void;
-      getLocale: () => Promise<string>;
+      getAll: ElectronChannelMap[ElectronChannels.getAllSettings];
+      disableShortcut: ElectronChannelMap[ElectronChannels.disableShortcut];
+      setAudio: ElectronChannelMap[ElectronChannels.setAudio];
+      setKeyboard: ElectronChannelMap[ElectronChannels.setKeyboard];
+      setApplication: ElectronChannelMap[ElectronChannels.setApplication];
+      setOutput: ElectronChannelMap[ElectronChannels.setOutput];
+      onSettingsChanged: ElectronChannelMap[ElectronChannels.onSettingsChanged];
+      getLocale: ElectronChannelMap[ElectronChannels.getLocale];
     };
     url: {
-      open: (url: string) => void;
+      open: ElectronChannelMap[ElectronChannels.openURL];
     };
     mini: {
-      requestAudioLevel: () => void;
-      onReceiveAudioLevel: (
-        callback: (audioLevel: number) => void,
-      ) => () => void;
-      onStatusUpdate: (
-        callback: (status: ControllerStatusType) => void,
-      ) => () => void;
-      onResult: (callback: (result: Result) => void) => () => void;
-      onTranscription(callback: (transcription: string) => void): () => void;
-      onChangeModeShortcutPressed: (callback: () => void) => () => void;
-      setMainContentHeight: (height: number) => void;
+      requestAudioLevel: ElectronChannelMap[ElectronChannels.requestAudioLevel];
+      onReceiveAudioLevel: ElectronChannelMap[ElectronChannels.onReceiveAudioLevel];
+      onStatusUpdate: ElectronChannelMap[ElectronChannels.onStatusUpdate];
+      onResult: ElectronChannelMap[ElectronChannels.onResult];
+      onTranscription: ElectronChannelMap[ElectronChannels.onTranscription];
+      onChangeModeShortcutPressed: ElectronChannelMap[ElectronChannels.onChangeModeShortcutPressed];
+      setMainContentHeight: ElectronChannelMap[ElectronChannels.setMainContentHeight];
     };
     device: {
-      setDevice: ChannelFunctionTypeMap[CHANNELS.setDevice];
-      fetchAllDevices: ChannelFunctionTypeMap[CHANNELS.fetchAllDevices];
+      setDevice: PythonChannelMap[PythonChannels.setDevice];
+      fetchAllDevices: PythonChannelMap[PythonChannels.fetchAllDevices];
     };
     database: {
       modes: {
-        fetchAllModes: ChannelFunctionTypeMap[CHANNELS.fetchAllModes];
-        createMode: ChannelFunctionTypeMap[CHANNELS.createMode];
-        updateMode: ChannelFunctionTypeMap[CHANNELS.updateMode];
-        deleteMode: ChannelFunctionTypeMap[CHANNELS.deleteMode];
-        activateMode: ChannelFunctionTypeMap[CHANNELS.activateMode];
+        fetchAllModes: PythonChannelMap[PythonChannels.fetchAllModes];
+        createMode: PythonChannelMap[PythonChannels.createMode];
+        updateMode: PythonChannelMap[PythonChannels.updateMode];
+        deleteMode: PythonChannelMap[PythonChannels.deleteMode];
+        activateMode: PythonChannelMap[PythonChannels.activateMode];
       };
       results: {
-        fetchAllResults: ChannelFunctionTypeMap[CHANNELS.fetchAllResults];
-        deleteResult: ChannelFunctionTypeMap[CHANNELS.deleteResult];
+        fetchAllResults: PythonChannelMap[PythonChannels.fetchAllResults];
+        deleteResult: PythonChannelMap[PythonChannels.deleteResult];
       };
       examples: {
-        addExample: ChannelFunctionTypeMap[CHANNELS.addExample];
+        addExample: PythonChannelMap[PythonChannels.addExample];
       };
       textReplacements: {
-        fetchAllTextReplacements: ChannelFunctionTypeMap[CHANNELS.fetchAllTextReplacements];
-        createTextReplacement: ChannelFunctionTypeMap[CHANNELS.createTextReplacement];
-        deleteTextReplacement: ChannelFunctionTypeMap[CHANNELS.deleteTextReplacement];
+        fetchAllTextReplacements: PythonChannelMap[PythonChannels.fetchAllTextReplacements];
+        createTextReplacement: PythonChannelMap[PythonChannels.createTextReplacement];
+        deleteTextReplacement: PythonChannelMap[PythonChannels.deleteTextReplacement];
       };
       voiceModels: {
-        fetchAllVoiceModels: ChannelFunctionTypeMap[CHANNELS.fetchAllVoiceModels];
+        fetchAllVoiceModels: PythonChannelMap[PythonChannels.fetchAllVoiceModels];
       };
       languageModels: {
-        fetchAllLanguageModels: ChannelFunctionTypeMap[CHANNELS.fetchAllLanguageModels];
+        fetchAllLanguageModels: PythonChannelMap[PythonChannels.fetchAllLanguageModels];
       };
     };
-    recordingHistory: {
-      openWindow: () => void;
-      requestAll: () => void;
-      onReceiveResults: (callback: (results: Result[]) => void) => () => void;
+    historyWindow: {
+      openWindow: ElectronChannelMap[ElectronChannels.openHistoryWindow];
     };
     clipboard: {
-      copy: (text: string) => void;
+      copy: ElectronChannelMap[ElectronChannels.copy];
     };
     file: {
-      open: (path: string) => void;
+      open: ElectronChannelMap[ElectronChannels.openFile];
     };
   }
 }
 
-export const CHANNEL_NAMES = {
+export const ChannelNames = {
   SETTINGS: "settings",
   URL: "url",
   MINI: "mini",
   DEVICE: "device",
   DATABASE: "database",
-  RECORDING_HISTORY: "recordingHistory",
+  HISTORY_WINDOW: "historyWindow",
   CLIPBOARD: "clipboard",
   FILE: "file",
 };
 
-export const CHANNELS_old = {
-  SETTINGS: {
-    GET: "settings:get-all",
-    DISABLE_SHORTCUT: "settings:disable-shortcut",
-    SET_AUDIO: "settings:set-audio",
-    SET_KEYBOARD: "settings:set-keyboard",
-    SET_APPLICATION: "settings:set-application",
-    SET_OUTPUT: "settings:set-output",
-    SETTINGS_CHANGED: "settings:changed",
-    GET_LOCALE: "settings:get-locale",
-  },
-  URL: {
-    OPEN: "url:open",
-  },
-  CLIPBOARD: {
-    COPY: "clipboard:copy",
-  },
-  FILE: {
-    OPEN: "file:open",
-  },
-  MINI: {
-    AUDIO_LEVEL_REQUEST: "mini:requestAudioLevel",
-    AUDIO_LEVEL_RESPONSE: "mini:audio-level",
-    STATUS_UPDATE: "mini:status-update",
-    RESULT: "mini:result",
-    TRANSCRIPTION: "mini:transcription",
-    CHANGE_MODE_SHORTCUT_PRESSED: "mini:change-mode-shortcut-pressed",
-    SET_MAIN_CONTENT_HEIGHT: "mini:setMainContentHeight",
-  },
-  DEVICE: {
-    DEVICES_REQUEST: "device:requestAll",
-    DEVICES_RESPONSE: "device:receiveDevices",
-    SET: "device:set",
-  },
-  DATABASE: {
-    MODES: {
-      MODES_REQUEST: "database:modes:getAll",
-      MODES_RESPONSE: "database:modes:receiveModes",
-      CREATE_MODE: "database:modes:createMode",
-      UPDATE_MODE: "database:modes:updateMode",
-      DELETE_MODE: "database:modes:deleteMode",
-      ACTIVATE_MODE: "database:modes:activateMode",
-    },
-    RESULTS: {
-      DELETE_RESULT: "database:results:deleteResult",
-    },
-    EXAMPLES: {
-      ADD_EXAMPLE: "database:examples:addExample",
-    },
-    TEXT_REPLACEMENTS: {
-      TEXT_REPLACEMENTS_REQUEST: "database:textReplacements:getAll",
-      TEXT_REPLACEMENTS_RESPONSE:
-        "database:textReplacements:receiveTextReplacements",
-      CREATE_TEXT_REPLACEMENT: "database:textReplacements:create",
-      DELETE_TEXT_REPLACEMENT: "database:textReplacements:delete",
-    },
-    VOICE_MODELS: {
-      VOICE_MODELS_REQUEST: "database:voiceModels:getAll",
-      VOICE_MODELS_RESPONSE: "database:voiceModels:receiveVoiceModels",
-    },
-    LANGUAGE_MODELS: {
-      LANGUAGE_MODELS_REQUEST: "database:languageModels:getAll",
-      LANGUAGE_MODELS_RESPONSE: "database:languageModels:receiveLanguageModels",
-    },
-  },
-  RECORDING_HISTORY: {
-    OPEN_WINDOW: "recordingHistory:open-window",
-    RESULTS_REQUEST: "recordingHistory:requestAll",
-    RESULTS_RESPONSE: "recordingHistory:receiveResults",
-  },
-};
-
 // Python service events for IPC communication
-export enum PYTHON_SERVICE_EVENTS {
+export enum PythonEvents {
   MODELS_READY = "models-ready",
   ERROR = "error",
   AUDIO_LEVEL = "audio-level",
@@ -274,11 +287,11 @@ export enum PYTHON_SERVICE_EVENTS {
 
 // Define the mapping between event names and their payload types
 export type PythonEventMap = {
-  [PYTHON_SERVICE_EVENTS.MODELS_READY]: void;
-  [PYTHON_SERVICE_EVENTS.ERROR]: Error;
-  [PYTHON_SERVICE_EVENTS.AUDIO_LEVEL]: number;
-  [PYTHON_SERVICE_EVENTS.STATUS_UPDATE]: ControllerStatusType;
-  [PYTHON_SERVICE_EVENTS.MODES]: Mode[];
-  [PYTHON_SERVICE_EVENTS.RESULT]: Result;
-  [PYTHON_SERVICE_EVENTS.TRANSCRIPTION]: string;
+  [PythonEvents.MODELS_READY]: void;
+  [PythonEvents.ERROR]: Error;
+  [PythonEvents.AUDIO_LEVEL]: number;
+  [PythonEvents.STATUS_UPDATE]: ControllerStatusType;
+  [PythonEvents.MODES]: Mode[];
+  [PythonEvents.RESULT]: Result;
+  [PythonEvents.TRANSCRIPTION]: string;
 };

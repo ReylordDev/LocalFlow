@@ -5,10 +5,10 @@ import { WindowManager } from "../windows/window-manager";
 import { registerURLHandlers } from "./url";
 import { registerSettingsHandlers } from "./settings";
 import {
-  ChannelFunctionTypeMap,
-  CHANNELS_old,
-  CHANNELS,
-  ChannelType,
+  PythonChannels,
+  PythonChannel,
+  PythonChannelFunction,
+  ElectronChannels,
 } from "../../lib/models/channels";
 import { tryCatch } from "../../lib/utils";
 import { Action } from "../../lib/models/commands";
@@ -18,10 +18,10 @@ export function registerIpcHandlers(
   pythonService: PythonService,
   windowManager: WindowManager,
 ) {
-  function handlePythonIPC<C extends ChannelType>(channel: C) {
+  function handlePythonIPC<C extends PythonChannel>(channel: C) {
     ipcMain.handle(
       channel,
-      async (_, ...args: Parameters<ChannelFunctionTypeMap[C]>) => {
+      async (_, ...args: Parameters<PythonChannelFunction<C>>) => {
         console.log(`Received event: ${channel}`, args);
         const { data, error } = await tryCatch(
           pythonService.sendPythonRequest({
@@ -42,7 +42,7 @@ export function registerIpcHandlers(
   registerSettingsHandlers(settingsService);
   registerURLHandlers();
 
-  ipcMain.on(CHANNELS_old.MINI.AUDIO_LEVEL_REQUEST, () => {
+  ipcMain.on(ElectronChannels.requestAudioLevel, () => {
     console.log("Remove this Audio Level request maybe");
     pythonService.sendCommand({
       action: Action.AUDIO_LEVEL,
@@ -51,29 +51,29 @@ export function registerIpcHandlers(
     });
   });
 
-  Object.values(CHANNELS).forEach((channel) => {
-    handlePythonIPC(channel as CHANNELS);
+  Object.values(PythonChannels).forEach((channel) => {
+    handlePythonIPC(channel);
   });
 
-  ipcMain.on(CHANNELS_old.RECORDING_HISTORY.OPEN_WINDOW, () => {
+  ipcMain.on(ElectronChannels.openHistoryWindow, () => {
     windowManager.createRecordingHistoryWindow();
   });
 
-  ipcMain.on(CHANNELS_old.CLIPBOARD.COPY, (_, text: string) => {
+  ipcMain.on(ElectronChannels.copy, (_, text: string) => {
     console.log("Copying to clipboard:", text);
     clipboard.writeText(text);
   });
 
-  ipcMain.on(CHANNELS_old.FILE.OPEN, (_, location: string) => {
+  ipcMain.on(ElectronChannels.openFile, (_, location: string) => {
     console.log("Opening file:", location);
     shell.openPath(location);
   });
 
-  ipcMain.handle(CHANNELS_old.SETTINGS.GET_LOCALE, () => {
+  ipcMain.handle(ElectronChannels.getLocale, () => {
     return app.getSystemLocale();
   });
 
-  ipcMain.on(CHANNELS_old.MINI.SET_MAIN_CONTENT_HEIGHT, (_, height: number) => {
+  ipcMain.on(ElectronChannels.setMainContentHeight, (_, height: number) => {
     windowManager.setMiniWindowMainContentHeight(height);
   });
 }
