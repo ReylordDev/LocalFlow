@@ -56,6 +56,10 @@ export enum PythonChannels {
   setDevice = "device:set",
 }
 
+/**
+ * Map the Python IPC channels to their respective function type.
+ * This is used to define the functions that will be called when a channel is invoked.
+ */
 type PythonChannelMap = {
   // Mode channels
   [PythonChannels.fetchAllModes]: () => Promise<Mode[]>;
@@ -107,9 +111,6 @@ export enum ElectronChannels {
   onSettingsChanged = "settings:changed",
   getLocale = "settings:get-locale",
 
-  // Controller channels
-  toggleRecording = "controller:toggle-recording",
-
   // URL channels
   openURL = "url:open",
 
@@ -132,6 +133,10 @@ export enum ElectronChannels {
   openFile = "file:open",
 }
 
+/**
+ * Map the Electron IPC channels to their respective function type.
+ * This is used to define the functions that will be called when a channel is invoked.
+ */
 type ElectronChannelMap = {
   // Settings channels
   [ElectronChannels.getAllSettings]: () => Promise<AppSettings>;
@@ -146,9 +151,6 @@ type ElectronChannelMap = {
     callback: (settings: AppSettings) => void,
   ) => () => void;
   [ElectronChannels.getLocale]: () => Promise<string>;
-
-  // Controller channels
-  [ElectronChannels.toggleRecording]: () => void;
 
   // URL channels
   [ElectronChannels.openURL]: (url: string) => void;
@@ -195,70 +197,67 @@ export type ChannelFunction<C extends Channel> = C extends PythonChannel
 
 declare global {
   interface Window {
-    controller: {
-      toggleRecording: ElectronChannelMap[ElectronChannels.toggleRecording];
-    };
     settings: {
-      getAll: ElectronChannelMap[ElectronChannels.getAllSettings];
-      disableShortcut: ElectronChannelMap[ElectronChannels.disableShortcut];
-      setAudio: ElectronChannelMap[ElectronChannels.setAudio];
-      setKeyboard: ElectronChannelMap[ElectronChannels.setKeyboard];
-      setApplication: ElectronChannelMap[ElectronChannels.setApplication];
-      setOutput: ElectronChannelMap[ElectronChannels.setOutput];
-      onSettingsChanged: ElectronChannelMap[ElectronChannels.onSettingsChanged];
-      getLocale: ElectronChannelMap[ElectronChannels.getLocale];
+      getAll: ChannelFunction<ElectronChannels.getAllSettings>;
+      disableShortcut: ChannelFunction<ElectronChannels.disableShortcut>;
+      setAudio: ChannelFunction<ElectronChannels.setAudio>;
+      setKeyboard: ChannelFunction<ElectronChannels.setKeyboard>;
+      setApplication: ChannelFunction<ElectronChannels.setApplication>;
+      setOutput: ChannelFunction<ElectronChannels.setOutput>;
+      onSettingsChanged: ChannelFunction<ElectronChannels.onSettingsChanged>;
+      getLocale: ChannelFunction<ElectronChannels.getLocale>;
     };
     url: {
-      open: ElectronChannelMap[ElectronChannels.openURL];
+      open: ChannelFunction<ElectronChannels.openURL>;
     };
     mini: {
-      requestAudioLevel: ElectronChannelMap[ElectronChannels.requestAudioLevel];
-      onReceiveAudioLevel: ElectronChannelMap[ElectronChannels.onReceiveAudioLevel];
-      onStatusUpdate: ElectronChannelMap[ElectronChannels.onStatusUpdate];
-      onResult: ElectronChannelMap[ElectronChannels.onResult];
-      onTranscription: ElectronChannelMap[ElectronChannels.onTranscription];
-      onChangeModeShortcutPressed: ElectronChannelMap[ElectronChannels.onChangeModeShortcutPressed];
-      setMainContentHeight: ElectronChannelMap[ElectronChannels.setMainContentHeight];
+      requestAudioLevel: ChannelFunction<ElectronChannels.requestAudioLevel>;
+      onReceiveAudioLevel: ChannelFunction<ElectronChannels.onReceiveAudioLevel>;
+      onStatusUpdate: ChannelFunction<ElectronChannels.onStatusUpdate>;
+      onResult: ChannelFunction<ElectronChannels.onResult>;
+      onTranscription: ChannelFunction<ElectronChannels.onTranscription>;
+      onChangeModeShortcutPressed: ChannelFunction<ElectronChannels.onChangeModeShortcutPressed>;
+      setMainContentHeight: ChannelFunction<ElectronChannels.setMainContentHeight>;
     };
     device: {
-      setDevice: PythonChannelMap[PythonChannels.setDevice];
-      fetchAllDevices: PythonChannelMap[PythonChannels.fetchAllDevices];
+      setDevice: ChannelFunction<PythonChannels.setDevice>;
+      fetchAllDevices: ChannelFunction<PythonChannels.fetchAllDevices>;
     };
     database: {
       modes: {
-        fetchAllModes: PythonChannelMap[PythonChannels.fetchAllModes];
-        createMode: PythonChannelMap[PythonChannels.createMode];
-        updateMode: PythonChannelMap[PythonChannels.updateMode];
-        deleteMode: PythonChannelMap[PythonChannels.deleteMode];
-        activateMode: PythonChannelMap[PythonChannels.activateMode];
+        fetchAllModes: ChannelFunction<PythonChannels.fetchAllModes>;
+        createMode: ChannelFunction<PythonChannels.createMode>;
+        updateMode: ChannelFunction<PythonChannels.updateMode>;
+        deleteMode: ChannelFunction<PythonChannels.deleteMode>;
+        activateMode: ChannelFunction<PythonChannels.activateMode>;
       };
       results: {
-        fetchAllResults: PythonChannelMap[PythonChannels.fetchAllResults];
-        deleteResult: PythonChannelMap[PythonChannels.deleteResult];
+        fetchAllResults: ChannelFunction<PythonChannels.fetchAllResults>;
+        deleteResult: ChannelFunction<PythonChannels.deleteResult>;
       };
       examples: {
-        addExample: PythonChannelMap[PythonChannels.addExample];
+        addExample: ChannelFunction<PythonChannels.addExample>;
       };
       textReplacements: {
-        fetchAllTextReplacements: PythonChannelMap[PythonChannels.fetchAllTextReplacements];
-        createTextReplacement: PythonChannelMap[PythonChannels.createTextReplacement];
-        deleteTextReplacement: PythonChannelMap[PythonChannels.deleteTextReplacement];
+        fetchAllTextReplacements: ChannelFunction<PythonChannels.fetchAllTextReplacements>;
+        createTextReplacement: ChannelFunction<PythonChannels.createTextReplacement>;
+        deleteTextReplacement: ChannelFunction<PythonChannels.deleteTextReplacement>;
       };
       voiceModels: {
-        fetchAllVoiceModels: PythonChannelMap[PythonChannels.fetchAllVoiceModels];
+        fetchAllVoiceModels: ChannelFunction<PythonChannels.fetchAllVoiceModels>;
       };
       languageModels: {
-        fetchAllLanguageModels: PythonChannelMap[PythonChannels.fetchAllLanguageModels];
+        fetchAllLanguageModels: ChannelFunction<PythonChannels.fetchAllLanguageModels>;
       };
     };
     historyWindow: {
-      openWindow: ElectronChannelMap[ElectronChannels.openHistoryWindow];
+      openWindow: ChannelFunction<ElectronChannels.openHistoryWindow>;
     };
     clipboard: {
-      copy: ElectronChannelMap[ElectronChannels.copy];
+      copy: ChannelFunction<ElectronChannels.copy>;
     };
     file: {
-      open: ElectronChannelMap[ElectronChannels.openFile];
+      open: ChannelFunction<ElectronChannels.openFile>;
     };
   }
 }
