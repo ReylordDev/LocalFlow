@@ -2,12 +2,7 @@ from loguru import logger
 
 from api.ipc import print_message, print_nested_model, print_progress
 from utils.serialization import dump_instance
-from models.commands import (
-    CHANNELS,
-    Command,
-    Request,
-    ResponselessCommand,
-)
+from models.commands import CHANNELS, Command, Action, Request, ResponselessCommand
 from models.db import (
     Mode,
 )
@@ -19,7 +14,6 @@ from models.messages import (
     ModesResponse,
     ResultsResponse,
     StatusUpdate,
-    ExceptionUpdate,
     TextReplacementsResponse,
     VoiceModelsResponse,
 )
@@ -133,14 +127,14 @@ class Controller:
         dumped_response["data"] = [dump_instance(m.create_instance()) for m in modes]
         print_nested_model(dumped_response)
 
-    def handle_request(self, command: Request):
-        logger.info(f"Received request: {command}")
+    def handle_request(self, request: Request):
+        logger.info(f"Received request: {request}")
 
-        if command.channel == CHANNELS.FETCH_ALL_MODES:
+        if request.channel == CHANNELS.FETCH_ALL_MODES:
             modes = list(self.database_manager.get_all_modes())
             response = ModesResponse(
                 data=modes,
-                id=command.id,
+                id=request.id,
             )
             dumped_response = response.model_dump()
             dumped_response["data"] = [
@@ -150,27 +144,27 @@ class Controller:
 
         # TODO: what about select mode?
 
-        elif command.channel == CHANNELS.FETCH_ALL_DEVICES:
+        elif request.channel == CHANNELS.FETCH_ALL_DEVICES:
             devices = self.recorder.get_devices()
-            print_message(DevicesResponse(data=devices, id=command.id))
+            print_message(DevicesResponse(data=devices, id=request.id))
 
-        elif command.channel == CHANNELS.CREATE_MODE:
-            self.database_manager.create_mode(command.data)
-            self.print_refreshed_modes(request_id=command.id)
+        elif request.channel == CHANNELS.CREATE_MODE:
+            self.database_manager.create_mode(request.data)
+            self.print_refreshed_modes(request_id=request.id)
 
-        elif command.channel == CHANNELS.UPDATE_MODE:
-            self.database_manager.update_mode(command.data)
-            self.print_refreshed_modes(request_id=command.id)
+        elif request.channel == CHANNELS.UPDATE_MODE:
+            self.database_manager.update_mode(request.data)
+            self.print_refreshed_modes(request_id=request.id)
 
-        elif command.channel == CHANNELS.DELETE_MODE:
-            self.database_manager.delete_mode(command.data)
-            self.print_refreshed_modes(request_id=command.id)
+        elif request.channel == CHANNELS.DELETE_MODE:
+            self.database_manager.delete_mode(request.data)
+            self.print_refreshed_modes(request_id=request.id)
 
-        elif command.channel == CHANNELS.FETCH_ALL_RESULTS:
+        elif request.channel == CHANNELS.FETCH_ALL_RESULTS:
             results = list(self.database_manager.get_all_results())
             response = ResultsResponse(
                 data=results,
-                id=command.id,
+                id=request.id,
             )
             dumped_response = response.model_dump()
             dumped_response["data"] = [
@@ -178,12 +172,12 @@ class Controller:
             ]
             print_nested_model(dumped_response)
 
-        elif command.channel == CHANNELS.DELETE_RESULT:
-            self.database_manager.delete_result(command.data)
+        elif request.channel == CHANNELS.DELETE_RESULT:
+            self.database_manager.delete_result(request.data)
             results = list(self.database_manager.get_all_results())
             response = ResultsResponse(
                 data=results,
-                id=command.id,
+                id=request.id,
             )
             dumped_response = response.model_dump()
             dumped_response["data"] = [
@@ -191,82 +185,82 @@ class Controller:
             ]
             print_nested_model(dumped_response)
 
-        elif command.channel == CHANNELS.ADD_EXAMPLE:
-            payload = command.data
+        elif request.channel == CHANNELS.ADD_EXAMPLE:
+            payload = request.data
             self.database_manager.add_example(payload.prompt_id, payload.example)
             # maybe print the refreshed models here.
 
-        elif command.channel == CHANNELS.FETCH_ALL_VOICE_MODELS:
+        elif request.channel == CHANNELS.FETCH_ALL_VOICE_MODELS:
             voice_models = list(self.database_manager.get_voice_models())
             print_message(
                 VoiceModelsResponse(
                     data=voice_models,
-                    id=command.id,
+                    id=request.id,
                 )
             )
 
-        elif command.channel == CHANNELS.FETCH_ALL_LANGUAGE_MODELS:
+        elif request.channel == CHANNELS.FETCH_ALL_LANGUAGE_MODELS:
             language_models = list(self.database_manager.get_language_models())
             print_message(
                 LanguageModelsResponse(
                     data=language_models,
-                    id=command.id,
+                    id=request.id,
                 )
             )
 
-        elif command.channel == CHANNELS.FETCH_ALL_TEXT_REPLACEMENTS:
+        elif request.channel == CHANNELS.FETCH_ALL_TEXT_REPLACEMENTS:
             text_replacements = list(self.database_manager.get_all_text_replacements())
             response = TextReplacementsResponse(
                 data=text_replacements,
-                id=command.id,
+                id=request.id,
             )
             dumped_response = response.model_dump()
             dumped_response["data"] = [tr.model_dump() for tr in text_replacements]
             print_message(response)
 
-        elif command.channel == CHANNELS.CREATE_TEXT_REPLACEMENT:
-            _ = self.database_manager.create_global_text_replacement(command.data)
+        elif request.channel == CHANNELS.CREATE_TEXT_REPLACEMENT:
+            _ = self.database_manager.create_global_text_replacement(request.data)
             text_replacements = list(self.database_manager.get_all_text_replacements())
             response = TextReplacementsResponse(
                 data=text_replacements,
-                id=command.id,
+                id=request.id,
             )
             dumped_response = response.model_dump()
             dumped_response["data"] = [tr.model_dump() for tr in text_replacements]
             print_message(response)
 
-        elif command.channel == CHANNELS.DELETE_TEXT_REPLACEMENT:
-            self.database_manager.delete_text_replacement(command.data)
+        elif request.channel == CHANNELS.DELETE_TEXT_REPLACEMENT:
+            self.database_manager.delete_text_replacement(request.data)
             text_replacements = list(self.database_manager.get_all_text_replacements())
             response = TextReplacementsResponse(
                 data=text_replacements,
-                id=command.id,
+                id=request.id,
             )
             dumped_response = response.model_dump()
             dumped_response["data"] = [tr.model_dump() for tr in text_replacements]
             print_message(response)
 
-        elif command.channel == CHANNELS.ACTIVATE_MODE:
-            self.database_manager.switch_mode(command.data)
-            self.print_refreshed_modes(command.id)
+        elif request.channel == CHANNELS.ACTIVATE_MODE:
+            self.database_manager.switch_mode(request.data)
+            self.print_refreshed_modes(request.id)
 
         # TODO: This doesn't belong here
-        elif command.channel == CHANNELS.SET_DEVICE:
-            self.recorder.set_device(command.data.index)
+        elif request.channel == CHANNELS.SET_DEVICE:
+            self.recorder.set_device(request.data.index)
 
     def handle_responseless_command(self, command: ResponselessCommand):
         logger.info(f"Received responseless command: {command}")
 
-        if command.action == "toggle":
+        if command.action == Action.TOGGLE:
             self.handle_toggle()
-        elif command.action == "cancel":
+        elif command.action == Action.CANCEL:
             self.handle_cancel()
-        elif command.action == "audio_level":
+        elif command.action == Action.AUDIO_LEVEL:
             print_message(
                 AudioLevelUpdate(audio_level=self.recorder.get_audio_level()),
             )
-        elif command.action == "exception":
-            print_message(ExceptionUpdate(exception=command.data))
+        elif command.action == Action.SWITCH_MODE:
+            self.database_manager.switch_mode(command.data)
 
     def handle_command(self, x: Command):
         logger.info(f"Received command: {x.command}")

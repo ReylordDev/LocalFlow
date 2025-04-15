@@ -266,3 +266,10 @@ class ActiveWindowContext(BaseModel):
     process: str
     platform: Literal["windows", "darwin", "linux"]
     app_name: str
+
+
+class Device(BaseModel):
+    name: str
+    index: int
+    default_samplerate: float
+    is_default: bool = False

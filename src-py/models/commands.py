@@ -1,73 +1,17 @@
-from typing import Literal, Optional, Union, Annotated
+from enum import Enum
+from typing import Literal, Union, Annotated
 from uuid import UUID
 from pydantic import BaseModel, Field
-from enum import Enum
 from models.db import (
     ExampleBase,
-    LanguageModel,
-    Mode,
     ModeCreate,
     ModeUpdate,
-    Result,
-    TextReplacement,
     TextReplacementBase,
-    VoiceModel,
+    Device,
 )
+from models.channels import CHANNELS
 
-
-# maybe move somewhere else
-class Device(BaseModel):
-    name: str
-    index: int
-    default_samplerate: float
-    is_default: bool = False
-
-
-# Update Action Literal to match TypeScript enum
-Action = Literal[
-    "toggle",
-    "cancel",
-    "audio_level",
-    "switch_mode",
-]
-
-
-# ChannelType Literal to match TypeScript enum
-class CHANNELS(str, Enum):
-    FETCH_ALL_MODES = "database:modes:getAll"
-    CREATE_MODE = "database:modes:createMode"
-    UPDATE_MODE = "database:modes:updateMode"
-    DELETE_MODE = "database:modes:deleteMode"
-    ACTIVATE_MODE = "database:modes:activateMode"
-    DELETE_RESULT = "database:results:deleteResult"
-    ADD_EXAMPLE = "database:examples:addExample"
-    FETCH_ALL_RESULTS = "database:results:getAll"
-    FETCH_ALL_VOICE_MODELS = "database:voiceModels:getAll"
-    FETCH_ALL_LANGUAGE_MODELS = "database:languageModels:getAll"
-    FETCH_ALL_TEXT_REPLACEMENTS = "database:textReplacements:getAll"
-    CREATE_TEXT_REPLACEMENT = "database:textReplacements:create"
-    DELETE_TEXT_REPLACEMENT = "database:textReplacements:delete"
-    FETCH_ALL_DEVICES = "device:getAll"
-    SET_DEVICE = "device:set"
-
-
-ChannelResponseType = {
-    CHANNELS.FETCH_ALL_MODES: list[Mode],
-    CHANNELS.CREATE_MODE: list[Mode],
-    CHANNELS.UPDATE_MODE: list[Mode],
-    CHANNELS.DELETE_MODE: list[Mode],
-    CHANNELS.ACTIVATE_MODE: list[Mode],
-    CHANNELS.DELETE_RESULT: list[Result],
-    CHANNELS.ADD_EXAMPLE: None,
-    CHANNELS.FETCH_ALL_RESULTS: list[Result],
-    CHANNELS.FETCH_ALL_VOICE_MODELS: list[VoiceModel],
-    CHANNELS.FETCH_ALL_LANGUAGE_MODELS: list[LanguageModel],
-    CHANNELS.FETCH_ALL_TEXT_REPLACEMENTS: list[TextReplacement],
-    CHANNELS.CREATE_TEXT_REPLACEMENT: list[TextReplacement],
-    CHANNELS.DELETE_TEXT_REPLACEMENT: list[TextReplacement],
-    CHANNELS.FETCH_ALL_DEVICES: list[Device],
-    CHANNELS.SET_DEVICE: Device,
-}
+# ---------- Requests ----------
 
 
 class AddExampleData(BaseModel):
@@ -75,90 +19,98 @@ class AddExampleData(BaseModel):
     example: ExampleBase
 
 
-# Base Request Models
 class BaseRequest(BaseModel):
     channel: CHANNELS
+    # data depends on the channel, refer to parameters of PythonChannelMap in channels.ts
     id: str
     kind: Literal["request"] = "request"
 
 
 # Channel-specific request models with discriminator
 class FetchAllModesRequest(BaseRequest):
-    channel: Literal["database:modes:getAll"]
+    channel: Literal[CHANNELS.FETCH_ALL_MODES] = CHANNELS.FETCH_ALL_MODES
     data: None = None
 
 
 class CreateModeRequest(BaseRequest):
-    channel: Literal["database:modes:createMode"]
+    channel: Literal[CHANNELS.CREATE_MODE] = CHANNELS.CREATE_MODE
     data: ModeCreate
 
 
 class UpdateModeRequest(BaseRequest):
-    channel: Literal["database:modes:updateMode"]
+    channel: Literal[CHANNELS.UPDATE_MODE] = CHANNELS.UPDATE_MODE
     data: ModeUpdate
 
 
 class DeleteModeRequest(BaseRequest):
-    channel: Literal["database:modes:deleteMode"]
+    channel: Literal[CHANNELS.DELETE_MODE] = CHANNELS.DELETE_MODE
     data: UUID
 
 
 class ActivateModeRequest(BaseRequest):
-    channel: Literal["database:modes:activateMode"]
+    channel: Literal[CHANNELS.ACTIVATE_MODE] = CHANNELS.ACTIVATE_MODE
     data: UUID
 
 
 class DeleteResultRequest(BaseRequest):
-    channel: Literal["database:results:deleteResult"]
+    channel: Literal[CHANNELS.DELETE_RESULT] = CHANNELS.DELETE_RESULT
     data: UUID
 
 
 class AddExampleRequest(BaseRequest):
-    channel: Literal["database:examples:addExample"]
+    channel: Literal[CHANNELS.ADD_EXAMPLE] = CHANNELS.ADD_EXAMPLE
     data: AddExampleData
 
 
 class FetchAllResultsRequest(BaseRequest):
-    channel: Literal["database:results:getAll"]
+    channel: Literal[CHANNELS.FETCH_ALL_RESULTS] = CHANNELS.FETCH_ALL_RESULTS
     data: None = None
 
 
 class FetchAllVoiceModelsRequest(BaseRequest):
-    channel: Literal["database:voiceModels:getAll"]
+    channel: Literal[CHANNELS.FETCH_ALL_VOICE_MODELS] = CHANNELS.FETCH_ALL_VOICE_MODELS
     data: None = None
 
 
 class FetchAllLanguageModelsRequest(BaseRequest):
-    channel: Literal["database:languageModels:getAll"]
+    channel: Literal[CHANNELS.FETCH_ALL_LANGUAGE_MODELS] = (
+        CHANNELS.FETCH_ALL_LANGUAGE_MODELS
+    )
     data: None = None
 
 
 class FetchAllTextReplacementsRequest(BaseRequest):
-    channel: Literal["database:textReplacements:getAll"]
+    channel: Literal[CHANNELS.FETCH_ALL_TEXT_REPLACEMENTS] = (
+        CHANNELS.FETCH_ALL_TEXT_REPLACEMENTS
+    )
     data: None = None
 
 
 class CreateTextReplacementRequest(BaseRequest):
-    channel: Literal["database:textReplacements:create"]
+    channel: Literal[CHANNELS.CREATE_TEXT_REPLACEMENT] = (
+        CHANNELS.CREATE_TEXT_REPLACEMENT
+    )
     data: TextReplacementBase
 
 
 class DeleteTextReplacementRequest(BaseRequest):
-    channel: Literal["database:textReplacements:delete"]
+    channel: Literal[CHANNELS.DELETE_TEXT_REPLACEMENT] = (
+        CHANNELS.DELETE_TEXT_REPLACEMENT
+    )
     data: UUID
 
 
 class FetchAllDevicesRequest(BaseRequest):
-    channel: Literal["device:getAll"]
+    channel: Literal[CHANNELS.FETCH_ALL_DEVICES] = CHANNELS.FETCH_ALL_DEVICES
     data: None = None
 
 
 class SetDeviceRequest(BaseRequest):
-    channel: Literal["device:set"]
+    channel: Literal[CHANNELS.SET_DEVICE] = CHANNELS.SET_DEVICE
     data: Device
 
 
-# Create discriminated union for Request
+# A request from the Electron process that expects a response
 Request = Annotated[
     Union[
         FetchAllModesRequest,
@@ -181,56 +133,52 @@ Request = Annotated[
 ]
 
 
-class SelectDeviceCommand(BaseModel):
-    index: int
+# ---------- Responseless Commands  ----------
 
 
-class AddExampleCommand(BaseModel):
-    prompt_id: UUID
-    example: ExampleBase
+# Update Action Literal to match TypeScript enum
+class Action(str, Enum):
+    TOGGLE = "toggle"
+    CANCEL = "cancel"
+    AUDIO_LEVEL = "audio_level"
+    SWITCH_MODE = "switch_mode"
 
 
-class CreateTextReplacementCommand(BaseModel):
-    text_replacement: TextReplacementBase
-
-
-# Update CommandDataType to include only what's in ActionDataMap from TypeScript
-CommandDataType = Union[
-    UUID,  # For switch_mode
-    None,  # For toggle, cancel, audio_level
-]
+# TODO: Maybe there is a way to do an actual type mapping
+ActionDataMap = {
+    Action.TOGGLE: None,
+    Action.CANCEL: None,
+    Action.AUDIO_LEVEL: None,
+    Action.SWITCH_MODE: UUID,
+}
 
 
 class BaseResponselessCommand(BaseModel):
+    action: Action
     kind: Literal["command"] = "command"
 
 
-# ResponselessCommand models with discriminator
 class ToggleCommand(BaseResponselessCommand):
-    action: Literal["toggle"]
-    data: None = None
-    request_id: Optional[str] = None
+    action: Literal[Action.TOGGLE] = Action.TOGGLE
+    data: None = ActionDataMap[Action.TOGGLE]
 
 
 class CancelCommand(BaseResponselessCommand):
-    action: Literal["cancel"]
-    data: None = None
-    request_id: Optional[str] = None
+    action: Literal[Action.CANCEL] = Action.CANCEL
+    data: None = ActionDataMap[Action.CANCEL]
 
 
 class AudioLevelCommand(BaseResponselessCommand):
-    action: Literal["audio_level"]
-    data: None = None
-    request_id: Optional[str] = None
+    action: Literal[Action.AUDIO_LEVEL] = Action.AUDIO_LEVEL
+    data: None = ActionDataMap[Action.AUDIO_LEVEL]
 
 
 class SwitchModeCommand(BaseResponselessCommand):
-    action: Literal["switch_mode"]
-    data: UUID
-    request_id: Optional[str] = None
+    action: Literal[Action.SWITCH_MODE] = Action.SWITCH_MODE
+    data: UUID = ActionDataMap[Action.SWITCH_MODE]
 
 
-# Create discriminated union for ResponselessCommand
+# A command from the electron process that doesn't expect a response
 ResponselessCommand = Annotated[
     Union[
         ToggleCommand,
@@ -249,4 +197,8 @@ CommandType = Annotated[
 
 
 class Command(BaseModel):
+    """
+    Parent type for any message sent from the Electron process.
+    """
+
     command: CommandType

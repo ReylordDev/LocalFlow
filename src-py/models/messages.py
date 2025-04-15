@@ -7,7 +7,8 @@ from typing import (
     Union,
 )
 from pydantic import BaseModel, Field
-from models.commands import Action, ChannelResponseType, CHANNELS
+from models.commands import Action
+from models.channels import CHANNELS
 from models.db import (
     LanguageModel,
     Mode,

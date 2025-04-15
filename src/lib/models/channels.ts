@@ -69,8 +69,8 @@ type PythonChannelMap = {
   [PythonChannels.activateMode]: (modeId: UUID) => Promise<Mode[]>;
 
   // Result channels
-  [PythonChannels.deleteResult]: (resultId: UUID) => Promise<Result[]>;
   [PythonChannels.fetchAllResults]: () => Promise<Result[]>;
+  [PythonChannels.deleteResult]: (resultId: UUID) => Promise<Result[]>;
 
   // Example channels
   [PythonChannels.addExample]: (promptId: UUID, example: ExampleBase) => void;
