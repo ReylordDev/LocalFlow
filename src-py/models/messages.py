@@ -2,7 +2,6 @@ import time
 from typing import (
     Any,
     Annotated,
-    List,
     Literal,
     Union,
 )
@@ -10,12 +9,15 @@ from pydantic import BaseModel, Field
 from models.commands import Action
 from models.channels import CHANNELS
 from models.db import (
+    Device,
     LanguageModel,
     Mode,
     Result,
     TextReplacement,
     VoiceModel,
 )
+
+# ---------- Update Message ----------
 
 # Utility types
 StatusType = Literal["start", "complete", "error"]
@@ -25,25 +27,24 @@ StepType = Union[
 ]
 
 
-class ProgressMessage(BaseModel):
+class BaseUpdateMessage(BaseModel):
+    kind: Literal["update"] = "update"
+
+
+class ProgressMessage(BaseUpdateMessage):
     step: StepType
     status: StatusType
     timestamp: float = Field(default_factory=time.time)
     updateKind: Literal["progress"] = "progress"
 
 
-class ExceptionMessage(BaseModel):
+class ExceptionMessage(BaseUpdateMessage):
     exception: str
     timestamp: float = Field(default_factory=time.time)
     updateKind: Literal["exception"] = "exception"
 
 
-class TranscriptionMessage(BaseModel):
-    transcription: str
-    updateKind: Literal["transcription"] = "transcription"
-
-
-class AudioLevelMessage(BaseModel):
+class AudioLevelMessage(BaseUpdateMessage):
     audio_level: float
     updateKind: Literal["audio_level"] = "audio_level"
 
@@ -51,30 +52,6 @@ class AudioLevelMessage(BaseModel):
 class ErrorMessage(BaseModel):
     error: str
     updateKind: Literal["error"] = "error"
-
-
-class Device(BaseModel):
-    hostapi: int
-    index: int
-    max_input_channels: int
-    max_output_channels: int
-    name: str
-    default_low_input_latency: float
-    default_low_output_latency: float
-    default_high_input_latency: float
-    default_high_output_latency: float
-    default_samplerate: float
-    is_default: bool = False
-
-
-class DevicesMessage(BaseModel):
-    devices: List[Device]
-    updateKind: Literal["devices"] = "devices"
-
-
-class ModesMessage(BaseModel):
-    modes: List[Mode]
-    updateKind: Literal["modes"] = "modes"
 
 
 ControllerStatusType = Literal[
@@ -87,42 +64,26 @@ ControllerStatusType = Literal[
     "generating_ai_result",
     "saving",
     "result",
-    "error",
 ]
 
 
-class StatusMessage(BaseModel):
+class StatusMessage(BaseUpdateMessage):
     status: ControllerStatusType
     updateKind: Literal["status"] = "status"
 
 
-class ResultMessage(BaseModel):
+class ResultMessage(BaseUpdateMessage):
     result: Result
     updateKind: Literal["result"] = "result"
 
 
-class ResultsMessage(BaseModel):
-    results: list[Result]
-    updateKind: Literal["results"] = "results"
+class TranscriptionMessage(BaseUpdateMessage):
+    transcription: str
+    updateKind: Literal["transcription"] = "transcription"
 
 
-class VoiceModelsMessage(BaseModel):
-    voice_models: list[VoiceModel]
-    updateKind: Literal["voice_models"] = "voice_models"
-
-
-class LanguageModelsMessage(BaseModel):
-    language_models: list[LanguageModel]
-    updateKind: Literal["language_models"] = "language_models"
-
-
-class TextReplacementsMessage(BaseModel):
-    text_replacements: List[TextReplacement]
-    updateKind: Literal["text_replacements"] = "text_replacements"
-
-
-# Create discriminated union for MessageType
-MessageType = Annotated[
+# A message from the Python process to the Electron process that was not explicitly requested.
+Update = Annotated[
     Union[
         ProgressMessage,
         ExceptionMessage,
@@ -131,20 +92,20 @@ MessageType = Annotated[
         StatusMessage,
         ResultMessage,
         TranscriptionMessage,
-        DevicesMessage,
-        ModesMessage,
-        ResultsMessage,
-        VoiceModelsMessage,
-        LanguageModelsMessage,
-        TextReplacementsMessage,
     ],
     Field(discriminator="updateKind"),
 ]
 
 
-# For response types related to specific channels
+# ---------- Response Message ----------
+
+
 class BaseResponse(BaseModel):
-    data: Any
+    """
+    Base class for a response from the Python process to the Electron process that was explicitly requested.
+    """
+
+    data: Any  # data type depends on the channel, refer to awaited return types of PythonChannelMap in channels.ts. Subtypes implement tighter types.
     channel: CHANNELS
     id: str
     kind: Literal["response"] = "response"
@@ -184,53 +145,10 @@ class LanguageModelsResponse(BaseResponse):
     )
 
 
-# To match TypeScript Update = MessageType & { kind: "update" }
-# We need to use composition rather than having MessageType in a data property
-class ProgressUpdate(ProgressMessage):
-    kind: Literal["update"] = "update"
+# ------- Message -------
 
-
-class ExceptionUpdate(ExceptionMessage):
-    kind: Literal["update"] = "update"
-
-
-class AudioLevelUpdate(AudioLevelMessage):
-    kind: Literal["update"] = "update"
-
-
-class ErrorUpdate(ErrorMessage):
-    kind: Literal["update"] = "update"
-
-
-class StatusUpdate(StatusMessage):
-    kind: Literal["update"] = "update"
-
-
-class ResultUpdate(ResultMessage):
-    kind: Literal["update"] = "update"
-
-
-class TranscriptionUpdate(TranscriptionMessage):
-    kind: Literal["update"] = "update"
-
-
-# Create discriminated union for Update type
-UpdateMessage = Annotated[
-    Union[
-        ProgressUpdate,
-        ExceptionUpdate,
-        AudioLevelUpdate,
-        ErrorUpdate,
-        StatusUpdate,
-        ResultUpdate,
-        TranscriptionUpdate,
-    ],
-    Field(discriminator="updateKind"),
-]
-
-
-# Final Message Union type
+# A message from the Python process to the Electron process.
 Message = Annotated[
-    Union[BaseResponse, UpdateMessage],
+    Union[BaseResponse, Update],
     Field(discriminator="kind"),
 ]

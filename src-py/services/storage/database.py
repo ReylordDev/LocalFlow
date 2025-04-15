@@ -11,7 +11,6 @@ from models.db import (
     ModeCreate,
     ModeUpdate,
     Prompt,
-    PromptUpdate,
     Result,
     TextReplacement,
     TextReplacementBase,

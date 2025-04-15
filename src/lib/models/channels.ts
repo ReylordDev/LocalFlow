@@ -1,7 +1,7 @@
 // IPC channel constants for communication between renderer and main processes
 
+import { ControllerStatusType } from "./messages";
 import {
-  ControllerStatusType,
   Device,
   ModeCreate,
   ModeUpdate,

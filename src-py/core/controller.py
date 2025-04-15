@@ -7,13 +7,13 @@ from models.db import (
     Mode,
 )
 from models.messages import (
+    AudioLevelMessage,
     ControllerStatusType,
-    AudioLevelUpdate,
     DevicesResponse,
     LanguageModelsResponse,
     ModesResponse,
     ResultsResponse,
-    StatusUpdate,
+    StatusMessage,
     TextReplacementsResponse,
     VoiceModelsResponse,
 )
@@ -42,7 +42,7 @@ class Controller:
 
     def update_status(self, status: ControllerStatusType):
         self.status = status
-        print_message(StatusUpdate(status=status))
+        print_message(StatusMessage(status=status))
 
     def stop_recording(self):
         if self.recorder.recording:
@@ -106,10 +106,10 @@ class Controller:
         if self.status == "recording":
             self.recorder.interrupt_recording()
             self.recorder = AudioRecorder()
-            print_message(AudioLevelUpdate(audio_level=0))
+            print_message(AudioLevelMessage(audio_level=0))
             self.update_status("idle")
         elif self.status == "result":
-            print_message(AudioLevelUpdate(audio_level=0))
+            print_message(AudioLevelMessage(audio_level=0))
             self.update_status("idle")
         # TODO: implement other states if needed (would need everything to be in a separate thread)
         else:
@@ -257,7 +257,7 @@ class Controller:
             self.handle_cancel()
         elif command.action == Action.AUDIO_LEVEL:
             print_message(
-                AudioLevelUpdate(audio_level=self.recorder.get_audio_level()),
+                AudioLevelMessage(audio_level=self.recorder.get_audio_level()),
             )
         elif command.action == Action.SWITCH_MODE:
             self.database_manager.switch_mode(command.data)

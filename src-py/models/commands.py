@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Literal, Union, Annotated
+from typing import Any, Literal, Union, Annotated
 from uuid import UUID
 from pydantic import BaseModel, Field
 from models.db import (
@@ -14,16 +14,16 @@ from models.channels import CHANNELS
 # ---------- Requests ----------
 
 
-class AddExampleData(BaseModel):
-    prompt_id: UUID
-    example: ExampleBase
-
-
 class BaseRequest(BaseModel):
     channel: CHANNELS
-    # data depends on the channel, refer to parameters of PythonChannelMap in channels.ts
+    data: Any  # data type depends on the channel, refer to parameters of PythonChannelMap in channels.ts. Subtypes implement tighter types.
     id: str
     kind: Literal["request"] = "request"
+
+
+class AddExampleParameter(BaseModel):
+    prompt_id: UUID
+    example: ExampleBase
 
 
 # Channel-specific request models with discriminator
@@ -59,7 +59,7 @@ class DeleteResultRequest(BaseRequest):
 
 class AddExampleRequest(BaseRequest):
     channel: Literal[CHANNELS.ADD_EXAMPLE] = CHANNELS.ADD_EXAMPLE
-    data: AddExampleData
+    data: AddExampleParameter
 
 
 class FetchAllResultsRequest(BaseRequest):

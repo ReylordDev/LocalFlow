@@ -2,16 +2,6 @@
 import { UUID } from "crypto";
 
 // This is also technically not in the database
-export type ControllerStatusType =
-  | "idle"
-  | "recording"
-  | "compressing"
-  | "loading_voice_model"
-  | "transcribing"
-  | "loading_language_model"
-  | "generating_ai_result"
-  | "saving"
-  | "result";
 
 export type LanguageType =
   | "auto"
