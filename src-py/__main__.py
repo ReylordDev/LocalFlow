@@ -2,7 +2,7 @@ import sys
 from pydantic import ValidationError
 from loguru import logger
 from core.controller import Controller
-from models.commands import Command
+from models.commands import ElectronCommand
 from api.ipc import print_message
 from models.messages import ErrorUpdate
 from utils.logging import initialize_logger
@@ -15,7 +15,7 @@ def main():
     while True:
         message = sys.stdin.readline()
         try:
-            data = Command.model_validate_json(message)
+            data = ElectronCommand.model_validate_json(message)
             controller.handle_command(data)
         except ValidationError as e:
             logger.error(f"Invalid data: {e}")

@@ -1,7 +1,11 @@
 import { PythonShell } from "python-shell";
 import { EventEmitter } from "events";
 import { AppConfig } from "../utils/config";
-import { Message, ProgressMessage } from "../../lib/models/messages";
+import {
+  Message,
+  ProgressMessage,
+  ControllerStatusType,
+} from "../../lib/models/messages";
 import {
   BaseRequest,
   Request,
@@ -14,7 +18,6 @@ import {
   PythonEventMap,
   PythonChannelFunction,
 } from "../../lib/models/channels";
-import { ControllerStatusType } from "../../lib/models/database";
 
 // Define types for promise-based request handling
 interface PendingRequest<C extends PythonChannel> {

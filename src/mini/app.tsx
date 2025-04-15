@@ -2,12 +2,13 @@ import { createRoot } from "react-dom/client";
 import SpeechVocalization from "../components/SpeechVocalization";
 import { useEffect, useState } from "react";
 import { AudioWaveform, Loader2 } from "lucide-react";
-import { ControllerStatusType, Mode } from "../lib/models/database";
+import { ControllerStatusType } from "../lib/models/messages";
 import { Separator } from "../components/ui/separator";
 import { useSettings } from "../hooks/use-settings";
 import { ShortcutDisplay } from "../components/shortcut";
 import { cn, formatTimer, tryCatch } from "../lib/utils";
 import { RadioGroup, RadioGroupItem } from "../components/ui/radio-group";
+import { Mode } from "../lib/models/database";
 
 /**
  * Mini window application component

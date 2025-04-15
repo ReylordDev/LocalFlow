@@ -160,22 +160,22 @@ class BaseResponselessCommand(BaseModel):
 
 class ToggleCommand(BaseResponselessCommand):
     action: Literal[Action.TOGGLE] = Action.TOGGLE
-    data: None = ActionDataMap[Action.TOGGLE]
+    data: None = None
 
 
 class CancelCommand(BaseResponselessCommand):
     action: Literal[Action.CANCEL] = Action.CANCEL
-    data: None = ActionDataMap[Action.CANCEL]
+    data: None = None
 
 
 class AudioLevelCommand(BaseResponselessCommand):
     action: Literal[Action.AUDIO_LEVEL] = Action.AUDIO_LEVEL
-    data: None = ActionDataMap[Action.AUDIO_LEVEL]
+    data: None = None
 
 
 class SwitchModeCommand(BaseResponselessCommand):
     action: Literal[Action.SWITCH_MODE] = Action.SWITCH_MODE
-    data: UUID = ActionDataMap[Action.SWITCH_MODE]
+    data: UUID
 
 
 # A command from the electron process that doesn't expect a response
@@ -196,7 +196,7 @@ CommandType = Annotated[
 ]
 
 
-class Command(BaseModel):
+class ElectronCommand(BaseModel):
     """
     Parent type for any message sent from the Electron process.
     """

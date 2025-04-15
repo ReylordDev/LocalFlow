@@ -8,7 +8,7 @@ from utils.logging import initialize_logger
 initialize_logger()
 
 # Import components
-from models.commands import Command  # noqa: E402
+from models.commands import ElectronCommand
 from core.controller import Controller  # noqa: E402
 
 
@@ -25,7 +25,7 @@ def main():
             try:
                 # Parse the command from stdin
                 logger.debug(f"Received line: {line.strip()}")
-                command = Command.model_validate_json(line.strip())
+                command = ElectronCommand.model_validate_json(line.strip())
 
                 # Process the command
                 controller.handle_command(command)

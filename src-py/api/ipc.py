@@ -1,11 +1,10 @@
 from time import time
-from typing import Optional
 from pydantic_core import to_json
 
 from loguru import logger
 from models.messages import (
     Message,
-    ProgressUpdate,
+    ProgressMessage,
     StatusType,
     StepType,
 )
@@ -22,7 +21,7 @@ def print_progress(
         timestamp: Optional timestamp for the progress message
         request_id: Optional request ID for the progress message
     """
-    progress_message = ProgressUpdate(step=step, status=status, timestamp=timestamp)
+    progress_message = ProgressMessage(step=step, status=status, timestamp=timestamp)
     print_message(
         message_data=progress_message,
     )

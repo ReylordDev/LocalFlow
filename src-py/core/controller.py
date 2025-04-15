@@ -2,7 +2,13 @@ from loguru import logger
 
 from api.ipc import print_message, print_nested_model, print_progress
 from utils.serialization import dump_instance
-from models.commands import CHANNELS, Command, Action, Request, ResponselessCommand
+from models.commands import (
+    CHANNELS,
+    ElectronCommand,
+    Action,
+    Request,
+    ResponselessCommand,
+)
 from models.db import (
     Mode,
 )
@@ -262,7 +268,7 @@ class Controller:
         elif command.action == Action.SWITCH_MODE:
             self.database_manager.switch_mode(command.data)
 
-    def handle_command(self, x: Command):
+    def handle_command(self, x: ElectronCommand):
         logger.info(f"Received command: {x.command}")
         if x.command.kind == "request":
             self.handle_request(x.command)

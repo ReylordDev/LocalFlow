@@ -1,14 +1,5 @@
 from enum import Enum
 
-from models.db import (
-    LanguageModel,
-    Mode,
-    Result,
-    TextReplacement,
-    VoiceModel,
-    Device,
-)
-
 
 class CHANNELS(str, Enum):
     """
@@ -44,32 +35,3 @@ class CHANNELS(str, Enum):
     # Device channels
     FETCH_ALL_DEVICES = "device:getAll"
     SET_DEVICE = "device:set"
-
-
-# Dictionary mapping every channel to its response type
-# Matches response type in PythonChannelMap in channels.ts
-# Wait what is this used for?
-ChannelResponseType = {
-    # Mode channels
-    CHANNELS.FETCH_ALL_MODES: list[Mode],
-    CHANNELS.CREATE_MODE: list[Mode],
-    CHANNELS.UPDATE_MODE: list[Mode],
-    CHANNELS.DELETE_MODE: list[Mode],
-    CHANNELS.ACTIVATE_MODE: list[Mode],
-    # Result channels
-    CHANNELS.FETCH_ALL_RESULTS: list[Result],
-    CHANNELS.DELETE_RESULT: list[Result],
-    # Example channels
-    CHANNELS.ADD_EXAMPLE: None,
-    # VoiceModel channels
-    CHANNELS.FETCH_ALL_VOICE_MODELS: list[VoiceModel],
-    # LanguageModel channels
-    CHANNELS.FETCH_ALL_LANGUAGE_MODELS: list[LanguageModel],
-    # TextReplacement channels
-    CHANNELS.FETCH_ALL_TEXT_REPLACEMENTS: list[TextReplacement],
-    CHANNELS.CREATE_TEXT_REPLACEMENT: list[TextReplacement],
-    CHANNELS.DELETE_TEXT_REPLACEMENT: list[TextReplacement],
-    # Device channels
-    CHANNELS.FETCH_ALL_DEVICES: list[Device],
-    CHANNELS.SET_DEVICE: Device,
-}
