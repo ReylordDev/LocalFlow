@@ -34,6 +34,7 @@ export const useAudioStore = create<AudioState>((set, get) => ({
     const { devices, useSystemDefaultDevice, boostAudio } = get();
     const selectedDevice =
       devices.find((d) => d.index.toString() === index) || null;
+    console.info("Setting audio device:", selectedDevice);
     window.settings.setAudio({
       device: selectedDevice,
       useSystemDefaultDevice,
@@ -46,14 +47,17 @@ export const useAudioStore = create<AudioState>((set, get) => ({
   setUseSystemDefaultDevice: (use) => {
     set({ useSystemDefaultDevice: use });
     const { devices, selectedDeviceIndex, boostAudio } = get();
+    let newIndex = selectedDeviceIndex;
     if (use) {
       const defaultDevice = devices.find((d) => d.is_default);
       if (defaultDevice) {
-        set({ selectedDeviceIndex: defaultDevice.index.toString() });
+        newIndex = defaultDevice.index.toString();
+        set({ selectedDeviceIndex: newIndex });
       }
     }
     const selectedDevice =
-      devices.find((d) => d.index.toString() === selectedDeviceIndex) || null;
+      devices.find((d) => d.index.toString() === newIndex) || null;
+    console.info("Using system default device:", use, selectedDevice);
     window.settings.setAudio({
       device: selectedDevice,
       useSystemDefaultDevice: use,
@@ -68,6 +72,7 @@ export const useAudioStore = create<AudioState>((set, get) => ({
     const { devices, selectedDeviceIndex, useSystemDefaultDevice } = get();
     const selectedDevice =
       devices.find((d) => d.index.toString() === selectedDeviceIndex) || null;
+    console.info("Setting audio boost:", boost);
     window.settings.setAudio({
       device: selectedDevice,
       useSystemDefaultDevice,

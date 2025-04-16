@@ -5,7 +5,7 @@ import { WindowManager } from "./main-process/windows/window-manager";
 import { TrayManager } from "./main-process/windows/tray-manager";
 import { registerIpcHandlers } from "./main-process/ipc";
 import { AppConfig } from "./main-process/utils/config";
-import { SETTINGS_SERVICE_EVENTS as SettingsEvents } from "./lib/models/settings";
+import { SettingsEvents as SettingsEvents } from "./lib/models/settings";
 import { ElectronChannels, PythonEvents } from "./lib/models/channels";
 import { Action } from "./lib/models/commands";
 
@@ -110,6 +110,7 @@ function registerSettingsEventHandlers() {
         ElectronChannels.onSettingsChanged,
         settings,
       );
+      // We don't inform the main window about changed settings. This is because it is the only window that can change settings.
     },
   );
 

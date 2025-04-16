@@ -36,16 +36,13 @@ export interface AppSettings {
 }
 
 // Service event constants for settings management
-export enum SETTINGS_SERVICE_EVENTS {
+export enum SettingsEvents {
   SETTINGS_CHANGED = "settings-changed",
   SHORTCUT_PRESSED = "shortcut-pressed",
 }
 
 // Define the mapping between event names and their payload types
 export type SettingsEventMap = {
-  [SETTINGS_SERVICE_EVENTS.SETTINGS_CHANGED]: AppSettings;
-  [SETTINGS_SERVICE_EVENTS.SHORTCUT_PRESSED]:
-    | "toggle"
-    | "cancel"
-    | "change-mode";
+  [SettingsEvents.SETTINGS_CHANGED]: AppSettings;
+  [SettingsEvents.SHORTCUT_PRESSED]: "toggle" | "cancel" | "change-mode";
 };

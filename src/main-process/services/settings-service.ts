@@ -7,7 +7,7 @@ import {
   ApplicationConfig,
   AppSettings,
   AudioConfig,
-  SETTINGS_SERVICE_EVENTS,
+  SettingsEvents,
   SettingsEventMap,
   KeyboardConfig,
   OutputConfig,
@@ -91,10 +91,7 @@ export class SettingsService extends EventEmitter {
   private persistSettings() {
     if (this.settings === this.loadSettings()) return;
     fs.writeFileSync(this.settingsPath, JSON.stringify(this.settings));
-    this.emitSettingsEvent(
-      SETTINGS_SERVICE_EVENTS.SETTINGS_CHANGED,
-      this.settings,
-    );
+    this.emitSettingsEvent(SettingsEvents.SETTINGS_CHANGED, this.settings);
   }
 
   get currentSettings(): AppSettings {
@@ -115,11 +112,7 @@ export class SettingsService extends EventEmitter {
       );
       globalShortcut.register(
         this.settings.keyboard.toggleRecordingShortcut,
-        () =>
-          this.emitSettingsEvent(
-            SETTINGS_SERVICE_EVENTS.SHORTCUT_PRESSED,
-            "toggle",
-          ),
+        () => this.emitSettingsEvent(SettingsEvents.SHORTCUT_PRESSED, "toggle"),
       );
     }
 
@@ -130,11 +123,7 @@ export class SettingsService extends EventEmitter {
       );
       globalShortcut.register(
         this.settings.keyboard.cancelRecordingShortcut,
-        () =>
-          this.emitSettingsEvent(
-            SETTINGS_SERVICE_EVENTS.SHORTCUT_PRESSED,
-            "cancel",
-          ),
+        () => this.emitSettingsEvent(SettingsEvents.SHORTCUT_PRESSED, "cancel"),
       );
     }
 
@@ -144,10 +133,7 @@ export class SettingsService extends EventEmitter {
         this.settings.keyboard.changeModeShortcut,
       );
       globalShortcut.register(this.settings.keyboard.changeModeShortcut, () =>
-        this.emitSettingsEvent(
-          SETTINGS_SERVICE_EVENTS.SHORTCUT_PRESSED,
-          "change-mode",
-        ),
+        this.emitSettingsEvent(SettingsEvents.SHORTCUT_PRESSED, "change-mode"),
       );
     }
   }

@@ -3,7 +3,7 @@ import { Switch } from "../../components/ui/switch";
 import { Combobox } from "../../components/combobox";
 import { cn } from "../../lib/utils";
 import { useAudioStore } from "../../stores/audio-store";
-import { useEffect, Dispatch, SetStateAction } from "react";
+import { useEffect } from "react";
 
 const menuItemClass = "justify-between items-center flex px-4 min-h-[50px]";
 
@@ -25,15 +25,6 @@ export default function AudioPage() {
     initializeFromSettings();
   }, [fetchDevices, initializeFromSettings]);
 
-  const handleDeviceChange: Dispatch<SetStateAction<string>> = (value) => {
-    if (typeof value === "function") {
-      const newValue = value(selectedDeviceIndex);
-      setSelectedDeviceIndex(newValue);
-    } else {
-      setSelectedDeviceIndex(value);
-    }
-  };
-
   return (
     <div className="flex h-full w-full flex-col">
       <div className="flex items-center justify-between border-b border-zinc-200 bg-gradient-to-l from-sky-300 to-sky-600 px-4 text-white">
@@ -53,7 +44,7 @@ export default function AudioPage() {
                   label: device.name,
                 }))}
                 value={selectedDeviceIndex}
-                setValue={handleDeviceChange}
+                setValue={setSelectedDeviceIndex}
                 initialMessage="Select a device..."
                 noMatchesMessage="No devices found"
                 searchPlaceholder="Search for a device"

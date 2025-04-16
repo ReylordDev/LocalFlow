@@ -3,81 +3,24 @@ import { cn } from "../../lib/utils";
 import { useEffect, useState } from "react";
 import { Button } from "../../components/ui/button";
 import { Switch } from "../../components/ui/switch";
+import { useConfigStore } from "../../stores/config-store";
 
 const menuItemClass = "justify-between items-center flex px-4 min-h-[50px]";
 
 export default function ConfigurationPage() {
-  const [toggleRecordingShortcut, setToggleRecordingShortcut] = useState("");
-
-  const [cancelRecordingShortcut, setCancelRecordingShortcut] = useState("");
-
-  const [changeModeShortcut, setChangeModeShortcut] = useState("");
-
-  const [launchAtStartup, setLaunchAtStartup] = useState(false);
-  const [enableRecordingWindow, setEnableRecordingWindow] = useState(true);
-  const [autoCloseRecordingWindow, setAutoCloseRecordingWindow] =
-    useState(false);
-  const [minimizeToTray, setMinimizeToTray] = useState(false);
-  const [closeToTray, setCloseToTray] = useState(false);
-
-  const [autoPasteResult, setAutoPasteResult] = useState(false);
-  const [restoreClipboard, setRestoreClipboard] = useState(false);
+  const {
+    keyboard,
+    application,
+    output,
+    setKeyboardConfig,
+    setApplicationConfig,
+    setOutputConfig,
+    loadSettings,
+  } = useConfigStore();
 
   useEffect(() => {
-    window.settings.getAll().then((settings) => {
-      console.log("Settings: ", settings);
-      setToggleRecordingShortcut(settings.keyboard.toggleRecordingShortcut);
-      setCancelRecordingShortcut(settings.keyboard.cancelRecordingShortcut);
-      setChangeModeShortcut(settings.keyboard.changeModeShortcut);
-
-      setLaunchAtStartup(settings.application.launchAtStartup);
-      setEnableRecordingWindow(settings.application.enableRecordingWindow);
-      setAutoCloseRecordingWindow(
-        settings.application.autoCloseRecordingWindow,
-      );
-      setMinimizeToTray(settings.application.minimizeToTray);
-      setCloseToTray(settings.application.closeToTray);
-
-      setAutoPasteResult(settings.output.autoPasteResult);
-      setRestoreClipboard(settings.output.restoreClipboard);
-    });
-  }, []);
-
-  const handleSettingsChange = () => {
-    window.settings.setKeyboard({
-      toggleRecordingShortcut,
-      cancelRecordingShortcut,
-      changeModeShortcut,
-    });
-
-    window.settings.setApplication({
-      launchAtStartup,
-      minimizeToTray,
-      closeToTray,
-      enableRecordingWindow,
-      autoCloseRecordingWindow,
-    });
-
-    window.settings.setOutput({
-      autoPasteResult,
-      restoreClipboard,
-    });
-  };
-
-  useEffect(() => {
-    handleSettingsChange();
-  }, [
-    toggleRecordingShortcut,
-    cancelRecordingShortcut,
-    changeModeShortcut,
-    launchAtStartup,
-    enableRecordingWindow,
-    autoCloseRecordingWindow,
-    minimizeToTray,
-    closeToTray,
-    autoPasteResult,
-    restoreClipboard,
-  ]);
+    loadSettings();
+  }, [loadSettings]);
 
   return (
     <div className="flex h-full w-full flex-col">
@@ -95,9 +38,12 @@ export default function ConfigurationPage() {
                 Toggle Recording Shortcut
               </h3>
               <ShortcutRecorder
-                currentShortcut={toggleRecordingShortcut}
+                currentShortcut={keyboard.toggleRecordingShortcut}
                 onNewShortcut={(shortcut) =>
-                  setToggleRecordingShortcut(shortcut)
+                  setKeyboardConfig({
+                    ...keyboard,
+                    toggleRecordingShortcut: shortcut,
+                  })
                 }
               />
             </div>
@@ -107,9 +53,12 @@ export default function ConfigurationPage() {
                 Cancel Recording Shortcut
               </h3>
               <ShortcutRecorder
-                currentShortcut={cancelRecordingShortcut}
+                currentShortcut={keyboard.cancelRecordingShortcut}
                 onNewShortcut={(shortcut) =>
-                  setCancelRecordingShortcut(shortcut)
+                  setKeyboardConfig({
+                    ...keyboard,
+                    cancelRecordingShortcut: shortcut,
+                  })
                 }
               />
             </div>
@@ -117,8 +66,13 @@ export default function ConfigurationPage() {
             <div className={cn(menuItemClass)}>
               <h3 className="text-md font-semibold">Change Mode Shortcut</h3>
               <ShortcutRecorder
-                currentShortcut={changeModeShortcut}
-                onNewShortcut={(shortcut) => setChangeModeShortcut(shortcut)}
+                currentShortcut={keyboard.changeModeShortcut}
+                onNewShortcut={(shortcut) =>
+                  setKeyboardConfig({
+                    ...keyboard,
+                    changeModeShortcut: shortcut,
+                  })
+                }
               />
             </div>
           </div>
@@ -129,20 +83,26 @@ export default function ConfigurationPage() {
             <div className={cn(menuItemClass)}>
               <h3 className="text-md font-semibold">Launch on Login</h3>
               <Switch
-                checked={launchAtStartup}
-                onCheckedChange={(checked) => {
-                  setLaunchAtStartup(checked);
-                }}
+                checked={application.launchAtStartup}
+                onCheckedChange={(checked) =>
+                  setApplicationConfig({
+                    ...application,
+                    launchAtStartup: checked,
+                  })
+                }
               />
             </div>
             <Separator orientation="horizontal" />
             <div className={cn(menuItemClass)}>
               <h3 className="text-md font-semibold">Enable Recording Window</h3>
               <Switch
-                checked={enableRecordingWindow}
-                onCheckedChange={(checked) => {
-                  setEnableRecordingWindow(checked);
-                }}
+                checked={application.enableRecordingWindow}
+                onCheckedChange={(checked) =>
+                  setApplicationConfig({
+                    ...application,
+                    enableRecordingWindow: checked,
+                  })
+                }
               />
             </div>
             <Separator orientation="horizontal" />
@@ -151,10 +111,13 @@ export default function ConfigurationPage() {
                 Close Recording Window Automatically
               </h3>
               <Switch
-                checked={autoCloseRecordingWindow}
-                onCheckedChange={(checked) => {
-                  setAutoCloseRecordingWindow(checked);
-                }}
+                checked={application.autoCloseRecordingWindow}
+                onCheckedChange={(checked) =>
+                  setApplicationConfig({
+                    ...application,
+                    autoCloseRecordingWindow: checked,
+                  })
+                }
               />
             </div>
             <Separator orientation="horizontal" />
@@ -163,20 +126,26 @@ export default function ConfigurationPage() {
                 Minimize to the System Tray
               </h3>
               <Switch
-                checked={minimizeToTray}
-                onCheckedChange={(checked) => {
-                  setMinimizeToTray(checked);
-                }}
+                checked={application.minimizeToTray}
+                onCheckedChange={(checked) =>
+                  setApplicationConfig({
+                    ...application,
+                    minimizeToTray: checked,
+                  })
+                }
               />
             </div>
             <Separator orientation="horizontal" />
             <div className={cn(menuItemClass)}>
               <h3 className="text-md font-semibold">Close to Tray</h3>
               <Switch
-                checked={closeToTray}
-                onCheckedChange={(checked) => {
-                  setCloseToTray(checked);
-                }}
+                checked={application.closeToTray}
+                onCheckedChange={(checked) =>
+                  setApplicationConfig({
+                    ...application,
+                    closeToTray: checked,
+                  })
+                }
               />
             </div>
           </div>
@@ -189,10 +158,13 @@ export default function ConfigurationPage() {
                 Automatically Paste Result
               </h3>
               <Switch
-                checked={autoPasteResult}
-                onCheckedChange={(checked) => {
-                  setAutoPasteResult(checked);
-                }}
+                checked={output.autoPasteResult}
+                onCheckedChange={(checked) =>
+                  setOutputConfig({
+                    ...output,
+                    autoPasteResult: checked,
+                  })
+                }
               />
             </div>
             <Separator orientation="horizontal" />
@@ -201,10 +173,13 @@ export default function ConfigurationPage() {
                 Restore Clipboard after Paste
               </h3>
               <Switch
-                checked={restoreClipboard}
-                onCheckedChange={(checked) => {
-                  setRestoreClipboard(checked);
-                }}
+                checked={output.restoreClipboard}
+                onCheckedChange={(checked) =>
+                  setOutputConfig({
+                    ...output,
+                    restoreClipboard: checked,
+                  })
+                }
               />
             </div>
           </div>
@@ -223,12 +198,8 @@ function ShortcutRecorder({
 }) {
   const [recording, setRecording] = useState(false);
 
-  console.log("Current Shortcut: ", currentShortcut);
-
   function abortShortcutRecording() {
     setRecording(false);
-    onNewShortcut(currentShortcut);
-    console.log("Stopped Recording");
   }
 
   useEffect(() => {
@@ -246,10 +217,11 @@ function ShortcutRecorder({
         if (e.key !== "Control" && e.key !== "Shift" && e.key !== "Alt") {
           keys.push(e.key.toUpperCase());
           if (keys.length > 0 && isValidShortcut(keys.join("+"))) {
+            console.info("New shortcut is valid: ", keys.join("+"));
             onNewShortcut(keys.join("+"));
             setRecording(false);
           } else {
-            console.log("Invalid shortcut: ", keys.join("+"));
+            console.warn("Invalid shortcut: ", keys.join("+"));
           }
         }
       };
@@ -268,7 +240,7 @@ function ShortcutRecorder({
         } else {
           setRecording(true);
           window.settings.disableShortcut(currentShortcut);
-          console.log("Recording Shortcut Setting");
+          console.debug("Recording Shortcut Setting");
         }
       }}
       className={cn(
@@ -386,8 +358,8 @@ function isValidShortcut(shortcut: string): boolean {
     if (!modifiers.includes(parts[i])) return false;
   }
 
-  console.log("Checking Shortcut");
-  console.log(parts[parts.length - 1]);
+  console.debug("Checking Shortcut");
+  console.debug(parts[parts.length - 1]);
 
   return keyCodes.includes(parts[parts.length - 1]);
 }

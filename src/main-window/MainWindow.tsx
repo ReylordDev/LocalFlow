@@ -8,7 +8,7 @@ import ConfigurationPage from "./pages/Configuration";
 import TextReplacements from "./pages/TextReplacements";
 
 const MainWindow = () => {
-  console.log("MainWindow");
+  console.debug("MainWindow rendered");
   const [page, setPage] = useState<Page>("Modes");
 
   function renderPage(page: Page) {

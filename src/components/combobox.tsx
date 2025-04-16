@@ -24,7 +24,7 @@ export function Combobox({
   disabled = false,
 }: {
   value: string;
-  setValue: React.Dispatch<React.SetStateAction<string>>;
+  setValue: (value: string) => void;
   items: { label: string; value: string }[];
   initialMessage?: string;
   searchPlaceholder?: string;
