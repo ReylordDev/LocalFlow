@@ -1,58 +1,38 @@
 import { Separator } from "../../components/ui/separator";
 import { Switch } from "../../components/ui/switch";
 import { Combobox } from "../../components/combobox";
-import { cn, tryCatch } from "../../lib/utils";
-import { Device } from "../../lib/models/database";
-import { useEffect, useState } from "react";
+import { cn } from "../../lib/utils";
+import { useAudioStore } from "../../stores/audio-store";
+import { useEffect, Dispatch, SetStateAction } from "react";
 
 const menuItemClass = "justify-between items-center flex px-4 min-h-[50px]";
 
 export default function AudioPage() {
-  const [devices, setDevices] = useState<Device[]>([]);
-  const [selectedDeviceIndex, setSelectedDeviceIndex] = useState("");
-  const [useSystemDefaultDevice, setUseSystemDefaultDevice] = useState(false);
-  const [boostAudio, setBoostAudio] = useState(false);
+  const {
+    devices,
+    selectedDeviceIndex,
+    useSystemDefaultDevice,
+    boostAudio,
+    fetchDevices,
+    setSelectedDeviceIndex,
+    setUseSystemDefaultDevice,
+    setBoostAudio,
+    initializeFromSettings,
+  } = useAudioStore();
 
   useEffect(() => {
-    const fetchDevices = async () => {
-      const { data, error } = await tryCatch(window.device.fetchAllDevices());
-      if (error) {
-        console.error("Error fetching devices: ", error);
-        return;
-      }
-      setDevices(data);
-    };
     fetchDevices();
-  }, []);
+    initializeFromSettings();
+  }, [fetchDevices, initializeFromSettings]);
 
-  useEffect(() => {
-    window.settings.getAll().then((settings) => {
-      console.log("Settings: ", settings);
-      setSelectedDeviceIndex(
-        settings.audio.device ? settings.audio.device.index.toString() : "",
-      );
-      setUseSystemDefaultDevice(settings.audio.useSystemDefaultDevice);
-      setBoostAudio(settings.audio.automaticallyIncreaseMicVolume);
-    });
-  }, []);
-
-  const handleSettingsChange = () => {
-    const selectedDevice =
-      devices.find(
-        (device) => device.index.toString() === selectedDeviceIndex,
-      ) || null;
-    window.settings.setAudio({
-      device: selectedDevice,
-      useSystemDefaultDevice,
-      automaticallyIncreaseMicVolume: boostAudio,
-      soundEffects: false,
-      soundEffectsVolume: 0.5,
-    });
+  const handleDeviceChange: Dispatch<SetStateAction<string>> = (value) => {
+    if (typeof value === "function") {
+      const newValue = value(selectedDeviceIndex);
+      setSelectedDeviceIndex(newValue);
+    } else {
+      setSelectedDeviceIndex(value);
+    }
   };
-
-  useEffect(() => {
-    handleSettingsChange();
-  }, [selectedDeviceIndex, useSystemDefaultDevice, boostAudio]);
 
   return (
     <div className="flex h-full w-full flex-col">
@@ -73,7 +53,7 @@ export default function AudioPage() {
                   label: device.name,
                 }))}
                 value={selectedDeviceIndex}
-                setValue={setSelectedDeviceIndex}
+                setValue={handleDeviceChange}
                 initialMessage="Select a device..."
                 noMatchesMessage="No devices found"
                 searchPlaceholder="Search for a device"
@@ -87,16 +67,7 @@ export default function AudioPage() {
               </h3>
               <Switch
                 checked={useSystemDefaultDevice}
-                onCheckedChange={(checked) => {
-                  setUseSystemDefaultDevice(checked);
-                  if (checked) {
-                    setSelectedDeviceIndex(
-                      devices
-                        .filter((device) => device.is_default)[0]
-                        .index.toString(),
-                    );
-                  }
-                }}
+                onCheckedChange={setUseSystemDefaultDevice}
               />
             </div>
             <Separator orientation="horizontal" />
@@ -104,12 +75,7 @@ export default function AudioPage() {
               <h3 className="text-md font-semibold">
                 Automatically increase microphone volume
               </h3>
-              <Switch
-                checked={boostAudio}
-                onCheckedChange={(checked) => {
-                  setBoostAudio(checked);
-                }}
-              />
+              <Switch checked={boostAudio} onCheckedChange={setBoostAudio} />
             </div>
           </div>
         </div>
