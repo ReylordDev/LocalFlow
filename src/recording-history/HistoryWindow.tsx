@@ -30,10 +30,10 @@ import {
   SidebarMenuItem,
 } from "../components/ui/sidebar";
 import { Separator } from "../components/ui/separator";
+import { useHistoryStore } from "../stores/history-store";
 
 const HistoryWindow = () => {
-  const [history, setHistory] = useState<Result[]>([]);
-  const [selectedResult, setSelectedResult] = useState<Result | null>(null);
+  const { setResults, selectedResult } = useHistoryStore();
 
   useEffect(() => {
     async function fetchHistory() {
@@ -44,20 +44,15 @@ const HistoryWindow = () => {
         console.error("Error fetching history:", error);
         return;
       }
-      setHistory(data);
-      setSelectedResult(data[0] || null);
+      setResults(data);
     }
 
     fetchHistory();
-  }, []);
+  }, [setResults]);
 
   return (
     <div className="flex h-screen select-none">
-      <Sidebar
-        history={history}
-        selectedResult={selectedResult}
-        setSelectedResult={setSelectedResult}
-      />
+      <Sidebar />
       <ResultDetails result={selectedResult} />
     </div>
   );
@@ -65,45 +60,24 @@ const HistoryWindow = () => {
 
 export default HistoryWindow;
 
-function Sidebar({
-  history,
-  selectedResult,
-  setSelectedResult,
-}: {
-  history: Result[];
-  selectedResult: Result | null;
-  setSelectedResult: (result: Result | null) => void;
-}) {
-  const [searchTerm, setSearchTerm] = useState<string>("");
-  const [filteredHistory, setFilteredHistory] = useState<Result[]>(history);
+function Sidebar() {
+  const {
+    filteredResults,
+    selectedResult,
+    searchTerm,
+    setSelectedResult,
+    setSearchTerm,
+    deleteResult,
+  } = useHistoryStore();
   const locale = useLocale();
 
-  useEffect(() => {
-    setFilteredHistory(history);
-  }, [history]);
-
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.toLowerCase();
-    setSearchTerm(value);
-    if (value === "") {
-      setFilteredHistory(history);
-    } else {
-      setFilteredHistory(
-        history.filter((result) =>
-          result.mode.use_language_model && result.ai_result
-            ? result.ai_result.toLowerCase().includes(value) ||
-              result.transcription.toLowerCase().includes(value)
-            : result.transcription.toLowerCase().includes(value),
-        ),
-      );
-    }
+    setSearchTerm(e.target.value);
   };
 
   const handleDelete = (resultId: UUID) => {
     window.database.results.deleteResult(resultId);
-    if (selectedResult?.id === resultId) {
-      setSelectedResult(null);
-    }
+    deleteResult(resultId);
   };
 
   const handleAddExample = (result: Result) => {
@@ -135,7 +109,7 @@ function Sidebar({
         />
       </div>
       <div className="flex h-screen flex-col gap-2 overflow-y-auto p-2">
-        {filteredHistory.map((result) => (
+        {filteredResults.map((result) => (
           <ContextMenu key={result.id}>
             <ContextMenuTrigger>
               <div
