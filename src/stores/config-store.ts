@@ -20,7 +20,7 @@ interface ConfigState {
   loadSettings: () => Promise<void>;
 }
 
-export const useConfigStore = create<ConfigState>((set) => ({
+export const useConfigStore = create<ConfigState>()((set) => ({
   keyboard: {
     toggleRecordingShortcut: "",
     cancelRecordingShortcut: "",

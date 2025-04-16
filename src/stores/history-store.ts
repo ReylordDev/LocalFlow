@@ -12,7 +12,7 @@ interface HistoryState {
   deleteResult: (resultId: string) => void;
 }
 
-export const useHistoryStore = create<HistoryState>((set) => ({
+export const useHistoryStore = create<HistoryState>()((set) => ({
   results: [],
   selectedResult: null,
   searchTerm: "",

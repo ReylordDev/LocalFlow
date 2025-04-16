@@ -14,7 +14,7 @@ interface AudioState {
   initializeFromSettings: () => Promise<void>;
 }
 
-export const useAudioStore = create<AudioState>((set, get) => ({
+export const useAudioStore = create<AudioState>()((set, get) => ({
   devices: [],
   selectedDeviceIndex: "",
   useSystemDefaultDevice: false,
