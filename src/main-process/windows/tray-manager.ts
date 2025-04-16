@@ -34,8 +34,9 @@ export class TrayManager {
       this.windowManager.toggleMiniWindow();
     });
 
-    const contextMenu = this.updateContextMenu([]);
-    this.tray.setContextMenu(contextMenu);
+    // Initial context
+    this.tray.setContextMenu(this.updateContextMenu([]));
+
     const { data, error } = await tryCatch(
       this.pythonService.sendPythonRequest({
         channel: PythonChannels.fetchAllModes,
@@ -47,9 +48,8 @@ export class TrayManager {
       console.error("Error fetching modes:", error);
       return;
     }
-    const modes = data;
-    this.updateContextMenu(modes);
-    this.tray.setContextMenu(contextMenu);
+    // Filled Context Menu
+    this.tray.setContextMenu(this.updateContextMenu(data));
   }
 
   /**
