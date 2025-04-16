@@ -1,18 +1,18 @@
 // Database models for storage and data manipulation
 import { UUID } from "crypto";
 
-// This is also technically not in the database
-
-export type LanguageType =
-  | "auto"
-  | "en"
-  | "de"
-  | "fr"
-  | "it"
-  | "es"
-  | "pt"
-  | "hi"
-  | "th";
+export enum Language {
+  auto = "auto",
+  en = "en",
+  de = "de",
+  fr = "fr",
+  it = "it",
+  es = "es",
+  pt = "pt",
+  hi = "hi",
+  th = "th",
+}
+export type LanguageType = keyof typeof Language;
 
 export const languageNameMap: Record<LanguageType, string> = {
   auto: "Auto",

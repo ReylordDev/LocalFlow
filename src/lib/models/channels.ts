@@ -63,7 +63,7 @@ export enum PythonChannels {
 type PythonChannelMap = {
   // Mode channels
   [PythonChannels.fetchAllModes]: () => Promise<Mode[]>;
-  [PythonChannels.createMode]: (mode: ModeCreate) => Promise<Mode[]>;
+  [PythonChannels.createMode]: (mode: ModeCreate) => Promise<Mode>;
   [PythonChannels.updateMode]: (mode: ModeUpdate) => Promise<Mode[]>;
   [PythonChannels.deleteMode]: (modeId: UUID) => Promise<Mode[]>;
   [PythonChannels.activateMode]: (modeId: UUID) => Promise<Mode[]>;

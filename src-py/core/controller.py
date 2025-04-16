@@ -17,6 +17,7 @@ from models.messages import (
     ControllerStatusType,
     DevicesResponse,
     LanguageModelsResponse,
+    ModeResponse,
     ModesResponse,
     ResultsResponse,
     StatusMessage,
@@ -155,8 +156,14 @@ class Controller:
             print_message(DevicesResponse(data=devices, id=request.id))
 
         elif request.channel == CHANNELS.CREATE_MODE:
-            self.database_manager.create_mode(request.data)
-            self.print_refreshed_modes(request_id=request.id)
+            mode = self.database_manager.create_mode(request.data)
+            response = ModeResponse(
+                data=mode,
+                id=request.id,
+            )
+            dumped_response = response.model_dump()
+            dumped_response["data"] = dump_instance(mode.create_instance())
+            print_nested_model(dumped_response)
 
         elif request.channel == CHANNELS.UPDATE_MODE:
             self.database_manager.update_mode(request.data)

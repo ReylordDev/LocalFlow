@@ -116,6 +116,11 @@ class ModesResponse(BaseResponse):
     channel: Literal[CHANNELS.FETCH_ALL_MODES] = CHANNELS.FETCH_ALL_MODES
 
 
+class ModeResponse(BaseResponse):
+    data: Mode
+    channel: Literal[CHANNELS.CREATE_MODE] = CHANNELS.CREATE_MODE
+
+
 class ResultsResponse(BaseResponse):
     data: list[Result]
     channel: Literal[CHANNELS.FETCH_ALL_RESULTS] = CHANNELS.FETCH_ALL_RESULTS
