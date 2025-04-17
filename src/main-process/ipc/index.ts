@@ -13,35 +13,44 @@ import {
 import { tryCatch } from "../../lib/utils";
 import { Action } from "../../lib/models/commands";
 
+function handlePythonIPC<C extends PythonChannel>(
+  channel: C,
+  pythonService: PythonService,
+) {
+  ipcMain.handle(
+    channel,
+    async (_, ...args: Parameters<PythonChannelFunction<C>>) => {
+      console.log(`Received event: ${channel}`, args);
+      const { data, error } = await tryCatch(
+        pythonService.sendPythonRequest({
+          channel,
+          id: pythonService.generateRequestId(),
+          data: args[0], // typing problem
+          kind: "request",
+        }),
+      );
+      if (error) {
+        console.error(`Error in ${channel}:`, error);
+        throw error;
+      }
+      return data;
+    },
+  );
+}
+
 export function registerIpcHandlers(
   settingsService: SettingsService,
   pythonService: PythonService,
   windowManager: WindowManager,
 ) {
-  function handlePythonIPC<C extends PythonChannel>(channel: C) {
-    ipcMain.handle(
-      channel,
-      async (_, ...args: Parameters<PythonChannelFunction<C>>) => {
-        console.log(`Received event: ${channel}`, args);
-        const { data, error } = await tryCatch(
-          pythonService.sendPythonRequest({
-            channel,
-            id: pythonService.generateRequestId(),
-            data: args[0],
-            kind: "request",
-          }),
-        );
-        if (error) {
-          console.error(`Error in ${channel}:`, error);
-          throw error;
-        }
-        return data;
-      },
-    );
-  }
   registerSettingsHandlers(settingsService);
   registerURLHandlers();
 
+  Object.values(PythonChannels).forEach((channel) => {
+    handlePythonIPC(channel, pythonService);
+  });
+
+  // This is a bit out of place because it uses the python service but is an electron channel.
   ipcMain.on(ElectronChannels.requestAudioLevel, () => {
     console.log("Remove this Audio Level request maybe");
     pythonService.sendCommand({
@@ -49,10 +58,6 @@ export function registerIpcHandlers(
       data: undefined,
       kind: "command",
     });
-  });
-
-  Object.values(PythonChannels).forEach((channel) => {
-    handlePythonIPC(channel);
   });
 
   ipcMain.on(ElectronChannels.openHistoryWindow, () => {
