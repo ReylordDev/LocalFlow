@@ -91,16 +91,13 @@ export class WindowManager extends EventEmitter {
    * Shows the main application window
    */
   showMainWindow(): void {
-    if (this.mainWindow && !this.mainWindow.isDestroyed()) {
-      console.debug("Showing existing main window");
-      this.mainWindow.show();
-    } else {
+    if (!this.mainWindow || this.mainWindow.isDestroyed()) {
       console.info(
         "Main window does not exist, creating and showing new window",
       );
       this.mainWindow = this.createMainWindow();
-      this.mainWindow.show();
     }
+    this.mainWindow.show();
   }
 
   /**
@@ -188,16 +185,21 @@ export class WindowManager extends EventEmitter {
    * Shows the mini-mode window
    */
   showMiniWindow(): void {
-    if (this.miniWindow && !this.miniWindow.isDestroyed()) {
-      console.debug("Showing existing mini window");
-      this.miniWindow.showInactive();
-    } else {
+    if (!this.miniWindow || this.miniWindow.isDestroyed()) {
       console.info(
         "Mini window does not exist, creating and showing new window",
       );
       this.miniWindow = this.createMiniWindow();
-      this.miniWindow.showInactive();
     }
+    this.miniWindow.showInactive();
+    this.settingsService.registerShortcut(
+      this.settingsService.currentSettings.keyboard.changeModeShortcut,
+      "change-mode",
+    );
+    this.settingsService.registerShortcut(
+      this.settingsService.currentSettings.keyboard.cancelRecordingShortcut,
+      "cancel",
+    );
   }
 
   /**
@@ -213,6 +215,12 @@ export class WindowManager extends EventEmitter {
         "Cannot hide mini window: window is destroyed or not created",
       );
     }
+    this.settingsService.unregisterShortcut(
+      this.settingsService.currentSettings.keyboard.changeModeShortcut,
+    );
+    this.settingsService.unregisterShortcut(
+      this.settingsService.currentSettings.keyboard.cancelRecordingShortcut,
+    );
   }
 
   /**

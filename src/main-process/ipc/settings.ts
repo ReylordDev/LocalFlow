@@ -14,7 +14,7 @@ export function registerSettingsHandlers(settingsService: SettingsService) {
   });
 
   ipcMain.on(ElectronChannels.disableShortcut, (_, shortcut: string) => {
-    settingsService.disableShortcut(shortcut);
+    settingsService.unregisterShortcut(shortcut);
   });
 
   ipcMain.on(ElectronChannels.setAudio, (_, audioConfig: AudioConfig) => {

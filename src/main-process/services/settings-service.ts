@@ -98,10 +98,21 @@ export class SettingsService extends EventEmitter {
     return { ...this.settings };
   }
 
-  disableShortcut(shortcut: string) {
+  unregisterShortcut(shortcut: string) {
     if (!shortcut) return;
     console.info("Unregistering shortcut:", shortcut);
     globalShortcut.unregister(shortcut);
+  }
+
+  registerShortcut(
+    shortcut: string,
+    name: SettingsEventMap["shortcut-pressed"],
+  ) {
+    if (!shortcut) return;
+    console.info("Registering shortcut:", shortcut);
+    globalShortcut.register(shortcut, () =>
+      this.emitSettingsEvent(SettingsEvents.SHORTCUT_PRESSED, name),
+    );
   }
 
   registerShortcuts() {

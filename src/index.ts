@@ -51,7 +51,10 @@ function registerPythonEventHandlers() {
     windowManager.hideStartupWindow();
     windowManager.createMainWindow();
     windowManager.createMiniWindow();
-    settingsService.registerShortcuts();
+    settingsService.registerShortcut(
+      settingsService.currentSettings.keyboard.toggleRecordingShortcut,
+      "toggle",
+    );
     trayManager.initialize();
   });
 
