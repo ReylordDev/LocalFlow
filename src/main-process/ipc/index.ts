@@ -9,6 +9,7 @@ import {
   PythonChannel,
   PythonChannelFunction,
   ElectronChannels,
+  ElectronChannelFunction,
 } from "../../lib/models/channels";
 import { tryCatch } from "../../lib/utils";
 import { Action } from "../../lib/models/commands";
@@ -37,6 +38,8 @@ function handlePythonIPC<C extends PythonChannel>(
     },
   );
 }
+
+// TODO: Create typesafe electron handler
 
 export function registerIpcHandlers(
   settingsService: SettingsService,

@@ -6,7 +6,7 @@ import { PythonChannelFunction, PythonChannel } from "./channels";
 
 export type BaseRequest<C extends PythonChannel> = {
   channel: C;
-  data?: Parameters<PythonChannelFunction<C>>;
+  data?: Parameters<PythonChannelFunction<C>>[0];
   id: string;
   kind: "request";
 };

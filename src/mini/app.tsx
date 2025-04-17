@@ -61,6 +61,16 @@ const App = () => {
     };
   }, []);
 
+  /**
+   * Switches the active mode in the front- and backend
+   *
+   * @param mode The mode to be activated
+   */
+  const activateMode = (mode: Mode) => {
+    setActiveMode(mode);
+    window.database.modes.activateMode(mode.id);
+  };
+
   if (!settings) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-zinc-50">
@@ -76,11 +86,7 @@ const App = () => {
         {!modePickerOpen ? (
           <MainContentDisplay status={status} />
         ) : (
-          <ModePicker
-            modes={modes}
-            setActiveMode={setActiveMode}
-            setModePickerOpen={setModePickerOpen}
-          />
+          <ModePicker modes={modes} activateMode={activateMode} />
         )}
         <div className="flex h-14 w-full shrink-0 items-center justify-between rounded-b-3xl border-t border-t-zinc-200 bg-zinc-100 text-zinc-600">
           <div className="pl-8">
@@ -362,21 +368,16 @@ const TimerDisplay = ({ status }: TimerDisplayProps) => {
 
 interface ModePickerProps {
   modes: Mode[];
-  setActiveMode: (mode: Mode) => void;
-  setModePickerOpen: (open: boolean) => void;
+  activateMode: (mode: Mode) => void;
 }
 
 /**
  * Mode picker component for selecting different recording modes
  * @param modes List of available recording modes
- * @param setActiveMode Function to set the active mode
+ * @param activateMode Function to set the active mode
  * @param setModePickerOpen Function to toggle the mode picker visibility
  */
-const ModePicker = ({
-  modes,
-  setActiveMode,
-  setModePickerOpen,
-}: ModePickerProps) => {
+const ModePicker = ({ modes, activateMode }: ModePickerProps) => {
   const heightPerMode = 40; // Height of each mode item in pixels
   const gapHeight = 8; // Gap between mode items in pixels
   const paddingHeight = 16; // Padding around the mode picker in pixels
@@ -407,19 +408,7 @@ const ModePicker = ({
         onValueChange={(value) => {
           const selectedMode = modes.find((mode) => mode.id === value);
           if (selectedMode) {
-            modes
-              .filter((mode) => mode.id !== selectedMode.id && mode.active)
-              .forEach((mode) => {
-                window.database.modes.updateMode({
-                  id: mode.id,
-                  active: false,
-                });
-              });
-            window.database.modes.updateMode({
-              id: selectedMode.id,
-              active: true,
-            });
-            setActiveMode(selectedMode);
+            activateMode(selectedMode);
           }
         }}
       >
