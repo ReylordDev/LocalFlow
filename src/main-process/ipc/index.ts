@@ -13,6 +13,7 @@ import {
 } from "../../lib/models/channels";
 import { tryCatch } from "../../lib/utils";
 import { Action } from "../../lib/models/commands";
+import { Mode } from "../../lib/models/database";
 
 function handlePythonIPC<C extends PythonChannel>(
   channel: C,
@@ -84,4 +85,17 @@ export function registerIpcHandlers(
   ipcMain.on(ElectronChannels.setMainContentHeight, (_, height: number) => {
     windowManager.setMiniWindowMainContentHeight(height);
   });
+
+  ipcMain.on(
+    ElectronChannels.setModePickerOpen,
+    (_, isOpen: boolean, modes: Mode[]) => {
+      if (isOpen) {
+        console.debug("Registering mode picker shortcuts");
+        settingsService.registerModePickerShortcuts(modes);
+      } else {
+        console.debug("Unregistering mode picker shortcuts");
+        // settingsService.unregisterModePickerShortcuts();
+      }
+    },
+  );
 }

@@ -12,6 +12,7 @@ import {
   KeyboardConfig,
   OutputConfig,
 } from "../../lib/models/settings";
+import { Mode } from "../../lib/models/database";
 
 export const DEFAULT_SETTINGS: AppSettings = {
   keyboard: {
@@ -146,6 +147,25 @@ export class SettingsService extends EventEmitter {
       globalShortcut.register(this.settings.keyboard.changeModeShortcut, () =>
         this.emitSettingsEvent(SettingsEvents.SHORTCUT_PRESSED, "change-mode"),
       );
+    }
+  }
+
+  registerModePickerShortcuts(modes: Mode[]) {
+    console.debug("Registering mode picker shortcuts:", modes);
+    for (let index = 0; index < modes.length; index++) {
+      const mode = modes[index];
+      globalShortcut.register("Shift+" + (index + 1).toString(), () =>
+        this.emitSettingsEvent(SettingsEvents.SHORTCUT_PRESSED, {
+          modeId: mode.id,
+        }),
+      );
+    }
+  }
+
+  unregisterModePickerShortcuts(modes: Mode[]) {
+    console.debug("Unregistering mode picker shortcuts:", modes);
+    for (let index = 0; index < modes.length; index++) {
+      globalShortcut.unregister("Shift+" + (index + 1).toString());
     }
   }
 

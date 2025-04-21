@@ -55,11 +55,12 @@ const App = () => {
     const unsubscribe = window.mini.onChangeModeShortcutPressed(() => {
       console.debug("Change mode shortcut pressed");
       setModePickerOpen((prev) => !prev);
+      window.mini.setModePickerOpen(!modePickerOpen, modes);
     });
     return () => {
       unsubscribe();
     };
-  }, []);
+  }, [modes]);
 
   /**
    * Switches the active mode in the front- and backend

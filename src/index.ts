@@ -117,8 +117,8 @@ function registerSettingsEventHandlers() {
     },
   );
 
-  settingsService.onSettingsEvent(SettingsEvents.SHORTCUT_PRESSED, (type) => {
-    if (type === "toggle") {
+  settingsService.onSettingsEvent(SettingsEvents.SHORTCUT_PRESSED, (data) => {
+    if (data === "toggle") {
       if (settingsService.currentSettings.application.enableRecordingWindow) {
         windowManager.showMiniWindow();
       }
@@ -127,18 +127,24 @@ function registerSettingsEventHandlers() {
         data: undefined,
         kind: "command",
       });
-    }
-    if (type === "cancel") {
+    } else if (data === "cancel") {
       pythonService.sendCommand({
         action: Action.CANCEL,
         data: undefined,
         kind: "command",
       });
-    }
-    if (type === "change-mode") {
+    } else if (data === "change-mode") {
       windowManager.sendMiniWindowMessage(
         ElectronChannels.onChangeModeShortcutPressed,
       );
+    } else {
+      const modeId = data.modeId;
+      console.info(`Switching to mode: ${modeId}`);
+      pythonService.sendCommand({
+        action: Action.SWITCH_MODE,
+        data: modeId,
+        kind: "command",
+      });
     }
   });
 }

@@ -122,6 +122,7 @@ export enum ElectronChannels {
   onTranscription = "mini:transcription",
   onChangeModeShortcutPressed = "mini:change-mode-shortcut-pressed",
   setMainContentHeight = "mini:setMainContentHeight",
+  setModePickerOpen = "mini:setModePickerOpen",
 
   // Recording History channels
   openHistoryWindow = "recordingHistory:openWindow",
@@ -173,6 +174,10 @@ type ElectronChannelMap = {
     callback: (shortcut: string) => void,
   ) => () => void;
   [ElectronChannels.setMainContentHeight]: (height: number) => void;
+  [ElectronChannels.setModePickerOpen]: (
+    isOpen: boolean,
+    modes: Mode[],
+  ) => void;
 
   // Recording History channels
   [ElectronChannels.openHistoryWindow]: () => void;
@@ -218,6 +223,7 @@ declare global {
       onTranscription: ChannelFunction<ElectronChannels.onTranscription>;
       onChangeModeShortcutPressed: ChannelFunction<ElectronChannels.onChangeModeShortcutPressed>;
       setMainContentHeight: ChannelFunction<ElectronChannels.setMainContentHeight>;
+      setModePickerOpen: ChannelFunction<ElectronChannels.setModePickerOpen>;
     };
     device: {
       setDevice: ChannelFunction<PythonChannels.setDevice>;

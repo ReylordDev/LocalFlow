@@ -138,6 +138,8 @@ export const exposeMini = () => {
       send(ElectronChannels.setMainContentHeight, height),
     onTranscription: (callback) =>
       genericListener(ElectronChannels.onTranscription, callback),
+    setModePickerOpen: (isOpen, modes) =>
+      send(ElectronChannels.setModePickerOpen, isOpen, modes),
   } satisfies Window["mini"]);
 };
 

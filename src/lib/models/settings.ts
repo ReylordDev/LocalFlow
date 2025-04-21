@@ -1,4 +1,5 @@
 // Application settings models
+import { UUID } from "crypto";
 import { Device } from "./database";
 
 export interface ApplicationConfig {
@@ -44,5 +45,11 @@ export enum SettingsEvents {
 // Define the mapping between event names and their payload types
 export type SettingsEventMap = {
   [SettingsEvents.SETTINGS_CHANGED]: AppSettings;
-  [SettingsEvents.SHORTCUT_PRESSED]: "toggle" | "cancel" | "change-mode";
+  [SettingsEvents.SHORTCUT_PRESSED]:
+    | "toggle"
+    | "cancel"
+    | "change-mode"
+    | {
+        modeId: UUID;
+      };
 };
