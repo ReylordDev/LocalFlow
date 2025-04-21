@@ -141,7 +141,6 @@ class Action(str, Enum):
     TOGGLE = "toggle"
     CANCEL = "cancel"
     AUDIO_LEVEL = "audio_level"
-    SWITCH_MODE = "switch_mode"
 
 
 # TODO: Maybe there is a way to do an actual type mapping
@@ -149,7 +148,6 @@ ActionDataMap = {
     Action.TOGGLE: None,
     Action.CANCEL: None,
     Action.AUDIO_LEVEL: None,
-    Action.SWITCH_MODE: UUID,
 }
 
 
@@ -173,18 +171,12 @@ class AudioLevelCommand(BaseResponselessCommand):
     data: None = None
 
 
-class SwitchModeCommand(BaseResponselessCommand):
-    action: Literal[Action.SWITCH_MODE] = Action.SWITCH_MODE
-    data: UUID
-
-
 # A command from the electron process that doesn't expect a response
 ResponselessCommand = Annotated[
     Union[
         ToggleCommand,
         CancelCommand,
         AudioLevelCommand,
-        SwitchModeCommand,
     ],
     Field(discriminator="action"),
 ]

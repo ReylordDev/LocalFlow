@@ -120,10 +120,11 @@ export class TrayManager {
           checked: mode.active,
           click: () => {
             console.info(`Switching to mode: ${mode.name}`);
-            this.pythonService.sendCommand({
-              action: Action.SWITCH_MODE,
+            this.pythonService.sendPythonRequest({
+              channel: PythonChannels.activateMode,
+              id: this.pythonService.generateRequestId(),
               data: mode.id,
-              kind: "command",
+              kind: "request",
             });
           },
         })),

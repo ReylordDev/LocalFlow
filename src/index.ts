@@ -6,7 +6,11 @@ import { TrayManager } from "./main-process/windows/tray-manager";
 import { registerIpcHandlers } from "./main-process/ipc";
 import { AppConfig } from "./main-process/utils/config";
 import { SettingsEvents as SettingsEvents } from "./lib/models/settings";
-import { ElectronChannels, PythonEvents } from "./lib/models/channels";
+import {
+  ElectronChannels,
+  PythonChannels,
+  PythonEvents,
+} from "./lib/models/channels";
 import { Action } from "./lib/models/commands";
 
 // Handle setup events
@@ -140,10 +144,11 @@ function registerSettingsEventHandlers() {
     } else {
       const modeId = data.modeId;
       console.info(`Switching to mode: ${modeId}`);
-      pythonService.sendCommand({
-        action: Action.SWITCH_MODE,
+      pythonService.sendPythonRequest({
+        channel: PythonChannels.activateMode,
+        id: pythonService.generateRequestId(),
         data: modeId,
-        kind: "command",
+        kind: "request",
       });
     }
   });

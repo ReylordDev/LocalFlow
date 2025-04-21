@@ -1,5 +1,4 @@
 // Command types for Electron to Python IPC
-import { UUID } from "crypto";
 import { PythonChannelFunction, PythonChannel } from "./channels";
 
 // ----------- Requests -----------
@@ -24,14 +23,12 @@ export enum Action {
   TOGGLE = "toggle",
   CANCEL = "cancel",
   AUDIO_LEVEL = "audio_level",
-  SWITCH_MODE = "switch_mode", // does this actually exist?
 }
 
 export type ActionDataMap = {
   [Action.TOGGLE]: undefined;
   [Action.CANCEL]: undefined;
   [Action.AUDIO_LEVEL]: undefined;
-  [Action.SWITCH_MODE]: UUID;
 };
 
 type ActionType = keyof ActionDataMap;

@@ -272,8 +272,6 @@ class Controller:
             print_message(
                 AudioLevelMessage(audio_level=self.recorder.get_audio_level()),
             )
-        elif command.action == Action.SWITCH_MODE:
-            self.database_manager.switch_mode(command.data)
 
     def handle_command(self, x: ElectronCommand):
         logger.info(f"Received command: {x.command}")
