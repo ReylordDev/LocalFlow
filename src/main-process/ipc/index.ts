@@ -9,7 +9,6 @@ import {
   PythonChannel,
   PythonChannelFunction,
   ElectronChannels,
-  ElectronChannelFunction,
 } from "../../lib/models/channels";
 import { tryCatch } from "../../lib/utils";
 import { Action } from "../../lib/models/commands";
@@ -27,7 +26,7 @@ function handlePythonIPC<C extends PythonChannel>(
         pythonService.sendPythonRequest({
           channel,
           id: pythonService.generateRequestId(),
-          data: args[0], // typing problem
+          data: args[0],
           kind: "request",
         }),
       );
@@ -90,11 +89,9 @@ export function registerIpcHandlers(
     ElectronChannels.setModePickerOpen,
     (_, isOpen: boolean, modes: Mode[]) => {
       if (isOpen) {
-        console.debug("Registering mode picker shortcuts");
         settingsService.registerModePickerShortcuts(modes);
       } else {
-        console.debug("Unregistering mode picker shortcuts");
-        // settingsService.unregisterModePickerShortcuts();
+        settingsService.unregisterModePickerShortcuts(modes);
       }
     },
   );

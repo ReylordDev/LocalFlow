@@ -53,14 +53,17 @@ const App = () => {
 
   useEffect(() => {
     const unsubscribe = window.mini.onChangeModeShortcutPressed(() => {
-      console.debug("Change mode shortcut pressed");
+      console.debug(
+        "Change mode shortcut pressed, mode picker: ",
+        modePickerOpen,
+      );
       setModePickerOpen((prev) => !prev);
       window.mini.setModePickerOpen(!modePickerOpen, modes);
     });
     return () => {
       unsubscribe();
     };
-  }, [modes]);
+  }, [modes, modePickerOpen]);
 
   /**
    * Switches the active mode in the front- and backend

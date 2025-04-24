@@ -151,7 +151,7 @@ export class SettingsService extends EventEmitter {
   }
 
   registerModePickerShortcuts(modes: Mode[]) {
-    console.debug("Registering mode picker shortcuts:", modes);
+    console.debug(`Registering ${modes.length} mode picker shortcuts`);
     for (let index = 0; index < modes.length; index++) {
       const mode = modes[index];
       globalShortcut.register("Shift+" + (index + 1).toString(), () =>
@@ -163,7 +163,7 @@ export class SettingsService extends EventEmitter {
   }
 
   unregisterModePickerShortcuts(modes: Mode[]) {
-    console.debug("Unregistering mode picker shortcuts:", modes);
+    console.debug(`Unregistering ${modes.length} mode picker shortcuts`);
     for (let index = 0; index < modes.length; index++) {
       globalShortcut.unregister("Shift+" + (index + 1).toString());
     }
