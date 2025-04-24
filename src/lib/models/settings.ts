@@ -50,6 +50,11 @@ export type SettingsEventMap = {
     | "cancel"
     | "change-mode"
     | {
+        name: "activate-mode";
         modeId: UUID;
+      }
+    | {
+        name: "activate-next-mode";
+        direction: "next" | "previous";
       };
 };

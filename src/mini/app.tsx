@@ -143,12 +143,7 @@ const App = () => {
               </div>
               <Separator orientation="vertical" decorative />
               <div className="flex items-center gap-4">
-                Select Mode
-                <ShortcutDisplay shortcut={"Enter"} />
-              </div>
-              <Separator orientation="vertical" decorative />
-              <div className="flex items-center gap-4">
-                Cancel
+                Close Mode Picker
                 <ShortcutDisplay
                   shortcut={settings.keyboard.changeModeShortcut}
                 />

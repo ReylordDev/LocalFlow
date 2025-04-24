@@ -37,6 +37,16 @@ export default function Modes() {
   }, []);
 
   useEffect(() => {
+    const unsubscribe = window.database.modes.onModes((modes) => {
+      console.info("Modes updated:", modes);
+      setModes(modes);
+    });
+    return () => {
+      unsubscribe();
+    };
+  }, []);
+
+  useEffect(() => {
     async function fetchLanguageModels() {
       const { data, error } = await tryCatch(
         window.database.languageModels.fetchAllLanguageModels(),
@@ -137,6 +147,7 @@ export default function Modes() {
                   e.stopPropagation();
                   window.database.modes.activateMode(mode.id);
                 }}
+                disabled={mode.active}
               >
                 Activate
               </Button>

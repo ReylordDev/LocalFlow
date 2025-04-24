@@ -156,10 +156,23 @@ export class SettingsService extends EventEmitter {
       const mode = modes[index];
       globalShortcut.register("Shift+" + (index + 1).toString(), () =>
         this.emitSettingsEvent(SettingsEvents.SHORTCUT_PRESSED, {
+          name: "activate-mode",
           modeId: mode.id,
         }),
       );
     }
+    globalShortcut.register("Up", () => {
+      this.emitSettingsEvent(SettingsEvents.SHORTCUT_PRESSED, {
+        name: "activate-next-mode",
+        direction: "previous",
+      });
+    });
+    globalShortcut.register("Down", () => {
+      this.emitSettingsEvent(SettingsEvents.SHORTCUT_PRESSED, {
+        name: "activate-next-mode",
+        direction: "next",
+      });
+    });
   }
 
   unregisterModePickerShortcuts(modes: Mode[]) {

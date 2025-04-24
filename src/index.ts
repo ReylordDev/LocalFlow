@@ -12,6 +12,8 @@ import {
   PythonEvents,
 } from "./lib/models/channels";
 import { Action } from "./lib/models/commands";
+import { tryCatch } from "./lib/utils";
+import { UUID } from "crypto";
 
 // Handle setup events
 if (require("electron-squirrel-startup")) app.quit();
@@ -141,7 +143,41 @@ function registerSettingsEventHandlers() {
       windowManager.sendMiniWindowMessage(
         ElectronChannels.onChangeModeShortcutPressed,
       );
-    } else {
+    } else if (data.name === "activate-next-mode") {
+      tryCatch(
+        pythonService.sendPythonRequest({
+          channel: PythonChannels.fetchAllModes,
+          id: pythonService.generateRequestId(),
+          kind: "request",
+        }),
+      ).then(({ data: modes, error }) => {
+        if (error) {
+          console.error("Error fetching modes:", error);
+          return;
+        }
+        const currentIndex = modes.findIndex((mode) => mode.active);
+        let nextModeId: UUID | undefined = undefined;
+        if (data.direction === "previous") {
+          const previousIndex =
+            (currentIndex - 1 + modes.length) % modes.length;
+          nextModeId = modes[previousIndex].id;
+        } else if (data.direction === "next") {
+          const nextIndex = (currentIndex + 1) % modes.length;
+          nextModeId = modes[nextIndex].id;
+        }
+        if (!nextModeId) {
+          console.error("No next mode found");
+          return;
+        }
+        console.info(`Switching to mode: ${nextModeId}`);
+        pythonService.sendPythonRequest({
+          channel: PythonChannels.activateMode,
+          id: pythonService.generateRequestId(),
+          data: nextModeId,
+          kind: "request",
+        });
+      });
+    } else if (data.name === "activate-mode") {
       const modeId = data.modeId;
       console.info(`Switching to mode: ${modeId}`);
       pythonService.sendPythonRequest({
