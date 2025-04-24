@@ -104,8 +104,8 @@ function registerPythonEventHandlers() {
   });
 
   pythonService.onPythonEvent(PythonEvents.MODES, (modes) => {
-    console.warn("I don't think this is supposed to exit anymore:", modes);
-    // TODO: how to send modes update to mini window?
+    windowManager.sendMiniWindowMessage(PythonChannels.onModes, modes);
+    windowManager.sendMainWindowMessage(PythonChannels.onModes, modes);
   });
 }
 

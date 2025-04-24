@@ -32,6 +32,7 @@ export enum PythonChannels {
   updateMode = "database:modes:updateMode",
   deleteMode = "database:modes:deleteMode",
   activateMode = "database:modes:activateMode",
+  onModes = "database:modes:onModes",
 
   // Result channels
   fetchAllResults = "database:results:getAll",
@@ -67,6 +68,7 @@ type PythonChannelMap = {
   [PythonChannels.updateMode]: (mode: ModeUpdate) => Promise<Mode[]>;
   [PythonChannels.deleteMode]: (modeId: UUID) => Promise<Mode[]>;
   [PythonChannels.activateMode]: (modeId: UUID) => Promise<Mode[]>;
+  [PythonChannels.onModes]: (callback: (modes: Mode[]) => void) => () => void;
 
   // Result channels
   [PythonChannels.fetchAllResults]: () => Promise<Result[]>;
@@ -236,6 +238,7 @@ declare global {
         updateMode: ChannelFunction<PythonChannels.updateMode>;
         deleteMode: ChannelFunction<PythonChannels.deleteMode>;
         activateMode: ChannelFunction<PythonChannels.activateMode>;
+        onModes: ChannelFunction<PythonChannels.onModes>;
       };
       results: {
         fetchAllResults: ChannelFunction<PythonChannels.fetchAllResults>;

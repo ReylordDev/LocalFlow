@@ -17,6 +17,7 @@ import {
   PythonEvents,
   PythonEventMap,
   PythonChannelFunction,
+  PythonChannels,
 } from "../../lib/models/channels";
 
 // Define types for promise-based request handling
@@ -178,10 +179,12 @@ export class PythonService extends EventEmitter {
           console.debug(
             `Resolved request ${message.id} with type ${message.data}`,
           );
-          return;
         }
       } else {
         console.warn(`Request ID ${message.id} not found in pending requests`);
+      }
+      if (message.channel === PythonChannels.fetchAllModes) {
+        this.emitPythonEvent(PythonEvents.MODES, message.data);
       }
     } else if (message.kind === "update") {
       // Handle updates from the Python process

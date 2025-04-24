@@ -1,6 +1,6 @@
 import { createRoot } from "react-dom/client";
 import SpeechVocalization from "../components/SpeechVocalization";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AudioWaveform, Loader2 } from "lucide-react";
 import { ControllerStatusType } from "../lib/models/messages";
 import { Separator } from "../components/ui/separator";
@@ -17,9 +17,13 @@ import { Mode } from "../lib/models/database";
 const App = () => {
   const [status, setStatus] = useState<ControllerStatusType>("idle");
   const settings = useSettings();
-  const [activeMode, setActiveMode] = useState<Mode | null>(null);
+  // const [activeMode, setActiveMode] = useState<Mode | null>(null);
   const [modes, setModes] = useState<Mode[]>([]);
   const [modePickerOpen, setModePickerOpen] = useState(false);
+
+  const activeMode = useMemo(() => {
+    return modes.find((mode) => mode.active) || null;
+  }, [modes]);
 
   useEffect(() => {
     const unsubscribe = window.mini.onStatusUpdate((status) => {
@@ -43,12 +47,22 @@ const App = () => {
         return;
       }
       console.log("Fetched Modes", data);
-      const activeMode = data.find((mode) => mode.active);
-      setActiveMode(activeMode || null);
+      // const activeMode = data.find((mode) => mode.active);
+      // setActiveMode(activeMode || null);
       setModes(data);
     }
 
     fetchModes();
+  }, []);
+
+  useEffect(() => {
+    const unsubscribe = window.database.modes.onModes((modes) => {
+      console.info("Modes updated:", modes);
+      setModes(modes);
+    });
+    return () => {
+      unsubscribe();
+    };
   }, []);
 
   useEffect(() => {
@@ -71,7 +85,7 @@ const App = () => {
    * @param mode The mode to be activated
    */
   const activateMode = (mode: Mode) => {
-    setActiveMode(mode);
+    // setActiveMode(mode);
     window.database.modes.activateMode(mode.id);
   };
 
@@ -379,7 +393,6 @@ interface ModePickerProps {
  * Mode picker component for selecting different recording modes
  * @param modes List of available recording modes
  * @param activateMode Function to set the active mode
- * @param setModePickerOpen Function to toggle the mode picker visibility
  */
 const ModePicker = ({ modes, activateMode }: ModePickerProps) => {
   const heightPerMode = 40; // Height of each mode item in pixels
@@ -388,6 +401,10 @@ const ModePicker = ({ modes, activateMode }: ModePickerProps) => {
   const borderHeight = 2; // Border height in pixels
   const minHeight = 112 + borderHeight; // Minimum height of the mode picker in pixels
   const maxHeight = 328; // Maximum height of the mode picker in pixels
+
+  const activeMode = useMemo(() => {
+    return modes.find((mode) => mode.active) || null;
+  }, [modes]);
 
   useEffect(() => {
     const totalHeight =
@@ -409,6 +426,7 @@ const ModePicker = ({ modes, activateMode }: ModePickerProps) => {
       <RadioGroup
         defaultValue={modes.find((mode) => mode.active)?.id}
         className="scrollbar flex max-h-full w-full flex-col items-center gap-2 overflow-y-auto px-4"
+        value={activeMode?.id}
         onValueChange={(value) => {
           const selectedMode = modes.find((mode) => mode.id === value);
           if (selectedMode) {

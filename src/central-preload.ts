@@ -96,6 +96,7 @@ export const exposeDatabase = () => {
       updateMode: (mode) => invoke(PythonChannels.updateMode, mode),
       deleteMode: (modeId) => invoke(PythonChannels.deleteMode, modeId),
       activateMode: (modeId) => invoke(PythonChannels.activateMode, modeId),
+      onModes: (callback) => genericListener(PythonChannels.onModes, callback),
     },
     textReplacements: {
       fetchAllTextReplacements: () =>

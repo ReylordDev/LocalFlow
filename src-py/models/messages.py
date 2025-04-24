@@ -111,6 +111,9 @@ class BaseResponse(BaseModel):
     kind: Literal["response"] = "response"
 
 
+# TODO: investigate the need for the channel field
+
+
 class ModesResponse(BaseResponse):
     data: list[Mode]
     channel: Literal[CHANNELS.FETCH_ALL_MODES] = CHANNELS.FETCH_ALL_MODES
